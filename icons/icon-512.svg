@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="80" fill="#1a1a2e"/>
+  <!-- Pergola krov - horizontalne letve -->
+  <rect x="56" y="110" width="400" height="22" rx="11" fill="#e94560"/>
+  <rect x="90" y="145" width="14" height="100" rx="7" fill="#e94560" opacity="0.6"/>
+  <rect x="134" y="145" width="14" height="100" rx="7" fill="#e94560" opacity="0.6"/>
+  <rect x="178" y="145" width="14" height="100" rx="7" fill="#e94560" opacity="0.6"/>
+  <rect x="222" y="145" width="14" height="100" rx="7" fill="#e94560" opacity="0.6"/>
+  <rect x="266" y="145" width="14" height="100" rx="7" fill="#e94560" opacity="0.6"/>
+  <rect x="310" y="145" width="14" height="100" rx="7" fill="#e94560" opacity="0.6"/>
+  <rect x="354" y="145" width="14" height="100" rx="7" fill="#e94560" opacity="0.6"/>
+  <rect x="398" y="145" width="14" height="100" rx="7" fill="#e94560" opacity="0.6"/>
+  <!-- Stubovi -->
+  <rect x="64" y="238" width="28" height="164" rx="8" fill="#3b82f6"/>
+  <rect x="420" y="238" width="28" height="164" rx="8" fill="#3b82f6"/>
+  <!-- Bočna greda -->
+  <rect x="56" y="234" width="400" height="20" rx="8" fill="#16213e" stroke="#3b82f6" stroke-width="2"/>
+  <!-- AG GROUP tekst -->
+  <text x="256" y="352" font-family="'Segoe UI', Arial, sans-serif" font-size="80" font-weight="800" fill="white" text-anchor="middle" letter-spacing="4">AG</text>
+  <!-- Linija ispod AG -->
+  <rect x="148" y="368" width="216" height="7" rx="3.5" fill="#e94560"/>
+  <!-- PROHORECA GROUP tekst -->
+  <text x="256" y="416" font-family="'Segoe UI', Arial, sans-serif" font-size="24" font-weight="700" fill="#6b7280" text-anchor="middle" letter-spacing="3">PROHORECA</text>
+  <text x="256" y="444" font-family="'Segoe UI', Arial, sans-serif" font-size="18" font-weight="600" fill="#3b82f6" text-anchor="middle" letter-spacing="4">GROUP</text>
+</svg>
