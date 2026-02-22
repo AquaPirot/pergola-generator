@@ -756,13 +756,36 @@ function generateGuillotine(){
    3D HTML EXPORT FUNCTIONS
    ═══════════════════════════════════════════════════════════ */
 
-function download3DHTML(html, prefix) {
-  const blob = new Blob([html], {type:'text/html'});
-  const a = document.createElement('a');
-  a.download = genId(prefix) + '-3D.html';
-  a.href = URL.createObjectURL(blob);
-  a.click();
-  URL.revokeObjectURL(a.href);
+async function download3DHTML(html, prefix) {
+  const filename = genId(prefix) + '-3D.html';
+  const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+
+  // 1. Web Share API — najbolje za mobilni (Android/iOS PWA)
+  try {
+    const file = new File([blob], filename, {type: 'text/html'});
+    if (navigator.canShare && navigator.canShare({files: [file]})) {
+      await navigator.share({files: [file], title: 'PROHORECA AG GROUP - 3D Model'});
+      return;
+    }
+  } catch(e) {}
+
+  // 2. Standardni download (desktop + Android)
+  try {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 8000); // revoke NAKON downloada
+    return;
+  } catch(e) {}
+
+  // 3. Fallback — otvori u novom tabu (korisnik moze da sacuva rucno)
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
 function threejsBase(title, subtitle, dims, sceneCode) {
