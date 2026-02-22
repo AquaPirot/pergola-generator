@@ -758,34 +758,44 @@ function generateGuillotine(){
 
 async function download3DHTML(html, prefix) {
   const filename = genId(prefix) + '-3D.html';
-  const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
 
-  // 1. Web Share API — najbolje za mobilni (Android/iOS PWA)
-  try {
-    const file = new File([blob], filename, {type: 'text/html'});
-    if (navigator.canShare && navigator.canShare({files: [file]})) {
-      await navigator.share({files: [file], title: 'PROHORECA AG GROUP - 3D Model'});
-      return;
+  // 1. Web Share API (najbolje za mobilne uredjaje i PWA)
+  if (navigator.canShare && navigator.share) {
+    try {
+      const file = new File([html], filename, { type: 'text/html' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'PROHORECA AG GROUP - 3D Model',
+          text: 'Tehnicki 3D model klijenta'
+        });
+        return;
+      }
+    } catch (e) {
+      console.log('Share API nije uspeo, pokusavam download...');
     }
-  } catch(e) {}
+  }
 
-  // 2. Standardni download (desktop + Android)
+  // 2. Base64 download - stabilnije za PWA od Blob URL-a
   try {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 8000); // revoke NAKON downloada
-    return;
-  } catch(e) {}
-
-  // 3. Fallback — otvori u novom tabu (korisnik moze da sacuva rucno)
-  const url = URL.createObjectURL(blob);
-  window.open(url, '_blank');
-  setTimeout(() => URL.revokeObjectURL(url), 30000);
+    const base64data = btoa(unescape(encodeURIComponent(html)));
+    const link = document.createElement('a');
+    link.href = 'data:text/html;charset=utf-8;base64,' + base64data;
+    link.download = filename;
+    link.target = '_blank'; // vazno za PWA kontejner
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (e) {
+    // 3. Poslednja opcija: otvaranje u novom prozoru
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.document.write(html);
+      newWindow.document.close();
+    } else {
+      alert('Molimo omogucite pop-up prozore za ovu aplikaciju kako biste preuzeli 3D.');
+    }
+  }
 }
 
 function threejsBase(title, subtitle, dims, sceneCode) {
