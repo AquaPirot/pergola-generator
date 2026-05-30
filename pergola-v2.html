@@ -580,8 +580,11 @@ function generate3D(){
     c.fillStyle='white';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`CEV ${pgS.wallTubeW*10}×${pgS.wallTubeH*10}mm`,cp.x,cp.y+4);
   }
 
-  // Pergole
-  const bH=10,bD=6; // visina i dubina grede cm
+  // ═══ PERGOLE ═══
+  const bH=10,bD=6; // greda: visina, dubina (cm)
+  const rogW=8,rogH=9; // rog: širina i visina preseka (cm)
+  const crossH=5,crossD=5; // poprečna greda (cm)
+
   let xOff=0;
   for(let pi=0;pi<pgS.count;pi++){
     const pw=pgS.pergs[pi].w;
@@ -589,59 +592,94 @@ function generate3D(){
     const backY=pgS.wallHeight;
     const frontY=pgS.type==='klasicna'?pgS.passHeight:pgS.wallHeight;
 
-    // Zadnja greda (na zidu)
-    box(xOff,backY,0,pw,bH,bD,fMid,fDark,hexDarken(fHex,.45),'#111');
-    // Prednja greda
-    box(xOff,frontY,pp2-bD,pw,bH,bD,fMid,fDark,hexDarken(fHex,.45),'#111');
-    // Levi bočni profil
-    line3(xOff,backY,0,xOff,frontY,pp2,fDark,3);
-    line3(xOff,backY+bH,0,xOff,frontY+bH,pp2,fDark,3);
-    // Desni bočni profil
-    line3(xOff+pw,backY,0,xOff+pw,frontY,pp2,fDark,3);
-    line3(xOff+pw,backY+bH,0,xOff+pw,frontY+bH,pp2,fDark,3);
+    // Rafter positions
+    const rafterPositions=[];
+    for(let rsi=0;rsi<pgS.ppp;rsi++){
+      let rpx;
+      if(pgS.ppp===1) rpx=xOff+pw/2;
+      else if(pgS.ppp===2) rpx=rsi===0?xOff:xOff+pw;
+      else rpx=xOff+(pw/(pgS.ppp-1))*rsi;
+      rafterPositions.push(rpx);
+    }
 
-    // Krov
+    // 1. KROVNI POKRIVAČ (prvo — iza profila)
     if(pgS.type==='bioklimatska'){
-      // Lamele (horizontalne trake duž projekcije)
-      const nLam=Math.min(18,Math.round(pp2/12));
+      // Lamele — debeli horizontalni profili duž X, raspoređeni po Z
+      const nLam=Math.min(16,Math.round(pp2/14));
       for(let li=0;li<nLam;li++){
         const lz=(li+.5)*(pp2/nLam);
-        const lamY=backY+(frontY-backY)*(lz/pp2);
-        const lamH=8,lamD=10;
-        box(xOff,lamY,lz,pw,lamH*.12,lamD,fMid,fDark,hexDarken(fHex,.45),'#1a1a2e');
+        const lamY=backY+(frontY-backY)*(lz/pp2)+bH;
+        const lamT=2.5,lamD=12;
+        // Gornja ploha lamele
+        poly([p(xOff,lamY+lamT,lz-lamD/2),p(xOff+pw,lamY+lamT,lz-lamD/2),p(xOff+pw,lamY+lamT,lz+lamD/2),p(xOff,lamY+lamT,lz+lamD/2)],fMid,'#111',1);
+        // Prednja ivica lamele
+        poly([p(xOff,lamY,lz+lamD/2),p(xOff+pw,lamY,lz+lamD/2),p(xOff+pw,lamY+lamT,lz+lamD/2),p(xOff,lamY+lamT,lz+lamD/2)],fDark,'#111',1);
       }
     }else{
-      // Platno (poluprozirna površina)
-      const platnoFill='rgba(200,200,185,.72)';
-      poly([p(xOff,backY+bH,0),p(xOff+pw,backY+bH,0),p(xOff+pw,frontY+bH,pp2),p(xOff,frontY+bH,pp2)],platnoFill,'#999',1);
-      // Šrafura platna
-      c.save();c.globalAlpha=0.4;c.strokeStyle='#888';c.lineWidth=.7;
-      const nLines=8;
-      for(let li=0;li<=nLines;li++){
-        const t=li/nLines;
-        const A=p(xOff+pw*t,backY+bH,0);const B=p(xOff,frontY+bH,pp2*t);
+      // Platno (poluprozirno, iza rogova)
+      poly([p(xOff,backY+bH,0),p(xOff+pw,backY+bH,0),p(xOff+pw,frontY+bH,pp2),p(xOff,frontY+bH,pp2)],'rgba(215,215,200,.78)','#bbb',1);
+      // Šrafura po dužini (naglašava dubinu)
+      c.save();c.globalAlpha=.3;c.strokeStyle='#999';c.lineWidth=1;
+      const nStr=Math.max(3,Math.round(pw/55));
+      for(let si2=0;si2<=nStr;si2++){
+        const t=si2/nStr,rxl=xOff+pw*t;
+        const A=p(rxl,backY+bH,0),B=p(rxl,frontY+bH,pp2);
         c.beginPath();c.moveTo(A.x,A.y);c.lineTo(B.x,B.y);c.stroke();
       }
       c.restore();
-      // Rogovi
-      const rafterPositions=[];
-      for(let rsi=0;rsi<pgS.ppp;rsi++){let rpx;if(pgS.ppp===1)rpx=xOff+pw/2;else if(pgS.ppp===2)rpx=rsi===0?xOff:xOff+pw;else rpx=xOff+(pw/(pgS.ppp-1))*rsi;rafterPositions.push(rpx);}
-      rafterPositions.forEach(rx=>{const A=p(rx,backY+bH,0),B=p(rx,frontY+bH,pp2);c.beginPath();c.moveTo(A.x,A.y);c.lineTo(B.x,B.y);c.strokeStyle=fDark;c.lineWidth=3;c.stroke();});
+
+      // 2. ROGOVI — debeli 3D profili (prizma duž Z ose) ← GLAVNA IZMENA
+      rafterPositions.forEach(rx=>{
+        // Gornja ploha roga (najvidljivija)
+        poly([
+          p(rx-rogW/2, backY+bH+rogH, 0),
+          p(rx+rogW/2, backY+bH+rogH, 0),
+          p(rx+rogW/2, frontY+bH+rogH, pp2),
+          p(rx-rogW/2, frontY+bH+rogH, pp2)
+        ], fMid, '#111', 1.8);
+        // Desna bočna ploha roga
+        poly([
+          p(rx+rogW/2, backY+bH,     0),
+          p(rx+rogW/2, backY+bH+rogH, 0),
+          p(rx+rogW/2, frontY+bH+rogH, pp2),
+          p(rx+rogW/2, frontY+bH,    pp2)
+        ], fDark, '#111', 1.8);
+        // Prednja ivica roga (na zidu, z=0)
+        poly([
+          p(rx-rogW/2, backY+bH,     0),
+          p(rx+rogW/2, backY+bH,     0),
+          p(rx+rogW/2, backY+bH+rogH, 0),
+          p(rx-rogW/2, backY+bH+rogH, 0)
+        ], hexDarken(fHex,.4), '#111', 1.5);
+      });
     }
 
-    // Poprečni profili (LED grede)
+    // 3. ZADNJA GREDA (na zidu, z≈0)
+    box(xOff,backY,0,pw,bH,bD,fMid,fDark,hexDarken(fHex,.45),'#111');
+    // 4. PREDNJA GREDA / OLUK (z=pp2)
+    box(xOff,frontY,pp2-bD,pw,bH,bD,fMid,fDark,hexDarken(fHex,.45),'#111');
+
+    // 5. BOČNI PROFILI — kao pune prizme (ne tanke linije)
+    const sW=bD;
+    // Levi profil (top + prednja vidljiva ploha)
+    poly([p(xOff-sW,backY+bH,0),p(xOff,backY+bH,0),p(xOff,frontY+bH,pp2),p(xOff-sW,frontY+bH,pp2)],fMid,'#111',1.5);
+    poly([p(xOff-sW,backY,0),p(xOff,backY,0),p(xOff,frontY,pp2),p(xOff-sW,frontY,pp2)],hexDarken(fHex,.55),'#111',1.5);
+    // Desni profil
+    poly([p(xOff+pw,backY+bH,0),p(xOff+pw+sW,backY+bH,0),p(xOff+pw+sW,frontY+bH,pp2),p(xOff+pw,frontY+bH,pp2)],fMid,'#111',1.5);
+    poly([p(xOff+pw,backY,0),p(xOff+pw+sW,backY,0),p(xOff+pw+sW,frontY,pp2),p(xOff+pw,frontY,pp2)],hexDarken(fHex,.5),'#111',1.5);
+
+    // 6. POPREČNI PROFILI — 3D kutije
     const nCross=Math.max(2,Math.round(pp2/80));
     for(let ci=0;ci<nCross;ci++){
       const cz2=(ci+1)*(pp2/(nCross+1));
-      const cy2=backY+(frontY-backY)*(cz2/pp2)-8;
-      const A=p(xOff,cy2,cz2),B=p(xOff+pw,cy2,cz2);
-      c.beginPath();c.moveTo(A.x,A.y);c.lineTo(B.x,B.y);c.strokeStyle=fDark;c.lineWidth=3.5;c.stroke();
+      const cy2=backY+(frontY-backY)*(cz2/pp2)+bH-crossH-3;
+      box(xOff,cy2,cz2-crossD/2,pw,crossH,crossD,fMid,fDark,hexDarken(fHex,.45),'#111');
     }
 
     xOff+=pw;
   }
 
-  // Stubovi
+  // 7. STUBOVI
   const posts=pgPP();
   posts.forEach((pt,i)=>{
     const pp3=pgS.pergs[pt.pi].p;
@@ -656,21 +694,84 @@ function generate3D(){
     }else{
       box(pt.x-pW2/2,0,pp3-pD2/2,pW2,frontY,pD2,pCol,pColD,pColS,'#111');
     }
-    // Oznaka
     const stubTop=pgS.hasWallBase?pgS.wallBaseH+pgS.postHeight:frontY;
-    const lp=p(pt.x,stubTop+5,pp3);
+    const lp=p(pt.x,stubTop+6,pp3);
     c.fillStyle=pt.sh?'#e94560':'#374151';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`S${i+1}`,lp.x,lp.y);
   });
 
-  // Kotne linije u 3D
-  // Širina (duž X)
-  const dw0=p(0,-18,mp+10),dw1=p(tw,-18,mp+10);
+  // ═══ KOTNE LINIJE ═══
+  const frontPassY=pgS.type==='klasicna'?pgS.passHeight:pgS.wallHeight;
+
+  // A) Širina (duž X, ispred pergole)
+  const dw0=p(0,-22,mp+18),dw1=p(tw,-22,mp+18);
   dimH(c,dw0.x,dw0.y,dw1.x,`${tw} cm`);
-  // Projekcija (duž Z)
-  const dz0=p(tw+15,0,0),dz1=p(tw+15+mp*cos_a*zFactor*sc,0,0);
-  // Visina (duž Y)
-  const dvx=p(-18,0,0),dvy=p(-18,pgS.wallHeight,0);
-  dimV(c,dvx.x,dvx.y,dvy.y,`${pgS.wallHeight} cm`);
+
+  // B) Visina na zidu (vertikalno, levo)
+  const dvxA=p(-24,0,0),dvxB=p(-24,pgS.wallHeight,0);
+  dimV(c,dvxA.x,dvxA.y,dvxB.y,`${pgS.wallHeight} cm`);
+
+  // C) Projekcija / Dubina (dijagonalno desno, duž Z ose) ← NOVA KOTNA LINIJA
+  {
+    const offX=28; // koliko desno od pergole
+    const zA=p(tw+offX,0,0),zB=p(tw+offX,0,mp);
+    // Produžetke (isprekidano)
+    c.save();c.setLineDash([5,4]);c.strokeStyle='#9ca3af';c.lineWidth=1;
+    const rA=p(tw,0,0),rB=p(tw,0,mp);
+    c.beginPath();c.moveTo(rA.x,rA.y);c.lineTo(zA.x,zA.y);c.stroke();
+    c.beginPath();c.moveTo(rB.x,rB.y);c.lineTo(zB.x,zB.y);c.stroke();
+    c.setLineDash([]);
+    // Kotna linija
+    c.strokeStyle='#e94560';c.lineWidth=1.8;
+    c.beginPath();c.moveTo(zA.x,zA.y);c.lineTo(zB.x,zB.y);c.stroke();
+    // Tick-ovi
+    const ang4=Math.atan2(zB.y-zA.y,zB.x-zA.x);
+    const tpX=Math.sin(ang4)*7,tpY=-Math.cos(ang4)*7;
+    [[zA.x,zA.y],[zB.x,zB.y]].forEach(([px3,py3])=>{c.beginPath();c.moveTo(px3-tpX,py3-tpY);c.lineTo(px3+tpX,py3+tpY);c.stroke();});
+    // Strelice
+    [[zA,zB],[zB,zA]].forEach(([from,to])=>{
+      const dx4=to.x-from.x,dy4=to.y-from.y,ln=Math.sqrt(dx4*dx4+dy4*dy4);
+      const nx=dx4/ln,ny=dy4/ln;
+      c.fillStyle='#e94560';c.beginPath();c.moveTo(from.x,from.y);c.lineTo(from.x+nx*12+ny*5,from.y+ny*12-nx*5);c.lineTo(from.x+nx*12-ny*5,from.y+ny*12+nx*5);c.closePath();c.fill();
+    });
+    // Label
+    const mxZ=(zA.x+zB.x)/2,myZ=(zA.y+zB.y)/2;
+    c.font='bold 14px Segoe UI,sans-serif';c.textAlign='center';
+    const lbl=`${mp} cm`;
+    const lw3=c.measureText(lbl).width+14;
+    c.fillStyle='#fff';c.fillRect(mxZ-lw3/2,myZ-12,lw3,22);
+    c.fillStyle='#1a1a2e';c.fillText(lbl,mxZ,myZ+5);
+    c.restore();
+  }
+
+  // D) Prolazna visina (vertikalno desno, na prednjem uglu) ← NOVA KOTNA LINIJA
+  {
+    const offX2=42;
+    const pvA=p(tw+offX2,0,mp),pvB=p(tw+offX2,frontPassY,mp);
+    // Produžetke
+    c.save();c.setLineDash([5,4]);c.strokeStyle='#9ca3af';c.lineWidth=1;
+    const fA=p(tw,0,mp),fB=p(tw,frontPassY,mp);
+    c.beginPath();c.moveTo(fA.x,fA.y);c.lineTo(pvA.x,pvA.y);c.stroke();
+    c.beginPath();c.moveTo(fB.x,fB.y);c.lineTo(pvB.x,pvB.y);c.stroke();
+    c.setLineDash([]);
+    // Kotna linija
+    c.strokeStyle='#3b82f6';c.lineWidth=1.8;
+    c.beginPath();c.moveTo(pvA.x,pvA.y);c.lineTo(pvB.x,pvB.y);c.stroke();
+    c.beginPath();c.moveTo(pvA.x-6,pvA.y);c.lineTo(pvA.x+6,pvA.y);c.stroke();
+    c.beginPath();c.moveTo(pvB.x-6,pvB.y);c.lineTo(pvB.x+6,pvB.y);c.stroke();
+    // Strelice (gore i dole)
+    [[pvA,pvB],[pvB,pvA]].forEach(([from,to])=>{
+      const ny=to.y>from.y?1:-1;
+      c.fillStyle='#3b82f6';c.beginPath();c.moveTo(from.x,from.y);c.lineTo(from.x-5,from.y+ny*12);c.lineTo(from.x+5,from.y+ny*12);c.closePath();c.fill();
+    });
+    // Label
+    const lbl2=`${frontPassY} cm`;
+    const lw4=c.measureText(lbl2).width+14;
+    const lblY2=(pvA.y+pvB.y)/2;
+    c.font='bold 14px Segoe UI,sans-serif';c.textAlign='center';
+    c.fillStyle='#fff';c.fillRect(pvA.x-lw4/2,lblY2-12,lw4,22);
+    c.fillStyle='#1a1a2e';c.fillText(lbl2,pvA.x,lblY2+5);
+    c.restore();
+  }
 
   // Legende
   c.fillStyle='#1a1a2e';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
