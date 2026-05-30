@@ -279,6 +279,7 @@ function switchView(v,btn){
   if(btn)btn.classList.add('active');
   document.getElementById('panel-2d').classList.toggle('active',v==='2d');
   document.getElementById('panel-3d').classList.toggle('active',v==='3d');
+  if(v==='3d'&&document.getElementById('outputCanvas').style.display!=='none'&&document.getElementById('canvas3d').style.display==='none')generate3D();
 }
 
 /* ═══ UI HANDLERS ═══ */
@@ -294,6 +295,31 @@ document.getElementById('pg_postHeight').addEventListener('input',pgCalcWallBase
 
 function pgBuildDims(){const c=document.getElementById('pergolaDims');const ex=[];for(let i=0;i<3;i++){const w=document.getElementById('pw_'+i),p=document.getElementById('pp_'+i);ex.push({w:w?parseInt(w.value)||500:500,p:p?parseInt(p.value)||400:400});}let h='';for(let i=0;i<pgS.count;i++)h+=`<div class="pergola-dim-card"><div class="pergola-label">Pergola ${i+1}</div><div class="form-row"><div class="form-group"><label>Širina <span class="unit">(cm)</span></label><input type="number" id="pw_${i}" value="${ex[i]?ex[i].w:500}" min="200" max="1100" step="10"></div><div class="form-group"><label>Projekcija <span class="unit">(cm)</span></label><input type="number" id="pp_${i}" value="${ex[i]?ex[i].p:400}" min="200" max="1100" step="10"></div></div></div>`;c.innerHTML=h;}
 pgBuildDims();
+
+/* ═══ PERSIST ═══ */
+function pgSaveState(){
+  try{
+    const fv={};
+    ['pg_wallHeight','pg_passHeight','pg_postsPerPergola','pg_postW','pg_postD','pg_projectName','pg_notes','pg_customRal'].forEach(f=>{const e=document.getElementById(f);if(e)fv[f]=e.value;});
+    for(let i=0;i<3;i++){const w=document.getElementById('pw_'+i),pp=document.getElementById('pp_'+i);if(w)fv['pw_'+i]=w.value;if(pp)fv['pp_'+i]=pp.value;}
+    localStorage.setItem('pg_v2',JSON.stringify({s:pgS,f:fv}));
+  }catch(e){}
+}
+function pgLoadState(){
+  try{
+    const d=JSON.parse(localStorage.getItem('pg_v2'));
+    if(!d)return;const s=d.s,fv=d.f||{};if(!s)return;
+    if(s.type){pgS.type=s.type;document.querySelectorAll('.type-option').forEach(o=>o.classList.toggle('active',o.dataset.type===pgS.type));}
+    if(s.count&&s.count!==pgS.count){pgS.count=s.count;document.querySelectorAll('.num-option').forEach(o=>o.classList.toggle('active',parseInt(o.dataset.count)===pgS.count));pgBuildDims();document.getElementById('sharedPostSection').style.display=pgS.count>1?'block':'none';}
+    if(s.ral){pgS.ral=s.ral;document.querySelectorAll('#pg_colors .color-option').forEach(o=>o.classList.toggle('active',o.dataset.ral===pgS.ral));document.getElementById('pg_customRalWrap').classList.toggle('visible',pgS.ral==='custom');}
+    if(s.sharedPost!==undefined){pgS.sharedPost=s.sharedPost;document.getElementById('pg_sharedPost').checked=pgS.sharedPost;}
+    if(s.hasWallBase){pgS.hasWallBase=true;document.getElementById('pg_hasWallBase').checked=true;document.getElementById('pg_wallBaseFields').classList.add('visible');}
+    if(s.hasWallTube){pgS.hasWallTube=true;document.getElementById('pg_hasWallTube').checked=true;document.getElementById('pg_wallTubeFields').classList.add('visible');
+      if(s.wallTubeProfile){pgS.wallTubeProfile=s.wallTubeProfile;pgS.wallTubeW=s.wallTubeW||8;pgS.wallTubeH=s.wallTubeH||4;document.querySelectorAll('#pg_tubeOptions .tube-option').forEach(o=>o.classList.toggle('active',o.dataset.profile===pgS.wallTubeProfile));document.getElementById('pg_tubeCustomFields').style.display=pgS.wallTubeProfile==='custom'?'block':'none';}}
+    Object.keys(fv).forEach(k=>{const e=document.getElementById(k);if(e)e.value=fv[k];});
+  }catch(e){}
+}
+pgLoadState();
 
 /* ═══ DATA HELPERS ═══ */
 function pgGather(){
@@ -344,6 +370,46 @@ function ground(c,x1,x2,y){c.strokeStyle='#9ca3af';c.lineWidth=2;c.beginPath();c
 function wallHatch(c,x,y,w,h){c.fillStyle='#d1d5db';c.fillRect(x,y,w,h);c.strokeStyle='#9ca3af';c.lineWidth=0.8;for(let wy=y;wy<y+h;wy+=6){c.beginPath();c.moveTo(x,wy);c.lineTo(x+w,wy+6);c.stroke();}}
 function initCanvas(id,CW,CH){const cv=document.getElementById(id);cv.style.display='block';const D=2;cv.width=CW*D;cv.height=CH*D;cv.style.width='100%';cv.style.height='auto';const c=cv.getContext('2d');c.scale(D,D);c.fillStyle='#fff';c.fillRect(0,0,CW,CH);return c;}
 
+/* ═══ BOM ═══ */
+function pgDrawBOM(c,ox,oy,w){
+  const tp=pgTP(),tw2=pgTW(),mp2=pgMP(),ta=pgTA();
+  const nCross=Math.max(2,Math.round(mp2/80));
+  const stubH=pgS.hasWallBase?pgS.postHeight:pgS.passHeight;
+  secTitle(c,ox,oy,'SPECIFIKACIJA MATERIJALA');
+  const cols=[ox+10,ox+Math.round(w*.42),ox+Math.round(w*.58),ox+Math.round(w*.72)];
+  const th=38,rh=28,ty=oy+22;
+  c.fillStyle='#1a1a2e';c.fillRect(ox,ty,w,th);
+  c.fillStyle='white';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
+  ['ELEMENT','DUŽINA / FORMAT','KOM.','NAPOMENA'].forEach((h,i)=>c.fillText(h,cols[i],ty+25));
+  const items=[];
+  items.push({n:'Zadnja greda (zidna)',d:`${tw2} cm`,q:'1',note:'Prikotviti za zid'});
+  items.push({n:'Prednja greda / Oluk',d:`${tw2} cm`,q:'1',note:''});
+  items.push({n:'Bočni profil',d:`${mp2} cm`,q:`${2*pgS.count}`,note:'Levo i desno po pergoli'});
+  if(pgS.type==='bioklimatska'){
+    items.push({n:'Rog — nosač lamela',d:`${mp2} cm`,q:`${tp}`,note:'Duž projekcije'});
+    items.push({n:'Lamela (pokretna)',d:`${tw2} cm`,q:`~${Math.min(16,Math.round(mp2/14))*pgS.count}`,note:'Razmak ~14 cm'});
+  }else{
+    items.push({n:'Rog (krovni nosač)',d:`${mp2} cm`,q:`${tp}`,note:'Duž projekcije'});
+    items.push({n:pgS.type==='ravna'?'3D Blockout platno':'3D krovni pokrivač',d:`${tw2}×${mp2} cm`,q:'1',note:`~${ta.toFixed(1)} m²`});
+  }
+  items.push({n:'Poprečni profil (greda)',d:`~${Math.round(tw2/pgS.count)} cm`,q:`${nCross*pgS.count}`,note:'Po pergoli'});
+  items.push({n:`Stub alum. ${pgS.postW||12}×${pgS.postD||12} cm`,d:`${stubH} cm`,q:`${tp}`,note:pgS.count>1&&pgS.sharedPost?'Incl. zajednički':''});
+  if(pgS.hasWallBase)items.push({n:'Zidić (betonski)',d:`${tw2}×${pgS.wallBaseH} cm`,q:'1',note:'Van al. spec.'});
+  if(pgS.hasWallTube)items.push({n:`Zidna cev ${pgS.wallTubeW*10}×${pgS.wallTubeH*10} mm`,d:`${tw2} cm`,q:'1',note:'Prikotviti za zid'});
+  items.forEach((it,i)=>{
+    const ry=ty+th+i*rh;
+    c.fillStyle=i%2===0?'#f8f9fa':'#fff';c.fillRect(ox,ry,w,rh);
+    c.strokeStyle='#e5e7eb';c.lineWidth=.8;c.beginPath();c.moveTo(ox,ry+rh);c.lineTo(ox+w,ry+rh);c.stroke();
+    c.fillStyle='#1a1a2e';c.font='13px Segoe UI,sans-serif';c.textAlign='left';c.fillText(it.n,cols[0],ry+20);
+    c.fillStyle='#374151';c.fillText(it.d,cols[1],ry+20);
+    c.fillStyle='#e94560';c.font='bold 14px Segoe UI,sans-serif';c.fillText(it.q+' kom',cols[2],ry+20);
+    c.fillStyle='#6b7280';c.font='12px Segoe UI,sans-serif';c.fillText(it.note,cols[3],ry+20);
+  });
+  c.strokeStyle='#e5e7eb';c.lineWidth=1;c.strokeRect(ox,ty,w,th+items.length*rh);
+  c.fillStyle='#9ca3af';c.font='italic 12px Segoe UI,sans-serif';c.textAlign='left';
+  c.fillText('* Specifikacija je okvirna. Tačne količine zavise od projektnih detalja i načina montaže.',ox,ty+th+items.length*rh+18);
+}
+
 /* ═══════════════════════════════════════════════════════════
    2D GENERATE
    ═══════════════════════════════════════════════════════════ */
@@ -376,7 +442,9 @@ function generatePergola(){
   pgDrawTlocrt(c,30,dY,tLW,tH,tw,mp);
   pgDrawBocni(c,30+tLW+30,dY,tRW,tH,mp);
   pgDrawFront(c,30,dY+tH+60,CW-60,460,tw);
+  pgDrawBOM(c,30,dY+tH+60+500,CW-60);
   docFooter(c,CW,CH,id,d);
+  pgSaveState();
 }
 
 /* ═══ TLOCRT ═══ */
@@ -604,16 +672,20 @@ function generate3D(){
 
     // 1. KROVNI POKRIVAČ (prvo — iza profila)
     if(pgS.type==='bioklimatska'){
-      // Lamele — debeli horizontalni profili duž X, raspoređeni po Z
+      // 1. Rogovi (nosači lamela) — duž Z ose, isti presek kao za ravnu
+      rafterPositions.forEach(rx=>{
+        poly([p(rx-rogW/2,backY+bH+rogH,0),p(rx+rogW/2,backY+bH+rogH,0),p(rx+rogW/2,backY+bH+rogH,pp2),p(rx-rogW/2,backY+bH+rogH,pp2)],fMid,'#111',1.8);
+        poly([p(rx+rogW/2,backY+bH,0),p(rx+rogW/2,backY+bH+rogH,0),p(rx+rogW/2,backY+bH+rogH,pp2),p(rx+rogW/2,backY+bH,pp2)],fDark,'#111',1.8);
+        poly([p(rx-rogW/2,backY+bH,0),p(rx+rogW/2,backY+bH,0),p(rx+rogW/2,backY+bH+rogH,0),p(rx-rogW/2,backY+bH+rogH,0)],hexDarken(fHex,.4),'#111',1.5);
+      });
+      // 2. Lamele (pokretne) — duž X ose, na vrhu rogova
       const nLam=Math.min(16,Math.round(pp2/14));
       for(let li=0;li<nLam;li++){
         const lz=(li+.5)*(pp2/nLam);
-        const lamY=backY+(frontY-backY)*(lz/pp2)+bH;
+        const lamY=backY+bH+rogH-2.5;
         const lamT=2.5,lamD=12;
-        // Gornja ploha lamele
-        poly([p(xOff,lamY+lamT,lz-lamD/2),p(xOff+pw,lamY+lamT,lz-lamD/2),p(xOff+pw,lamY+lamT,lz+lamD/2),p(xOff,lamY+lamT,lz+lamD/2)],fMid,'#111',1);
-        // Prednja ivica lamele
-        poly([p(xOff,lamY,lz+lamD/2),p(xOff+pw,lamY,lz+lamD/2),p(xOff+pw,lamY+lamT,lz+lamD/2),p(xOff,lamY+lamT,lz+lamD/2)],fDark,'#111',1);
+        poly([p(xOff,lamY+lamT,lz-lamD/2),p(xOff+pw,lamY+lamT,lz-lamD/2),p(xOff+pw,lamY+lamT,lz+lamD/2),p(xOff,lamY+lamT,lz+lamD/2)],hexDarken(fHex,.85),'#111',1);
+        poly([p(xOff,lamY,lz+lamD/2),p(xOff+pw,lamY,lz+lamD/2),p(xOff+pw,lamY+lamT,lz+lamD/2),p(xOff,lamY+lamT,lz+lamD/2)],hexDarken(fHex,.65),'#111',1);
       }
     }else{
       // Platno (poluprozirno, iza rogova)
@@ -773,12 +845,26 @@ function generate3D(){
     c.restore();
   }
 
+  // E) Pad krova za klasičnu — label na sredini krova
+  if(pgS.type==='klasicna'){
+    const mZ=mp/2,mY=(pgS.wallHeight+frontPassY)/2+bH+rogH/2;
+    const spt=p(tw/2,mY,mZ);
+    const slopeAng=Math.atan2(pgS.wallHeight-frontPassY,mp);
+    c.save();c.translate(spt.x,spt.y);c.rotate(-slopeAng*.4);
+    const sl2=`pad: ${pgSl()}%`;c.font='bold 13px Segoe UI,sans-serif';c.textAlign='center';
+    const sw2=c.measureText(sl2).width+12;
+    c.fillStyle='rgba(255,255,255,.88)';c.fillRect(-sw2/2,-11,sw2,18);
+    c.fillStyle='#e94560';c.fillText(sl2,0,4);
+    c.restore();
+  }
+
   // Legende
   c.fillStyle='#1a1a2e';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
   if(pgS.count>1&&pgS.sharedPost){c.fillStyle='#e94560';c.fillText('■ Zajednički stub (crveni)',30,CH-90);}
   c.fillStyle='#374151';c.fillText('Aksonometrijski prikaz — kabinet projekcija 30°',30,CH-72);
 
   docFooter(c,CW,CH,id,d);
+  pgSaveState();
 }
 </script>
 </body>
