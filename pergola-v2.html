@@ -581,7 +581,7 @@ function generate3D(){
   const sc=Math.min((drawAreaW-120)/visW,(drawAreaH-60)/visH)*0.82;
 
   // Ishodište: donji levi ugao ZID-ZEMLJA u prostoru canvas
-  const ox=60+mp*cos_a*zFactor*sc+20;
+  const ox=(CW-visW*sc)/2;
   const oy=y+30+pgS.wallHeight*sc+mp*sin_a*zFactor*sc+20;
 
   // Projekcija 3D→2D
