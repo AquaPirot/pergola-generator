@@ -1,6 +1,8 @@
-const CACHE_NAME = 'aggroup-pergola-v1';
+const CACHE_NAME = 'aggroup-pergola-v2';
 const ASSETS = [
+  'index.html',
   'dizajn-pergola.html',
+  'pergola-v2.html',
   'manifest.json',
   'icons/icon-192.svg',
   'icons/icon-512.svg',
@@ -35,7 +37,7 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
         return response;
-      }).catch(() => caches.match('dizajn-pergola.html'));
+      }).catch(() => caches.match('index.html'));
     })
   );
 });

@@ -100,6 +100,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 #outputContainer,#output3dContainer{background:white;border-radius:var(--radius-sm);overflow:hidden}
 .output-canvas{width:100%;display:block}
 .info-note{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:10px 12px;font-size:11px;color:#166534;margin-top:8px;line-height:1.5}
+.proj-list{display:flex;flex-direction:column;gap:6px}
+.proj-row{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#f8f9fa;border:1px solid var(--border);border-radius:var(--radius-sm)}
+.proj-row .proj-name{flex:1;font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proj-row .proj-date{font-size:10px;color:var(--text-muted);font-weight:400}
+.proj-btn{border:none;background:none;cursor:pointer;font-size:14px;padding:3px 5px;border-radius:5px;color:var(--text-muted);font-family:var(--font)}
+.proj-btn:hover{background:#e5e7eb;color:var(--text)}
+.proj-empty{font-size:11px;color:var(--text-muted);text-align:center;padding:8px;line-height:1.6}
+.btn-mini{margin-left:auto;padding:6px 12px;background:rgba(255,255,255,.15);color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);letter-spacing:.3px}
+.btn-mini:hover{background:rgba(255,255,255,.3)}
+.warn-box{background:#fffbeb;border:1px solid #fbbf24;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;font-size:12px;color:#92400e;display:none;line-height:1.7}
+.warn-box.visible{display:block}
+.warn-box ul{margin:4px 0 0 18px}
 @media(max-width:1200px){.app-container{grid-template-columns:1fr}.sidebar{position:static;max-height:none}.stats-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){.app-header{padding:12px 16px}.app-container{padding:10px}.type-selector{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.color-options{grid-template-columns:repeat(2,1fr)}}
 ::-webkit-scrollbar{width:6px}
@@ -124,6 +136,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
 <div class="app-container">
   <div class="sidebar">
+    <div class="card" style="margin-bottom:18px">
+      <div class="card-header"><div class="icon">&#128193;</div> Projekti <button class="btn-mini" onclick="pgProjSave()">&#128190; Sačuvaj</button></div>
+      <div class="card-body"><div class="proj-list" id="pg_projList"></div></div>
+    </div>
     <div class="card">
       <div class="card-header"><div class="icon">&#9881;</div> Konfiguracija Pergole</div>
       <div class="card-body">
@@ -193,6 +209,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
               <div class="form-row" style="margin-bottom:0"><input type="number" id="pg_postW" value="12" min="5" max="30" placeholder="Š"><input type="number" id="pg_postD" value="12" min="5" max="30" placeholder="D"></div>
             </div>
           </div>
+          <div class="form-row single">
+            <div class="form-group"><label>Odvod vode (oluk kroz stub)</label>
+              <select id="pg_drain">
+                <option value="none">Bez oznake na crtežu</option>
+                <option value="left">Levi ugaoni stub</option>
+                <option value="right">Desni ugaoni stub</option>
+                <option value="both">Oba ugaona stuba</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <!-- ZIDNA CEV - NOVO -->
@@ -232,6 +258,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
           <div class="custom-ral-input" id="pg_customRalWrap"><div class="form-group" style="margin-top:8px"><label>RAL broj</label><input type="text" id="pg_customRal" placeholder="npr. 3020" maxlength="4"></div></div>
         </div>
 
+        <div class="form-section">
+          <div class="form-section-title">&#9670; Cenovnik (interno)</div>
+          <div class="form-row">
+            <div class="form-group"><label>Bioklimatska <span class="unit">(/m²)</span></label><input type="number" id="pg_priceBio" min="0" step="1" placeholder="0"></div>
+            <div class="form-group"><label>Ravna <span class="unit">(/m²)</span></label><input type="number" id="pg_priceRavna" min="0" step="1" placeholder="0"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Klasična <span class="unit">(/m²)</span></label><input type="number" id="pg_priceKlas" min="0" step="1" placeholder="0"></div>
+            <div class="form-group"><label>Valuta</label><select id="pg_priceCur"><option value="EUR">EUR</option><option value="RSD">RSD</option></select></div>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="pg_showPrice">
+            <label for="pg_showPrice">Prikaži okvirnu cenu na crtežu</label>
+          </div>
+          <div class="info-note">Cene se čuvaju samo na ovom uređaju. Na crtežu se prikazuju isključivo ako uključite opciju iznad.</div>
+        </div>
+
         <button class="btn-generate" onclick="generatePergola()">&#9998; Generiši 2D Tehnički Crtež</button>
         <button class="btn-3d" onclick="generate3D()">&#11041; Generiši 3D Tehnički Prikaz</button>
         <button class="btn-export" onclick="exportPNG('outputCanvas')" id="pg_btnExport" style="display:none">&#128190; Preuzmi 2D PNG</button>
@@ -243,6 +286,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
   <!-- OUTPUT -->
   <div>
+    <div class="warn-box" id="pg_warnBox"></div>
     <div class="stats-grid" id="statsGrid" style="display:none">
       <div class="stat-card"><div class="stat-value" id="stat1">-</div><div class="stat-label" id="stat1L">-</div></div>
       <div class="stat-card"><div class="stat-value" id="stat2">-</div><div class="stat-label" id="stat2L">-</div></div>
@@ -268,7 +312,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
 <script>
 /* ═══ STATE ═══ */
-let pgS={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:8,wallTubeH:4};
+let pgS={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:8,wallTubeH:4,drain:'none',showPrice:false};
 const PG_TL={bioklimatska:'Bioklimatska pergola (pokretne lamele)',ravna:'Ravna pergola (3D Blockout platno)',klasicna:'Klasična pergola sa padom'};
 const PG_ML={bioklimatska:'Pokretne lamele',ravna:'3D Blockout platno',klasicna:'3D Blockout platno'};
 const RAL_HEX={'7016':'#383E42','9005':'#0A0A0A','9016':'#F1F0EA','7035':'#C5C7C4','8017':'#44322D','custom':'#383E42'};
@@ -297,29 +341,99 @@ function pgBuildDims(){const c=document.getElementById('pergolaDims');const ex=[
 pgBuildDims();
 
 /* ═══ PERSIST ═══ */
-function pgSaveState(){
-  try{
-    const fv={};
-    ['pg_wallHeight','pg_passHeight','pg_postsPerPergola','pg_postW','pg_postD','pg_projectName','pg_notes','pg_customRal'].forEach(f=>{const e=document.getElementById(f);if(e)fv[f]=e.value;});
-    for(let i=0;i<3;i++){const w=document.getElementById('pw_'+i),pp=document.getElementById('pp_'+i);if(w)fv['pw_'+i]=w.value;if(pp)fv['pp_'+i]=pp.value;}
-    localStorage.setItem('pg_v2',JSON.stringify({s:pgS,f:fv}));
-  }catch(e){}
+const PG_FIELDS=['pg_wallHeight','pg_passHeight','pg_postsPerPergola','pg_postW','pg_postD','pg_projectName','pg_notes','pg_customRal','pg_wallBaseH','pg_postHeight','pg_tubeW','pg_tubeH','pg_drain'];
+function pgSnapshot(){
+  const fv={};
+  PG_FIELDS.forEach(f=>{const e=document.getElementById(f);if(e)fv[f]=e.value;});
+  for(let i=0;i<3;i++){const w=document.getElementById('pw_'+i),pp=document.getElementById('pp_'+i);if(w)fv['pw_'+i]=w.value;if(pp)fv['pp_'+i]=pp.value;}
+  return{s:JSON.parse(JSON.stringify(pgS)),f:fv};
 }
-function pgLoadState(){
-  try{
-    const d=JSON.parse(localStorage.getItem('pg_v2'));
-    if(!d)return;const s=d.s,fv=d.f||{};if(!s)return;
-    if(s.type){pgS.type=s.type;document.querySelectorAll('.type-option').forEach(o=>o.classList.toggle('active',o.dataset.type===pgS.type));}
-    if(s.count&&s.count!==pgS.count){pgS.count=s.count;document.querySelectorAll('.num-option').forEach(o=>o.classList.toggle('active',parseInt(o.dataset.count)===pgS.count));pgBuildDims();document.getElementById('sharedPostSection').style.display=pgS.count>1?'block':'none';}
-    if(s.ral){pgS.ral=s.ral;document.querySelectorAll('#pg_colors .color-option').forEach(o=>o.classList.toggle('active',o.dataset.ral===pgS.ral));document.getElementById('pg_customRalWrap').classList.toggle('visible',pgS.ral==='custom');}
-    if(s.sharedPost!==undefined){pgS.sharedPost=s.sharedPost;document.getElementById('pg_sharedPost').checked=pgS.sharedPost;}
-    if(s.hasWallBase){pgS.hasWallBase=true;document.getElementById('pg_hasWallBase').checked=true;document.getElementById('pg_wallBaseFields').classList.add('visible');}
-    if(s.hasWallTube){pgS.hasWallTube=true;document.getElementById('pg_hasWallTube').checked=true;document.getElementById('pg_wallTubeFields').classList.add('visible');
-      if(s.wallTubeProfile){pgS.wallTubeProfile=s.wallTubeProfile;pgS.wallTubeW=s.wallTubeW||8;pgS.wallTubeH=s.wallTubeH||4;document.querySelectorAll('#pg_tubeOptions .tube-option').forEach(o=>o.classList.toggle('active',o.dataset.profile===pgS.wallTubeProfile));document.getElementById('pg_tubeCustomFields').style.display=pgS.wallTubeProfile==='custom'?'block':'none';}}
-    Object.keys(fv).forEach(k=>{const e=document.getElementById(k);if(e)e.value=fv[k];});
-  }catch(e){}
+function pgApply(d){
+  if(!d||!d.s)return;const s=d.s,fv=d.f||{};
+  if(s.type){pgS.type=s.type;document.querySelectorAll('.type-option').forEach(o=>o.classList.toggle('active',o.dataset.type===pgS.type));}
+  if(s.count){pgS.count=s.count;document.querySelectorAll('.num-option').forEach(o=>o.classList.toggle('active',parseInt(o.dataset.count)===pgS.count));pgBuildDims();document.getElementById('sharedPostSection').style.display=pgS.count>1?'block':'none';}
+  if(s.ral){pgS.ral=s.ral;document.querySelectorAll('#pg_colors .color-option').forEach(o=>o.classList.toggle('active',o.dataset.ral===pgS.ral));document.getElementById('pg_customRalWrap').classList.toggle('visible',pgS.ral==='custom');}
+  pgS.sharedPost=s.sharedPost!==false;document.getElementById('pg_sharedPost').checked=pgS.sharedPost;
+  pgS.hasWallBase=!!s.hasWallBase;document.getElementById('pg_hasWallBase').checked=pgS.hasWallBase;document.getElementById('pg_wallBaseFields').classList.toggle('visible',pgS.hasWallBase);
+  pgS.hasWallTube=!!s.hasWallTube;document.getElementById('pg_hasWallTube').checked=pgS.hasWallTube;document.getElementById('pg_wallTubeFields').classList.toggle('visible',pgS.hasWallTube);
+  if(s.wallTubeProfile){pgS.wallTubeProfile=s.wallTubeProfile;pgS.wallTubeW=s.wallTubeW||8;pgS.wallTubeH=s.wallTubeH||4;document.querySelectorAll('#pg_tubeOptions .tube-option').forEach(o=>o.classList.toggle('active',o.dataset.profile===pgS.wallTubeProfile));document.getElementById('pg_tubeCustomFields').style.display=pgS.wallTubeProfile==='custom'?'block':'none';}
+  pgS.drain=s.drain||'none';
+  pgS.showPrice=!!s.showPrice;document.getElementById('pg_showPrice').checked=pgS.showPrice;
+  Object.keys(fv).forEach(k=>{const e=document.getElementById(k);if(e)e.value=fv[k];});
+  pgCalcWallBase();
 }
-pgLoadState();
+function pgSaveState(){try{localStorage.setItem('pg_v2',JSON.stringify(pgSnapshot()));}catch(e){}}
+function pgLoadState(){try{const d=JSON.parse(localStorage.getItem('pg_v2'));if(d)pgApply(d);}catch(e){}}
+
+/* ═══ PROJEKTI ═══ */
+function pgProjAll(){try{return JSON.parse(localStorage.getItem('pg_projects'))||[]}catch(e){return[]}}
+function pgProjStore(a){try{localStorage.setItem('pg_projects',JSON.stringify(a));}catch(e){alert('Nema dovoljno prostora za čuvanje projekta.');}}
+function pgProjSave(){
+  let name=document.getElementById('pg_projectName').value.trim();
+  if(!name)name=(prompt('Naziv projekta / klijent:')||'').trim();
+  if(!name)return;
+  document.getElementById('pg_projectName').value=name;
+  const all=pgProjAll(),snap=pgSnapshot(),ex=all.find(p=>p.name===name);
+  if(ex){if(!confirm(`Projekat "${name}" već postoji. Prepisati novim podacima?`))return;ex.data=snap;ex.date=ds();}
+  else all.unshift({id:Date.now(),name,date:ds(),data:snap});
+  pgProjStore(all);pgProjRender();
+}
+function pgProjOpen(id){const pr=pgProjAll().find(x=>x.id===id);if(!pr)return;pgApply(pr.data);pgSaveState();generatePergola();}
+function pgProjDup(id){
+  const all=pgProjAll(),pr=all.find(x=>x.id===id);if(!pr)return;
+  const cp=JSON.parse(JSON.stringify(pr));cp.id=Date.now();cp.name=pr.name+' (kopija)';cp.date=ds();
+  if(cp.data&&cp.data.f)cp.data.f.pg_projectName=cp.name;
+  all.unshift(cp);pgProjStore(all);pgProjRender();
+}
+function pgProjDel(id){
+  const pr=pgProjAll().find(x=>x.id===id);if(!pr)return;
+  if(!confirm(`Obrisati projekat "${pr.name}"?`))return;
+  pgProjStore(pgProjAll().filter(x=>x.id!==id));pgProjRender();
+}
+function pgProjRender(){
+  const all=pgProjAll(),el=document.getElementById('pg_projList');
+  if(!all.length){el.innerHTML='<div class="proj-empty">Nema sačuvanih projekata.<br>Unesite naziv klijenta i kliknite "Sačuvaj".</div>';return;}
+  el.innerHTML=all.map(pr=>`<div class="proj-row"><div class="proj-name" title="${pr.name}">${pr.name}<div class="proj-date">${pr.date}</div></div><button class="proj-btn" title="Otvori" onclick="pgProjOpen(${pr.id})">&#128194;</button><button class="proj-btn" title="Dupliraj" onclick="pgProjDup(${pr.id})">&#10697;</button><button class="proj-btn" title="Obriši" onclick="pgProjDel(${pr.id})">&#10005;</button></div>`).join('');
+}
+
+/* ═══ CENOVNIK ═══ */
+let pgPrices={bioklimatska:0,ravna:0,klasicna:0,cur:'EUR'};
+function pgPricesLoad(){
+  try{const p=JSON.parse(localStorage.getItem('pg_prices'));if(p)pgPrices=Object.assign(pgPrices,p);}catch(e){}
+  document.getElementById('pg_priceBio').value=pgPrices.bioklimatska||'';
+  document.getElementById('pg_priceRavna').value=pgPrices.ravna||'';
+  document.getElementById('pg_priceKlas').value=pgPrices.klasicna||'';
+  document.getElementById('pg_priceCur').value=pgPrices.cur;
+}
+function pgPricesSave(){
+  pgPrices.bioklimatska=parseFloat(document.getElementById('pg_priceBio').value)||0;
+  pgPrices.ravna=parseFloat(document.getElementById('pg_priceRavna').value)||0;
+  pgPrices.klasicna=parseFloat(document.getElementById('pg_priceKlas').value)||0;
+  pgPrices.cur=document.getElementById('pg_priceCur').value;
+  try{localStorage.setItem('pg_prices',JSON.stringify(pgPrices));}catch(e){}
+}
+['pg_priceBio','pg_priceRavna','pg_priceKlas','pg_priceCur'].forEach(f=>document.getElementById(f).addEventListener('input',pgPricesSave));
+function pgPrice(){return pgTA()*(pgPrices[pgS.type]||0);}
+
+/* ═══ TEHNIČKA UPOZORENJA ═══ */
+function pgWarnings(){
+  const w=[];
+  pgS.pergs.forEach((pg,i)=>{
+    const span=pgS.ppp>1?pg.w/(pgS.ppp-1):pg.w;
+    if(span>450)w.push(`P${i+1}: raspon između stubova ${Math.round(span)} cm prelazi 450 cm — preporučen dodatni stub ili ojačani profil.`);
+    if(pg.p>450)w.push(`P${i+1}: projekcija ${pg.p} cm prelazi 450 cm — proveriti nosivost rogova (statika).`);
+  });
+  if(pgS.type==='klasicna'){const sl=parseFloat(pgSl());if(sl>0&&sl<5)w.push(`Pad krova ${sl}% je manji od preporučenih 5% za siguran odvod vode.`);}
+  return w;
+}
+function pgRenderWarnings(){
+  const w=pgWarnings(),b=document.getElementById('pg_warnBox');
+  if(!w.length){b.classList.remove('visible');return;}
+  b.innerHTML='<b>&#9888; Tehničke napomene:</b><ul>'+w.map(x=>`<li>${x}</li>`).join('')+'</ul>';
+  b.classList.add('visible');
+}
+
+pgLoadState();pgProjRender();pgPricesLoad();
 
 /* ═══ DATA HELPERS ═══ */
 function pgGather(){
@@ -332,6 +446,8 @@ function pgGather(){
   pgS.hasWallBase=document.getElementById('pg_hasWallBase').checked;
   if(pgS.hasWallBase){pgS.wallBaseH=parseInt(document.getElementById('pg_wallBaseH').value)||40;pgS.postHeight=parseInt(document.getElementById('pg_postHeight').value)||190;}
   pgS.sharedPost=document.getElementById('pg_sharedPost').checked;
+  pgS.drain=document.getElementById('pg_drain').value;
+  pgS.showPrice=document.getElementById('pg_showPrice').checked;
   pgS.hasWallTube=document.getElementById('pg_hasWallTube').checked;
   if(pgS.hasWallTube&&pgS.wallTubeProfile==='custom'){pgS.wallTubeW=parseInt(document.getElementById('pg_tubeW').value||100)/10;pgS.wallTubeH=parseInt(document.getElementById('pg_tubeH').value||100)/10;}
   pgS.pergs=[];for(let i=0;i<pgS.count;i++)pgS.pergs.push({w:parseInt(document.getElementById('pw_'+i).value)||500,p:parseInt(document.getElementById('pp_'+i).value)||400});
@@ -369,6 +485,22 @@ function secTitle(c,x,y,t){c.fillStyle='#1a1a2e';c.font='bold 18px Segoe UI,sans
 function ground(c,x1,x2,y){c.strokeStyle='#9ca3af';c.lineWidth=2;c.beginPath();c.moveTo(x1,y);c.lineTo(x2,y);c.stroke();c.lineWidth=0.8;for(let g=x1;g<x2;g+=8){c.beginPath();c.moveTo(g,y);c.lineTo(g-6,y+8);c.stroke();}}
 function wallHatch(c,x,y,w,h){c.fillStyle='#d1d5db';c.fillRect(x,y,w,h);c.strokeStyle='#9ca3af';c.lineWidth=0.8;for(let wy=y;wy<y+h;wy+=6){c.beginPath();c.moveTo(x,wy);c.lineTo(x+w,wy+6);c.stroke();}}
 function initCanvas(id,CW,CH){const cv=document.getElementById(id);cv.style.display='block';const D=2;cv.width=CW*D;cv.height=CH*D;cv.style.width='100%';cv.style.height='auto';const c=cv.getContext('2d');c.scale(D,D);c.fillStyle='#fff';c.fillRect(0,0,CW,CH);return c;}
+function paperGrid(c,x,y,w,h){c.save();c.strokeStyle='rgba(26,26,46,.04)';c.lineWidth=1;for(let gx=x;gx<=x+w;gx+=40){c.beginPath();c.moveTo(gx,y);c.lineTo(gx,y+h);c.stroke();}for(let gy=y;gy<=y+h;gy+=40){c.beginPath();c.moveTo(x,gy);c.lineTo(x+w,gy);c.stroke();}c.restore();}
+function titleBlock(c,CW,CH,rows){
+  const w=430,rh=26,h=rows.length*rh+14,x=CW-30-w,y=CH-69-14-h;
+  c.save();
+  c.fillStyle='#fff';c.fillRect(x,y,w,h);
+  c.strokeStyle='#1a1a2e';c.lineWidth=2;c.strokeRect(x,y,w,h);
+  c.lineWidth=.8;c.strokeStyle='#cbd5e1';
+  rows.forEach((r,i)=>{
+    const ry=y+7+i*rh;
+    if(i>0){c.beginPath();c.moveTo(x+8,ry);c.lineTo(x+w-8,ry);c.stroke();}
+    c.fillStyle='#6b7280';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='left';c.fillText(r[0].toUpperCase(),x+14,ry+17);
+    c.fillStyle='#1a1a2e';c.font='bold 13px Segoe UI,sans-serif';c.fillText(String(r[1]),x+130,ry+17);
+  });
+  c.beginPath();c.moveTo(x+122,y+4);c.lineTo(x+122,y+h-4);c.stroke();
+  c.restore();
+}
 
 /* ═══ BOM ═══ */
 function pgDrawBOM(c,ox,oy,w){
@@ -426,7 +558,8 @@ function generatePergola(){
   document.getElementById('pg_btnExport').style.display='flex';
   document.getElementById('pg_btnShare').style.display='flex';
   switchView('2d',document.querySelectorAll('.view-btn')[0]);
-  const CW=1600,CH=2250,c=initCanvas('outputCanvas',CW,CH);
+  pgRenderWarnings();
+  const CW=1600,CH=2350,c=initCanvas('outputCanvas',CW,CH);
   docHeader(c,CW,'TEHNIČKI CRTEŽ PERGOLE',PG_TL[pgS.type].toUpperCase(),id,d);
   let y=projInfo(c,CW,105,pn);if(!pn)y=105;
   const dl=[`Ukupna širina: ${tw} cm`,`Max projekcija: ${mp} cm`,`Visina na zidu: ${pgS.wallHeight} cm`,`Prolazna visina: ${pgS.passHeight} cm`];
@@ -438,11 +571,36 @@ function generatePergola(){
   y=infoBlock(c,CW,y,'DIMENZIJE',dl,'KONSTRUKCIJA',kl);
   if(notes){c.fillStyle='#6b7280';c.font='italic 14px Segoe UI,sans-serif';c.fillText('Napomena: '+notes,30,y+18);y+=30;}
   y=matBar(c,CW,y,['Materijal: Aluminijum','Boja: RAL '+pgS.ralDisplay,'Tip: '+PG_ML[pgS.type]]);
+  const price=pgPrice();
+  if(pgS.showPrice&&price>0){
+    c.fillStyle='#e94560';c.fillRect(0,y,CW,46);
+    c.fillStyle='#fff';c.font='bold 18px Segoe UI,sans-serif';c.textAlign='left';
+    c.fillText(`OKVIRNA CENA: ${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`,30,y+30);
+    c.font='13px Segoe UI,sans-serif';c.textAlign='right';
+    c.fillText('Cena je informativna i ne predstavlja konačnu ponudu.',CW-30,y+30);
+    c.textAlign='left';y+=46;
+  }
+  const warns=pgWarnings();
+  if(warns.length){
+    c.fillStyle='#fffbeb';c.fillRect(0,y,CW,warns.length*22+16);
+    c.fillStyle='#b45309';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
+    warns.forEach((wt,i)=>c.fillText('⚠ '+wt,30,y+24+i*22));
+    y+=warns.length*22+16;
+  }
   const dY=y+30,tH=640,tLW=CW*.58-40,tRW=CW*.42-40;
+  paperGrid(c,0,y+6,CW,dY+tH+60+460-(y+6));
   pgDrawTlocrt(c,30,dY,tLW,tH,tw,mp);
   pgDrawBocni(c,30+tLW+30,dY,tRW,tH,mp);
   pgDrawFront(c,30,dY+tH+60,CW-60,460,tw);
   pgDrawBOM(c,30,dY+tH+60+500,CW-60);
+  titleBlock(c,CW,CH,[
+    ['Projekat',pn||'—'],
+    ['Tip',PG_TL[pgS.type]],
+    ['Gabarit',`${tw} × ${mp} cm`],
+    ['Boja','RAL '+pgS.ralDisplay],
+    ['Br. crteža',id],
+    ['Datum',d]
+  ]);
   docFooter(c,CW,CH,id,d);
   pgSaveState();
 }
@@ -472,6 +630,16 @@ function pgDrawTlocrt(c,ox,oy,w,h,tW,mP){
   if(pgS.count>1){c.strokeStyle='#e94560';c.lineWidth=1.5;c.setLineDash([6,4]);let jx=0;for(let pi=0;pi<pgS.count-1;pi++){jx+=pgS.pergs[pi].w*sc;c.beginPath();c.moveTo(sx+jx,sy-14);c.lineTo(sx+jx,sy+mP*sc+10);c.stroke();}c.setLineDash([]);c.fillStyle='#e94560';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText(pgS.sharedPost?'ZAJEDNIČKI STUB':'ODVOJENI STUBOVI',sx+dW/2,sy+mP*sc+28);}
   const posts=pgPP(),dpW=Math.max(pgS.postW*sc*.6,6),dpD=Math.max(pgS.postD*sc*.6,6);
   posts.forEach((p,i)=>{const psx=sx+p.x*sc-dpW/2,ppr=pgS.pergs[p.pi].p*sc,psy=sy+ppr-dpD/2;if(p.sh){c.fillStyle='#e94560';c.fillRect(psx-2,psy-2,dpW+4,dpD+4);}else{c.fillStyle='#1a1a2e';c.fillRect(psx,psy,dpW,dpD);}c.fillStyle='#1a1a2e';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`S${i+1}`,psx+dpW/2,psy+dpD+14);});
+  if(pgS.drain!=='none'&&posts.length){
+    const xs=posts.map(q=>q.x),minX=Math.min(...xs),maxX=Math.max(...xs);
+    posts.forEach(pt=>{
+      const isL=pt.x===minX,isR=pt.x===maxX;
+      if(!((pgS.drain==='left'&&isL)||(pgS.drain==='right'&&isR)||(pgS.drain==='both'&&(isL||isR))))return;
+      const cx=sx+pt.x*sc,cy=sy+pgS.pergs[pt.pi].p*sc;
+      c.strokeStyle='#0ea5e9';c.lineWidth=2.5;c.beginPath();c.arc(cx,cy,13,0,Math.PI*2);c.stroke();
+      c.fillStyle='#0ea5e9';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.fillText('ODVOD',cx,cy-19);
+    });
+  }
   dimH(c,sx,sy-32,sx+dW,`${tW}`);dimV(c,sx+dW+20,sy,sy+mP*sc,`${mP}`);
   let bx=0;for(let pi=0;pi<pgS.count;pi++){const pw=pgS.pergs[pi].w*sc;dimH(c,sx+bx,sy+mP*sc+24,sx+bx+pw,`${pgS.pergs[pi].w}`);bx+=pw;}
   c.restore();
@@ -517,6 +685,12 @@ function pgDrawBocni(c,ox,oy,w,h,mP){
   if(pgS.type==='klasicna'){const mRX=(wX+sX)/2,mRY=(wTY+pTY)/2,a=Math.atan2(pTY-wTY,sX-wX);c.save();c.translate(mRX,mRY-16);c.rotate(a);c.fillStyle='#e94560';c.font='bold 14px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`pad: ${pgSl()}%`,0,0);c.restore();}
   dimH(c,wX,wTY-rT-28,sX,`${mP}`);dimV(c,wX-34,wTY,gY,`${pgS.wallHeight}`);
   if(!pgS.hasWallBase)dimV(c,sX+20,pTY,gY,`${pgS.passHeight}`);
+  if(pgS.drain!=='none'){
+    c.strokeStyle='#0ea5e9';c.lineWidth=1.5;c.setLineDash([4,3]);
+    c.beginPath();c.moveTo(sX,pTY+12);c.lineTo(sX,gY-10);c.stroke();c.setLineDash([]);
+    c.fillStyle='#0ea5e9';c.beginPath();c.moveTo(sX,gY-2);c.lineTo(sX-4,gY-10);c.lineTo(sX+4,gY-10);c.closePath();c.fill();
+    c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText('oluk → odvod kroz stub',sX,gY+24);
+  }
   c.restore();
 }
 
@@ -556,7 +730,8 @@ function generate3D(){
   document.getElementById('pg_btnShare').style.display='flex';
   switchView('3d',document.querySelectorAll('.view-btn')[1]);
 
-  const CW=1600,CH=1500;
+  pgRenderWarnings();
+  const CW=1600,CH=1560;
   const c=initCanvas('canvas3d',CW,CH);
   docHeader(c,CW,'3D TEHNIČKI PRIKAZ PERGOLE',PG_TL[pgS.type].toUpperCase(),id,d);
   let y=projInfo(c,CW,105,pn);if(!pn)y=105;
@@ -566,11 +741,21 @@ function generate3D(){
   y=infoBlock(c,CW,y,'DIMENZIJE',dl,'KONSTRUKCIJA',kl);
   if(notes){c.fillStyle='#6b7280';c.font='italic 14px Segoe UI,sans-serif';c.fillText('Napomena: '+notes,30,y+18);y+=30;}
   y=matBar(c,CW,y,['Materijal: Aluminijum','Boja: RAL '+pgS.ralDisplay,'Tip: '+PG_ML[pgS.type]]);
+  const price3=pgPrice();
+  if(pgS.showPrice&&price3>0){
+    c.fillStyle='#e94560';c.fillRect(0,y,CW,46);
+    c.fillStyle='#fff';c.font='bold 18px Segoe UI,sans-serif';c.textAlign='left';
+    c.fillText(`OKVIRNA CENA: ${Math.round(price3).toLocaleString('sr-RS')} ${pgPrices.cur}`,30,y+30);
+    c.font='13px Segoe UI,sans-serif';c.textAlign='right';
+    c.fillText('Cena je informativna i ne predstavlja konačnu ponudu.',CW-30,y+30);
+    c.textAlign='left';y+=46;
+  }
 
   // ═══ AKSONOMETRIJA ═══
   // Cabinet oblique: x→desno, y→gore, z→gore-desno pod 30°, z skaliran 0.6
-  const drawAreaH=CH-y-80;
+  const drawAreaH=CH-y-210;
   const drawAreaW=CW-80;
+  paperGrid(c,0,y+6,CW,CH-y-90);
   const zAng=Math.PI/6; // 30°
   const zFactor=0.55;
   const cos_a=Math.cos(zAng),sin_a=Math.sin(zAng);
@@ -627,7 +812,7 @@ function generate3D(){
   }
 
   // Tlo
-  poly([p(0,0,0),p(tw,0,0),p(tw,0,mp),p(0,0,mp)],'#c8c0b0','#9ca3af',1);
+  poly([p(0,0,0),p(tw,0,0),p(tw,0,mp),p(0,0,mp)],'#e6e1d4','#9ca3af',1);
   // Linija tla
   c.strokeStyle='#6b7280';c.lineWidth=2;c.beginPath();
   const gl0=p(0,0,mp),glW=p(tw,0,mp);c.moveTo(gl0.x-20,gl0.y);c.lineTo(glW.x+20,glW.y);c.stroke();
@@ -769,6 +954,17 @@ function generate3D(){
     const stubTop=pgS.hasWallBase?pgS.wallBaseH+pgS.postHeight:frontY;
     const lp=p(pt.x,stubTop+6,pp3);
     c.fillStyle=pt.sh?'#e94560':'#374151';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`S${i+1}`,lp.x,lp.y);
+    if(pgS.drain!=='none'){
+      const xs3=posts.map(q=>q.x),minX3=Math.min(...xs3),maxX3=Math.max(...xs3);
+      const isL=pt.x===minX3,isR=pt.x===maxX3;
+      if((pgS.drain==='left'&&isL)||(pgS.drain==='right'&&isR)||(pgS.drain==='both'&&(isL||isR))){
+        const da=p(pt.x+pW2,stubTop*.72,pp3+pD2/2),db=p(pt.x+pW2,6,pp3+pD2/2);
+        c.strokeStyle='#0ea5e9';c.lineWidth=2;c.setLineDash([6,4]);
+        c.beginPath();c.moveTo(da.x,da.y);c.lineTo(db.x,db.y);c.stroke();c.setLineDash([]);
+        c.fillStyle='#0ea5e9';c.beginPath();c.moveTo(db.x,db.y+2);c.lineTo(db.x-5,db.y-8);c.lineTo(db.x+5,db.y-8);c.closePath();c.fill();
+        c.font='bold 11px Segoe UI,sans-serif';c.textAlign='left';c.fillText('ODVOD',db.x+8,db.y-2);
+      }
+    }
   });
 
   // ═══ KOTNE LINIJE ═══
@@ -860,9 +1056,18 @@ function generate3D(){
 
   // Legende
   c.fillStyle='#1a1a2e';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
-  if(pgS.count>1&&pgS.sharedPost){c.fillStyle='#e94560';c.fillText('■ Zajednički stub (crveni)',30,CH-90);}
+  if(pgS.count>1&&pgS.sharedPost){c.fillStyle='#e94560';c.fillText('■ Zajednički stub (crveni)',30,CH-108);}
+  if(pgS.drain!=='none'){c.fillStyle='#0ea5e9';c.fillText('▼ Odvod vode kroz stub',30,CH-90);}
   c.fillStyle='#374151';c.fillText('Aksonometrijski prikaz — kabinet projekcija 30°',30,CH-72);
 
+  titleBlock(c,CW,CH,[
+    ['Projekat',pn||'—'],
+    ['Tip',PG_TL[pgS.type]],
+    ['Gabarit',`${tw} × ${mp} cm`],
+    ['Boja','RAL '+pgS.ralDisplay],
+    ['Br. crteža',id],
+    ['Datum',d]
+  ]);
   docFooter(c,CW,CH,id,d);
   pgSaveState();
 }
