@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aggroup-pergola-v3';
+const CACHE_NAME = 'aggroup-pergola-v4';
 const ASSETS = [
   'index.html',
   'dizajn-pergola.html',
@@ -28,15 +28,32 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const req = event.request;
+  // HTML fajlovi: uvek pokušaj mrežu prvo — da korisnici uvek dobiju novu verziju
+  if (req.headers.get('Accept') && req.headers.get('Accept').includes('text/html')) {
+    event.respondWith(
+      fetch(req)
+        .then(res => {
+          if (res && res.status === 200) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(req, clone));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req).then(r => r || caches.match('index.html')))
+    );
+    return;
+  }
+  // Ostali resursi (ikone, manifest): keš prvo, brže učitavanje
   event.respondWith(
-    caches.match(event.request).then(cached => {
+    caches.match(req).then(cached => {
       if (cached) return cached;
-      return fetch(event.request).then(response => {
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+      return fetch(req).then(res => {
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(req, clone));
         }
-        return response;
+        return res;
       }).catch(() => caches.match('index.html'));
     })
   );
