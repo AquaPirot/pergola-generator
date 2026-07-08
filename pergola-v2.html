@@ -166,7 +166,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 <div class="app-container">
   <div class="sidebar">
     <div class="card" style="margin-bottom:18px">
-      <div class="card-header"><div class="icon">&#128193;</div> Projekti <button class="btn-mini" onclick="pgProjSave()">&#128190; Sačuvaj</button></div>
+      <div class="card-header"><div class="icon">&#128193;</div> Projekti <span id="pg_cloudBadge" style="font-size:10px;font-weight:600;margin-left:4px;color:rgba(255,255,255,.5)">&#9729; nije povezano</span> <button class="btn-mini" onclick="pgProjSave()">&#128190; Sačuvaj</button><button class="btn-mini" onclick="pgCloudConnect()" title="Sinhronizacija sa serverom" style="margin-left:6px">&#9729;</button></div>
       <div class="card-body"><div class="proj-list" id="pg_projList"></div></div>
     </div>
     <div class="card">
@@ -437,7 +437,8 @@ function pgApply(d){
 function pgSaveState(){try{localStorage.setItem('pg_v2',JSON.stringify(pgSnapshot()));}catch(e){}}
 function pgLoadState(){try{const d=JSON.parse(localStorage.getItem('pg_v2'));if(d)pgApply(d);}catch(e){}}
 
-/* ═══ PROJEKTI ═══ */
+/* ═══ PROJEKTI (lokalno + server) ═══ */
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function pgProjAll(){try{return JSON.parse(localStorage.getItem('pg_projects'))||[]}catch(e){return[]}}
 function pgProjStore(a){try{localStorage.setItem('pg_projects',JSON.stringify(a));}catch(e){alert('Nema dovoljno prostora za čuvanje projekta.');}}
 function pgProjSave(){
@@ -446,9 +447,11 @@ function pgProjSave(){
   if(!name)return;
   document.getElementById('pg_projectName').value=name;
   const all=pgProjAll(),snap=pgSnapshot(),ex=all.find(p=>p.name===name);
-  if(ex){if(!confirm(`Projekat "${name}" već postoji. Prepisati novim podacima?`))return;ex.data=snap;ex.date=ds();}
-  else all.unshift({id:Date.now(),name,date:ds(),data:snap});
+  let saved;
+  if(ex){if(!confirm(`Projekat "${name}" već postoji. Prepisati novim podacima?`))return;ex.data=snap;ex.date=ds();saved=ex;}
+  else{saved={id:Date.now(),name,date:ds(),data:snap};all.unshift(saved);}
   pgProjStore(all);pgProjRender();
+  pgCloudPush(saved);
 }
 function pgProjOpen(id){const pr=pgProjAll().find(x=>x.id===id);if(!pr)return;pgApply(pr.data);pgSaveState();generatePergola();}
 function pgProjDup(id){
@@ -456,16 +459,57 @@ function pgProjDup(id){
   const cp=JSON.parse(JSON.stringify(pr));cp.id=Date.now();cp.name=pr.name+' (kopija)';cp.date=ds();
   if(cp.data&&cp.data.f)cp.data.f.pg_projectName=cp.name;
   all.unshift(cp);pgProjStore(all);pgProjRender();
+  pgCloudPush(cp);
 }
 function pgProjDel(id){
   const pr=pgProjAll().find(x=>x.id===id);if(!pr)return;
   if(!confirm(`Obrisati projekat "${pr.name}"?`))return;
   pgProjStore(pgProjAll().filter(x=>x.id!==id));pgProjRender();
+  if(pgSyncKey)pgApi('delete',{id}).catch(()=>{});
 }
 function pgProjRender(){
   const all=pgProjAll(),el=document.getElementById('pg_projList');
   if(!all.length){el.innerHTML='<div class="proj-empty">Nema sačuvanih projekata.<br>Unesite naziv klijenta i kliknite "Sačuvaj".</div>';return;}
-  el.innerHTML=all.map(pr=>`<div class="proj-row"><div class="proj-name" title="${pr.name}">${pr.name}<div class="proj-date">${pr.date}</div></div><button class="proj-btn" title="Otvori" onclick="pgProjOpen(${pr.id})">&#128194;</button><button class="proj-btn" title="Dupliraj" onclick="pgProjDup(${pr.id})">&#10697;</button><button class="proj-btn" title="Obriši" onclick="pgProjDel(${pr.id})">&#10005;</button></div>`).join('');
+  el.innerHTML=all.map(pr=>`<div class="proj-row"><div class="proj-name" title="${esc(pr.name)}">${esc(pr.name)}<div class="proj-date">${esc(pr.date)}</div></div><button class="proj-btn" title="Otvori" onclick="pgProjOpen(${pr.id})">&#128194;</button><button class="proj-btn" title="Dupliraj" onclick="pgProjDup(${pr.id})">&#10697;</button><button class="proj-btn" title="Obriši" onclick="pgProjDel(${pr.id})">&#10005;</button></div>`).join('');
+}
+
+/* ═══ SINHRONIZACIJA SA SERVEROM (api.php + MySQL) ═══ */
+const PG_API='api.php';
+let pgSyncKey='';try{pgSyncKey=localStorage.getItem('pg_syncKey')||'';}catch(e){}
+let pgCloudOK=false;
+async function pgApi(action,payload){
+  const r=await fetch(PG_API+'?action='+action,{method:'POST',headers:{'Content-Type':'application/json','X-Api-Key':pgSyncKey},body:JSON.stringify(payload||{})});
+  const j=await r.json().catch(()=>({ok:false,error:'Server ne odgovara.'}));
+  if(!j.ok)throw new Error(j.error||'Greška na serveru.');
+  return j.data;
+}
+function pgCloudBadge(){const b=document.getElementById('pg_cloudBadge');if(!b)return;b.innerHTML=pgCloudOK?'&#9729; povezano':'&#9729; nije povezano';b.style.color=pgCloudOK?'#6ee7b7':'rgba(255,255,255,.5)';}
+function pgCloudPush(pr){
+  if(!pgSyncKey||!pr)return;
+  pgApi('save',pr).then(()=>{pgCloudOK=true;pgCloudBadge();})
+    .catch(()=>{pgCloudOK=false;pgCloudBadge();});
+}
+async function pgCloudConnect(){
+  const k=prompt('Šifra za sinhronizaciju projekata (ista na svim uređajima):',pgSyncKey||'');
+  if(k===null)return;
+  pgSyncKey=k.trim();try{localStorage.setItem('pg_syncKey',pgSyncKey);}catch(e){}
+  await pgCloudSync(true);
+}
+async function pgCloudSync(report){
+  if(!pgSyncKey){pgCloudOK=false;pgCloudBadge();return;}
+  try{
+    const server=await pgApi('list');
+    const sIds=new Set(server.map(p=>p.id));
+    const localOnly=pgProjAll().filter(p=>!sIds.has(p.id));
+    for(const lp of localOnly)await pgApi('save',lp);
+    const merged=localOnly.length?await pgApi('list'):server;
+    pgProjStore(merged);
+    pgCloudOK=true;pgCloudBadge();pgProjRender();pgStartProjList();
+    if(report)alert('Sinhronizacija uspešna — projekata na serveru: '+merged.length);
+  }catch(e){
+    pgCloudOK=false;pgCloudBadge();
+    if(report)alert('Sinhronizacija nije uspela: '+e.message);
+  }
 }
 
 /* ═══ CENOVNIK ═══ */
@@ -510,21 +554,24 @@ const PG_DEF_F={pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',p
 function pgStartClose(){document.getElementById('pg_startOverlay').classList.remove('visible');}
 function pgStartNew(){pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F});pgSaveState();pgStartClose();}
 function pgStartContinue(){pgLoadState();pgStartClose();}
+function pgStartProjList(){
+  const el=document.getElementById('pg_startProjects');if(!el)return;
+  const projs=pgProjAll();
+  el.innerHTML=projs.length?'<div class="sm-sub">Sačuvani projekti</div>'+projs.slice(0,6).map(pr=>`<button class="sm-proj" onclick="pgProjOpen(${pr.id});pgStartClose()">${esc(pr.name)}<span>${esc(pr.date)}</span></button>`).join(''):'';
+}
 function pgStartInit(){
   let last=null;try{last=JSON.parse(localStorage.getItem('pg_v2'));}catch(e){}
   const projs=pgProjAll();
-  if(!last&&!projs.length)return; // prvi ulazak — prazan formular, bez modala
+  if(!last&&!projs.length&&!pgSyncKey)return; // prvi ulazak — prazan formular, bez modala
   if(!last)document.getElementById('pg_startContBtn').style.display='none';
   else if(last.f&&last.f.pg_projectName)document.getElementById('pg_startLast').textContent='Poslednji rad: '+last.f.pg_projectName;
-  if(projs.length){
-    document.getElementById('pg_startProjects').innerHTML='<div class="sm-sub">Sačuvani projekti</div>'+projs.slice(0,6).map(pr=>`<button class="sm-proj" onclick="pgProjOpen(${pr.id});pgStartClose()">${pr.name}<span>${pr.date}</span></button>`).join('');
-  }
+  pgStartProjList();
   const ov=document.getElementById('pg_startOverlay');
   ov.classList.add('visible');
   ov.addEventListener('click',e=>{if(e.target===ov)pgStartContinue();});
 }
 
-pgProjRender();pgPricesLoad();pgStartInit();
+pgProjRender();pgPricesLoad();pgStartInit();pgCloudSync();
 
 /* ═══ DATA HELPERS ═══ */
 function pgGather(){

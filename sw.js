@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aggroup-pergola-v6';
+const CACHE_NAME = 'aggroup-pergola-v7';
 const ASSETS = [
   'index.html',
   'dizajn-pergola.html',
@@ -29,6 +29,8 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const req = event.request;
+  // API pozivi i sve što nije GET ide direktno na mrežu (bez keša)
+  if (req.method !== 'GET' || req.url.includes('api.php')) return;
   // HTML fajlovi: uvek pokušaj mrežu prvo — da korisnici uvek dobiju novu verziju
   if (req.headers.get('Accept') && req.headers.get('Accept').includes('text/html')) {
     event.respondWith(
