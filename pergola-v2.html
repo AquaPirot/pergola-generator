@@ -114,6 +114,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .warn-box{background:#fffbeb;border:1px solid #fbbf24;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;font-size:12px;color:#92400e;display:none;line-height:1.7}
 .warn-box.visible{display:block}
 .warn-box ul{margin:4px 0 0 18px}
+.start-overlay{position:fixed;inset:0;background:rgba(26,26,46,.72);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.start-overlay.visible{display:flex}
+.start-modal{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);max-width:470px;width:100%;overflow:hidden;animation:smIn .25s ease}
+@keyframes smIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.start-modal .sm-head{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;padding:22px 26px}
+.start-modal .sm-head h2{font-size:19px;font-weight:700;letter-spacing:.5px}
+.start-modal .sm-head p{font-size:12px;opacity:.7;margin-top:2px}
+.start-modal .sm-body{padding:20px 22px;display:flex;flex-direction:column;gap:10px}
+.sm-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:var(--radius-sm);background:#fafbfc;cursor:pointer;font-family:var(--font);font-size:14px;font-weight:700;color:var(--text);text-align:left;transition:var(--transition)}
+.sm-btn span{font-size:11px;font-weight:400;color:var(--text-muted)}
+.sm-btn:hover{border-color:var(--accent);background:#fff;transform:translateY(-1px)}
+.sm-btn.new{border-color:var(--accent);background:rgba(233,69,96,.04)}
+.sm-sub{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-top:6px}
+.sm-proj{display:flex;justify-content:space-between;align-items:center;width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:#f8f9fa;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text);text-align:left}
+.sm-proj:hover{border-color:var(--accent-blue);background:#fff}
+.sm-proj span{font-size:10px;color:var(--text-muted);font-weight:400}
 @media(max-width:1200px){.app-container{grid-template-columns:1fr}.sidebar{position:static;max-height:none}.stats-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){.app-header{padding:12px 16px}.app-container{padding:10px}.type-selector{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.color-options{grid-template-columns:repeat(2,1fr)}}
 ::-webkit-scrollbar{width:6px}
@@ -122,6 +138,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 </style>
 </head>
 <body>
+
+<div class="start-overlay" id="pg_startOverlay">
+  <div class="start-modal">
+    <div class="sm-head"><h2>Dobrodošli &#128075;</h2><p>PROHORECA AG GROUP — Generator Tehničkih Crteža</p></div>
+    <div class="sm-body">
+      <button class="sm-btn new" onclick="pgStartNew()">&#10133; Novi projekat<span>Prazan unos sa standardnim vrednostima</span></button>
+      <button class="sm-btn" id="pg_startContBtn" onclick="pgStartContinue()">&#128194; Nastavi poslednji rad<span id="pg_startLast">Vraća poslednje uneto stanje</span></button>
+      <div id="pg_startProjects" style="display:contents"></div>
+    </div>
+  </div>
+</div>
 
 <header class="app-header">
   <div class="logo">
@@ -174,6 +201,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
               <label for="pg_sharedPost">Zajednički stub na spoju pergola</label>
             </div>
             <div class="info-note">Pergole dele jedan stub na mestu spoja — manje materijala, čistiji izgled.</div>
+            <div class="form-row single" style="margin-top:10px">
+              <div class="form-group"><label>Poravnanje niza (dubina)</label>
+                <select id="pg_align" onchange="pgS.align=this.value">
+                  <option value="back">Pozadi — sve pergole uz zid (standard)</option>
+                  <option value="front">Napred — prednja linija ravna (ulica)</option>
+                </select>
+              </div>
+            </div>
+            <div class="info-note">„Napred" koristite kada objekti imaju različitu dubinu do ulice: prednje ivice svih pergola ostaju u istoj liniji, a razlika u dubini se prikazuje uz zid.</div>
           </div>
         </div>
 
@@ -317,7 +353,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
 <script>
 /* ═══ STATE ═══ */
-let pgS={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0]};
+let pgS={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back'};
 const PG_TL={bioklimatska:'Bioklimatska pergola (pokretne lamele)',ravna:'Ravna pergola (3D Blockout platno)',klasicna:'Klasična pergola sa padom'};
 const PG_ML={bioklimatska:'Pokretne lamele',ravna:'3D Blockout platno',klasicna:'3D Blockout platno'};
 const RAL_HEX={'7016':'#383E42','9005':'#0A0A0A','9016':'#F1F0EA','7035':'#C5C7C4','8017':'#44322D','custom':'#383E42'};
@@ -394,6 +430,7 @@ function pgApply(d){
   else if(s.motorSide&&s.motorSide!=='none'){pgS.motorSides=[s.motorSide,s.motorSide,s.motorSide];for(let i=0;i<3;i++)fv['pm_'+i]=s.motorSide;}
   else{pgS.motorSides=['none','none','none'];}
   pgS.gaps=s.gaps&&s.gaps.length?s.gaps:[0,0];
+  pgS.align=s.align||'back';document.getElementById('pg_align').value=pgS.align;
   Object.keys(fv).forEach(k=>{const e=document.getElementById(k);if(e)e.value=fv[k];});
   pgCalcWallBase();
 }
@@ -467,7 +504,27 @@ function pgRenderWarnings(){
   b.classList.add('visible');
 }
 
-pgLoadState();pgProjRender();pgPricesLoad();
+/* ═══ POČETNI EKRAN ═══ */
+const PG_DEF_S={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back'};
+const PG_DEF_F={pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',pg_postW:'12',pg_postD:'12',pg_projectName:'',pg_notes:'',pg_customRal:'',pg_wallBaseH:'40',pg_postHeight:'190',pg_tubeW:'40',pg_tubeH:'80',pg_drain:'none',pg_ceradaBoja:'',pw_0:'500',pp_0:'400',pm_0:'none',pw_1:'500',pp_1:'400',pm_1:'none',pw_2:'500',pp_2:'400',pm_2:'none',pg_gap_0:'0',pg_gap_1:'0'};
+function pgStartClose(){document.getElementById('pg_startOverlay').classList.remove('visible');}
+function pgStartNew(){pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F});pgSaveState();pgStartClose();}
+function pgStartContinue(){pgLoadState();pgStartClose();}
+function pgStartInit(){
+  let last=null;try{last=JSON.parse(localStorage.getItem('pg_v2'));}catch(e){}
+  const projs=pgProjAll();
+  if(!last&&!projs.length)return; // prvi ulazak — prazan formular, bez modala
+  if(!last)document.getElementById('pg_startContBtn').style.display='none';
+  else if(last.f&&last.f.pg_projectName)document.getElementById('pg_startLast').textContent='Poslednji rad: '+last.f.pg_projectName;
+  if(projs.length){
+    document.getElementById('pg_startProjects').innerHTML='<div class="sm-sub">Sačuvani projekti</div>'+projs.slice(0,6).map(pr=>`<button class="sm-proj" onclick="pgProjOpen(${pr.id});pgStartClose()">${pr.name}<span>${pr.date}</span></button>`).join('');
+  }
+  const ov=document.getElementById('pg_startOverlay');
+  ov.classList.add('visible');
+  ov.addEventListener('click',e=>{if(e.target===ov)pgStartContinue();});
+}
+
+pgProjRender();pgPricesLoad();pgStartInit();
 
 /* ═══ DATA HELPERS ═══ */
 function pgGather(){
@@ -480,6 +537,7 @@ function pgGather(){
   pgS.hasWallBase=document.getElementById('pg_hasWallBase').checked;
   if(pgS.hasWallBase){pgS.wallBaseH=parseInt(document.getElementById('pg_wallBaseH').value)||40;pgS.postHeight=parseInt(document.getElementById('pg_postHeight').value)||190;}
   pgS.sharedPost=document.getElementById('pg_sharedPost').checked;
+  pgS.align=document.getElementById('pg_align').value||'back';
   pgS.drain=document.getElementById('pg_drain').value;
   pgS.showPrice=document.getElementById('pg_showPrice').checked;
   pgS.hasWallTube=document.getElementById('pg_hasWallTube').checked;
@@ -493,6 +551,8 @@ function pgGap(i){return (pgS.gaps&&pgS.gaps[i])?(parseFloat(pgS.gaps[i])||0):0;
 function pgGapSum(){let s=0;for(let i=0;i<pgS.count-1;i++)s+=pgGap(i);return s;}
 function pgXOff(pi){let x=0;for(let i=0;i<pi;i++)x+=pgS.pergs[i].w+pgGap(i);return x;}
 function pgJoined(i){return pgS.sharedPost&&pgGap(i)===0;} // spoj sa zajedničkim stubom samo ako nema razmaka
+function pgZOff(pi){return pgS.align==='front'?(pgMP()-pgS.pergs[pi].p):0;} // pomak zadnje ivice od zajedničke zadnje linije
+function pgZDiff(){return pgS.count>1&&pgS.align==='front'&&pgS.pergs.some(p=>p.p!==pgMP());}
 function pgTW(){return pgS.pergs.reduce((s,p)=>s+p.w,0)+pgGapSum();}
 function pgMP(){return Math.max(...pgS.pergs.map(p=>p.p));}
 function pgTA(){return pgS.pergs.reduce((s,p)=>s+(p.w*p.p)/10000,0);}
@@ -568,6 +628,7 @@ function pgSpecData(){
     ['Broj pergola',pgS.count===1?'1':`${pgS.count} — `+pgS.pergs.map((p,i)=>`P${i+1}: ${p.w}×${p.p}`).join(', ')],
   ];
   if(pgS.count>1&&pgGapSum()>0)det.push(['Razmak pergola',pgS.gaps.slice(0,pgS.count-1).map((g,i)=>`P${i+1}-P${i+2}: ${pgGap(i)} cm`).join(', ')]);
+  if(pgS.count>1)det.push(['Poravnanje niza',pgS.align==='front'?'napred — prednja linija ravna':'pozadi — uz zid']);
   det.push(
     ['Parapet / zidić',pgS.hasWallBase?`DA — zidić ${pgS.wallBaseH} cm + stub ${pgS.postHeight} cm`:'NE'],
     ['Zidna cev',pgS.hasWallTube?`DA — ${pgS.wallTubeH*10}×${pgS.wallTubeW*10} mm`:'NE'],
@@ -693,14 +754,35 @@ function pgDrawTlocrt(c,ox,oy,w,h,tW,mP){
   c.save();secTitle(c,ox,oy-8,'TLOCRT (pogled odozgo)');
   const m={t:50,r:70,b:70,l:30},dw=w-m.l-m.r,dh=h-m.t-m.b,dx=ox+m.l,dy=oy+m.t;
   const sc=Math.min(dw/tW,dh/mP)*.85,dW=tW*sc,sx=dx+(dw-dW)/2,sy=dy+10;
-  c.fillStyle='#d1d5db';c.fillRect(sx-10,sy-14,dW+20,14);c.strokeStyle='#9ca3af';c.lineWidth=0.8;
-  for(let hx=sx-10;hx<sx+dW+10;hx+=6){c.beginPath();c.moveTo(hx,sy-14);c.lineTo(hx+8,sy);c.stroke();}
-  c.fillStyle='#6b7280';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';c.fillText('ZID',sx+dW/2,sy-4);
-  if(pgS.hasWallTube){const td=pgS.wallTubeW*sc*.4;c.fillStyle='rgba(59,130,246,.2)';c.fillRect(sx-6,sy,dW+12,td);c.strokeStyle='#3b82f6';c.lineWidth=2;c.strokeRect(sx-6,sy,dW+12,td);c.fillStyle='#3b82f6';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`CEV ${pgS.wallTubeH*10}×${pgS.wallTubeW*10}mm`,sx+dW/2,sy+td/2+3);}
-  if(pgS.hasWallBase){let xO=0;for(let pi=0;pi<pgS.count;pi++){const pw=pgS.pergs[pi].w*sc,pp=pgS.pergs[pi].p*sc;c.fillStyle='rgba(180,160,140,.4)';c.fillRect(sx+xO,sy+pp-20*sc-5,8,20*sc+10);c.fillRect(sx+xO+pw-8,sy+pp-20*sc-5,8,20*sc+10);xO+=pw+pgGap(pi)*sc;}}
+  const offs=pgS.pergs.map((_,i)=>pgZOff(i)),anyOff=pgZDiff();
+  // Zid — jedna traka kad su sve uz zid, po pergoli kad su zadnje ivice pomerene
+  c.strokeStyle='#9ca3af';c.lineWidth=0.8;
+  if(!anyOff){
+    c.fillStyle='#d1d5db';c.fillRect(sx-10,sy-14,dW+20,14);
+    for(let hx=sx-10;hx<sx+dW+10;hx+=6){c.beginPath();c.moveTo(hx,sy-14);c.lineTo(hx+8,sy);c.stroke();}
+    c.fillStyle='#6b7280';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';c.fillText('ZID',sx+dW/2,sy-4);
+  }else{
+    for(let pi=0;pi<pgS.count;pi++){
+      const wx0=sx+pgXOff(pi)*sc-(pi===0?10:pgGap(pi-1)*sc/2),wx1=sx+(pgXOff(pi)+pgS.pergs[pi].w)*sc+(pi===pgS.count-1?10:pgGap(pi)*sc/2),wy=sy+offs[pi]*sc;
+      c.fillStyle='#d1d5db';c.fillRect(wx0,wy-14,wx1-wx0,14);
+      c.strokeStyle='#9ca3af';c.lineWidth=0.8;
+      for(let hx=wx0;hx<wx1;hx+=6){c.beginPath();c.moveTo(hx,wy-14);c.lineTo(hx+8,wy);c.stroke();}
+      c.fillStyle='#6b7280';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.fillText('ZID',(wx0+wx1)/2,wy-4);
+    }
+  }
+  if(pgS.hasWallTube){
+    c.font='bold 10px Segoe UI,sans-serif';
+    const td=pgS.wallTubeW*sc*.4;
+    for(let pi=0;pi<pgS.count;pi++){
+      const tx0=sx+pgXOff(pi)*sc-6,tw2=pgS.pergs[pi].w*sc+12,ty=sy+offs[pi]*sc;
+      c.fillStyle='rgba(59,130,246,.2)';c.fillRect(tx0,ty,tw2,td);c.strokeStyle='#3b82f6';c.lineWidth=2;c.strokeRect(tx0,ty,tw2,td);
+      if(pi===0){c.fillStyle='#3b82f6';c.textAlign='center';c.fillText(`CEV ${pgS.wallTubeH*10}×${pgS.wallTubeW*10}mm`,tx0+tw2/2,ty+td/2+3);}
+    }
+  }
+  if(pgS.hasWallBase){let xO=0;for(let pi=0;pi<pgS.count;pi++){const pw=pgS.pergs[pi].w*sc,pp=pgS.pergs[pi].p*sc,zo=offs[pi]*sc;c.fillStyle='rgba(180,160,140,.4)';c.fillRect(sx+xO,sy+zo+pp-20*sc-5,8,20*sc+10);c.fillRect(sx+xO+pw-8,sy+zo+pp-20*sc-5,8,20*sc+10);xO+=pw+pgGap(pi)*sc;}}
   let xO=0;
   for(let pi=0;pi<pgS.count;pi++){
-    const pw=pgS.pergs[pi].w*sc,pp=pgS.pergs[pi].p*sc,px=sx+xO,py=sy;
+    const pw=pgS.pergs[pi].w*sc,pp=pgS.pergs[pi].p*sc,px=sx+xO,py=sy+offs[pi]*sc;
     c.fillStyle='rgba(233,69,96,.04)';c.fillRect(px,py,pw,pp);
     c.strokeStyle='rgba(26,26,46,.15)';c.lineWidth=0.8;
     c.save();c.beginPath();c.rect(px,py,pw,pp);c.clip();
@@ -711,17 +793,18 @@ function pgDrawTlocrt(c,ox,oy,w,h,tW,mP){
     c.fillStyle='#6b7280';c.fillRect(px,py,pw,4);c.fillStyle='#374151';c.fillRect(px,py+pp-6,pw,6);
     c.fillStyle='#e94560';c.font='bold 15px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`P${pi+1}`,px+pw/2,py+pp/2+5);
     xO+=pw;
-    if(pi<pgS.count-1){const g=pgGap(pi)*sc;if(g>0){c.save();c.fillStyle='rgba(67,56,202,.05)';c.fillRect(sx+xO,py,g,pp);c.strokeStyle='#818cf8';c.lineWidth=1;c.setLineDash([4,3]);c.strokeRect(sx+xO,py,g,pp);c.setLineDash([]);c.fillStyle='#4338ca';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.save();c.translate(sx+xO+g/2,py+pp/2);c.rotate(-Math.PI/2);c.fillText('RAZMAK',0,3);c.restore();c.restore();}xO+=g;}
+    if(pi<pgS.count-1){const g=pgGap(pi)*sc;if(g>0){const gt=sy+Math.min(offs[pi],offs[pi+1])*sc,gb=sy+Math.max(offs[pi]+pgS.pergs[pi].p,offs[pi+1]+pgS.pergs[pi+1].p)*sc;c.save();c.fillStyle='rgba(67,56,202,.05)';c.fillRect(sx+xO,gt,g,gb-gt);c.strokeStyle='#818cf8';c.lineWidth=1;c.setLineDash([4,3]);c.strokeRect(sx+xO,gt,g,gb-gt);c.setLineDash([]);c.fillStyle='#4338ca';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.save();c.translate(sx+xO+g/2,(gt+gb)/2);c.rotate(-Math.PI/2);c.fillText('RAZMAK',0,3);c.restore();c.restore();}xO+=g;}
   }
   if(pgS.count>1){c.strokeStyle='#e94560';c.lineWidth=1.5;c.setLineDash([6,4]);for(let pi=0;pi<pgS.count-1;pi++){const jStart=pgXOff(pi)+pgS.pergs[pi].w,jEnd=pgXOff(pi+1),jxc=(jStart+jEnd)/2*sc;c.beginPath();c.moveTo(sx+jxc,sy-14);c.lineTo(sx+jxc,sy+mP*sc+10);c.stroke();}c.setLineDash([]);c.fillStyle='#e94560';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText(pgGapSum()>0?'RAZMAKNUTE PERGOLE':(pgS.sharedPost?'ZAJEDNIČKI STUB':'ODVOJENI STUBOVI'),sx+dW/2,sy+mP*sc+52);}
+  if(anyOff){c.save();c.strokeStyle='#0284c7';c.lineWidth=1.4;c.setLineDash([8,5]);c.beginPath();c.moveTo(sx-14,sy+mP*sc);c.lineTo(sx+dW+14,sy+mP*sc);c.stroke();c.setLineDash([]);c.fillStyle='#0284c7';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='left';c.fillText('PREDNJA LINIJA — PORAVNATO',sx-10,sy+mP*sc-8);c.restore();}
   const posts=pgPP(),dpW=Math.max(pgS.postW*sc*.6,6),dpD=Math.max(pgS.postD*sc*.6,6);
-  posts.forEach((p,i)=>{const psx=sx+p.x*sc-dpW/2,ppr=pgS.pergs[p.pi].p*sc,psy=sy+ppr-dpD/2;if(p.sh){c.fillStyle='#e94560';c.fillRect(psx-2,psy-2,dpW+4,dpD+4);}else{c.fillStyle='#1a1a2e';c.fillRect(psx,psy,dpW,dpD);}c.fillStyle='#1a1a2e';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`S${i+1}`,psx+dpW/2,psy+dpD+14);});
+  posts.forEach((p,i)=>{const psx=sx+p.x*sc-dpW/2,ppr=pgS.pergs[p.pi].p*sc,psy=sy+offs[p.pi]*sc+ppr-dpD/2;if(p.sh){c.fillStyle='#e94560';c.fillRect(psx-2,psy-2,dpW+4,dpD+4);}else{c.fillStyle='#1a1a2e';c.fillRect(psx,psy,dpW,dpD);}c.fillStyle='#1a1a2e';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`S${i+1}`,psx+dpW/2,psy+dpD+14);});
   if(pgS.drain!=='none'&&posts.length){
     const xs=posts.map(q=>q.x),minX=Math.min(...xs),maxX=Math.max(...xs);
     posts.forEach(pt=>{
       const isL=pt.x===minX,isR=pt.x===maxX;
       if(!((pgS.drain==='left'&&isL)||(pgS.drain==='right'&&isR)||(pgS.drain==='both'&&(isL||isR))))return;
-      const cx=sx+pt.x*sc,cy=sy+pgS.pergs[pt.pi].p*sc;
+      const cx=sx+pt.x*sc,cy=sy+(offs[pt.pi]+pgS.pergs[pt.pi].p)*sc;
       c.strokeStyle='#0ea5e9';c.lineWidth=2.5;c.beginPath();c.arc(cx,cy,13,0,Math.PI*2);c.stroke();
       c.fillStyle='#0ea5e9';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.fillText('ODVOD',cx,cy-19);
     });
@@ -789,6 +872,7 @@ function pgDrawBocni(c,ox,oy,w,h,mP){
     c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText('oluk → odvod kroz stub',sX,gY+24);
   }
   c.fillStyle='#6b7280';c.font='italic 11px Segoe UI,sans-serif';c.textAlign='left';c.fillText('Prolazna visina merena do donje ivice oluka.',wX-20,gY+46);
+  if(pgZDiff())c.fillText('Presek kroz najdublju pergolu — prednje ivice svih pergola su u istoj liniji.',wX-20,gY+64);
   c.restore();
 }
 
@@ -947,18 +1031,32 @@ function generate3D(){
   const gl0=p(0,0,mp),glW=p(tw,0,mp);c.moveTo(gl0.x-20,gl0.y);c.lineTo(glW.x+20,glW.y);c.stroke();
   for(let gx=0;gx<=tw;gx+=tw/(tw>800?12:8)){const gp=p(gx,0,mp);c.beginPath();c.lineWidth=1;c.moveTo(gp.x,gp.y);c.lineTo(gp.x-8,gp.y+8);c.stroke();}
 
-  // Zid (laka šrafura)
-  poly([p(0,0,0),p(tw,0,0),p(tw,pgS.wallHeight,0),p(0,pgS.wallHeight,0)],'#e8e8ec','#b0b0b8',1);
-  c.strokeStyle='rgba(150,150,170,.4)';c.lineWidth=.5;
-  for(let wy2=0;wy2<=pgS.wallHeight;wy2+=30){poly([p(0,wy2,0),p(tw,wy2,0),p(tw,wy2+.1,0),p(0,wy2+.1,0)],'','#b0b0c0',.5);}
-  c.fillStyle='#6b7280';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='center';
-  const wMid=p(tw/2,pgS.wallHeight/2,0);c.fillText('ZID',wMid.x,wMid.y);
+  // Zid (laka šrafura) — po pergoli kad su zadnje ivice pomerene (objekti različite dubine)
+  const zOffs=pgS.pergs.map((_,i)=>pgZOff(i)),anyZOff=pgZDiff();
+  if(!anyZOff){
+    poly([p(0,0,0),p(tw,0,0),p(tw,pgS.wallHeight,0),p(0,pgS.wallHeight,0)],'#e8e8ec','#b0b0b8',1);
+    c.strokeStyle='rgba(150,150,170,.4)';c.lineWidth=.5;
+    for(let wy2=0;wy2<=pgS.wallHeight;wy2+=30){poly([p(0,wy2,0),p(tw,wy2,0),p(tw,wy2+.1,0),p(0,wy2+.1,0)],'','#b0b0c0',.5);}
+    c.fillStyle='#6b7280';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='center';
+    const wMid=p(tw/2,pgS.wallHeight/2,0);c.fillText('ZID',wMid.x,wMid.y);
+  }else{
+    for(let pi=0;pi<pgS.count;pi++){
+      const x0=pgXOff(pi)-(pi===0?0:pgGap(pi-1)/2),x1=pgXOff(pi)+pgS.pergs[pi].w+(pi===pgS.count-1?0:pgGap(pi)/2),zo=zOffs[pi];
+      poly([p(x0,0,zo),p(x1,0,zo),p(x1,pgS.wallHeight,zo),p(x0,pgS.wallHeight,zo)],'#e8e8ec','#b0b0b8',1);
+      c.strokeStyle='rgba(150,150,170,.4)';c.lineWidth=.5;
+      for(let wy2=0;wy2<=pgS.wallHeight;wy2+=30){poly([p(x0,wy2,zo),p(x1,wy2,zo),p(x1,wy2+.1,zo),p(x0,wy2+.1,zo)],'','#b0b0c0',.5);}
+      c.fillStyle='#6b7280';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';
+      const wMid=p((x0+x1)/2,pgS.wallHeight*.82,zo);c.fillText('ZID',wMid.x,wMid.y);
+    }
+  }
 
-  // Zidna cev
+  // Zidna cev — prati zadnju ivicu svake pergole
   if(pgS.hasWallTube){
     const tH3=pgS.wallTubeH,tD3=pgS.wallTubeW;
-    box(0,pgS.wallHeight-tH3,0,tw,tH3,tD3,'#5fa3d6','#4a85c0',hexDarken('#4a85c0',.75),'#1d4ed8');
-    const cp=p(tw/2,pgS.wallHeight-tH3/2,tD3/2);
+    for(let pi=0;pi<pgS.count;pi++){
+      box(pgXOff(pi),pgS.wallHeight-tH3,zOffs[pi],pgS.pergs[pi].w,tH3,tD3,'#5fa3d6','#4a85c0',hexDarken('#4a85c0',.75),'#1d4ed8');
+    }
+    const cp=p(pgS.pergs[0].w/2,pgS.wallHeight-tH3/2,zOffs[0]+tD3/2);
     c.fillStyle='white';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`CEV ${pgS.wallTubeH*10}×${pgS.wallTubeW*10}mm`,cp.x,cp.y+4);
   }
 
@@ -971,6 +1069,7 @@ function generate3D(){
   for(let pi=0;pi<pgS.count;pi++){
     const pw=pgS.pergs[pi].w;
     const pp2=pgS.pergs[pi].p;
+    const zO=zOffs[pi];
     const backY=pgS.wallHeight;
     const frontY=pgS.type==='klasicna'?pgS.passHeight:pgS.wallHeight;
 
@@ -988,14 +1087,14 @@ function generate3D(){
     if(pgS.type==='bioklimatska'){
       // 1. Rogovi (nosači lamela) — duž Z ose, isti presek kao za ravnu
       rafterPositions.forEach(rx=>{
-        poly([p(rx-rogW/2,backY+bH+rogH,0),p(rx+rogW/2,backY+bH+rogH,0),p(rx+rogW/2,backY+bH+rogH,pp2),p(rx-rogW/2,backY+bH+rogH,pp2)],fMid,'#111',1.8);
-        poly([p(rx+rogW/2,backY+bH,0),p(rx+rogW/2,backY+bH+rogH,0),p(rx+rogW/2,backY+bH+rogH,pp2),p(rx+rogW/2,backY+bH,pp2)],fDark,'#111',1.8);
-        poly([p(rx-rogW/2,backY+bH,0),p(rx+rogW/2,backY+bH,0),p(rx+rogW/2,backY+bH+rogH,0),p(rx-rogW/2,backY+bH+rogH,0)],hexDarken(fHex,.4),'#111',1.5);
+        poly([p(rx-rogW/2,backY+bH+rogH,zO),p(rx+rogW/2,backY+bH+rogH,zO),p(rx+rogW/2,backY+bH+rogH,zO+pp2),p(rx-rogW/2,backY+bH+rogH,zO+pp2)],fMid,'#111',1.8);
+        poly([p(rx+rogW/2,backY+bH,zO),p(rx+rogW/2,backY+bH+rogH,zO),p(rx+rogW/2,backY+bH+rogH,zO+pp2),p(rx+rogW/2,backY+bH,zO+pp2)],fDark,'#111',1.8);
+        poly([p(rx-rogW/2,backY+bH,zO),p(rx+rogW/2,backY+bH,zO),p(rx+rogW/2,backY+bH+rogH,zO),p(rx-rogW/2,backY+bH+rogH,zO)],hexDarken(fHex,.4),'#111',1.5);
       });
       // 2. Lamele (pokretne) — duž X ose, na vrhu rogova
       const nLam=Math.min(16,Math.round(pp2/14));
       for(let li=0;li<nLam;li++){
-        const lz=(li+.5)*(pp2/nLam);
+        const lz=zO+(li+.5)*(pp2/nLam);
         const lamY=backY+bH+rogH-2.5;
         const lamT=2.5,lamD=12;
         poly([p(xOff,lamY+lamT,lz-lamD/2),p(xOff+pw,lamY+lamT,lz-lamD/2),p(xOff+pw,lamY+lamT,lz+lamD/2),p(xOff,lamY+lamT,lz+lamD/2)],hexDarken(fHex,.85),'#111',1);
@@ -1003,13 +1102,13 @@ function generate3D(){
       }
     }else{
       // Platno (poluprozirno, iza rogova)
-      poly([p(xOff,backY+bH,0),p(xOff+pw,backY+bH,0),p(xOff+pw,frontY+bH,pp2),p(xOff,frontY+bH,pp2)],'rgba(215,215,200,.78)','#bbb',1);
+      poly([p(xOff,backY+bH,zO),p(xOff+pw,backY+bH,zO),p(xOff+pw,frontY+bH,zO+pp2),p(xOff,frontY+bH,zO+pp2)],'rgba(215,215,200,.78)','#bbb',1);
       // Šrafura po dužini (naglašava dubinu)
       c.save();c.globalAlpha=.3;c.strokeStyle='#999';c.lineWidth=1;
       const nStr=Math.max(3,Math.round(pw/55));
       for(let si2=0;si2<=nStr;si2++){
         const t=si2/nStr,rxl=xOff+pw*t;
-        const A=p(rxl,backY+bH,0),B=p(rxl,frontY+bH,pp2);
+        const A=p(rxl,backY+bH,zO),B=p(rxl,frontY+bH,zO+pp2);
         c.beginPath();c.moveTo(A.x,A.y);c.lineTo(B.x,B.y);c.stroke();
       }
       c.restore();
@@ -1018,48 +1117,48 @@ function generate3D(){
       rafterPositions.forEach(rx=>{
         // Gornja ploha roga (najvidljivija)
         poly([
-          p(rx-rogW/2, backY+bH+rogH, 0),
-          p(rx+rogW/2, backY+bH+rogH, 0),
-          p(rx+rogW/2, frontY+bH+rogH, pp2),
-          p(rx-rogW/2, frontY+bH+rogH, pp2)
+          p(rx-rogW/2, backY+bH+rogH, zO),
+          p(rx+rogW/2, backY+bH+rogH, zO),
+          p(rx+rogW/2, frontY+bH+rogH, zO+pp2),
+          p(rx-rogW/2, frontY+bH+rogH, zO+pp2)
         ], fMid, '#111', 1.8);
         // Desna bočna ploha roga
         poly([
-          p(rx+rogW/2, backY+bH,     0),
-          p(rx+rogW/2, backY+bH+rogH, 0),
-          p(rx+rogW/2, frontY+bH+rogH, pp2),
-          p(rx+rogW/2, frontY+bH,    pp2)
+          p(rx+rogW/2, backY+bH,     zO),
+          p(rx+rogW/2, backY+bH+rogH, zO),
+          p(rx+rogW/2, frontY+bH+rogH, zO+pp2),
+          p(rx+rogW/2, frontY+bH,    zO+pp2)
         ], fDark, '#111', 1.8);
-        // Prednja ivica roga (na zidu, z=0)
+        // Prednja ivica roga (na zidu, z=zO)
         poly([
-          p(rx-rogW/2, backY+bH,     0),
-          p(rx+rogW/2, backY+bH,     0),
-          p(rx+rogW/2, backY+bH+rogH, 0),
-          p(rx-rogW/2, backY+bH+rogH, 0)
+          p(rx-rogW/2, backY+bH,     zO),
+          p(rx+rogW/2, backY+bH,     zO),
+          p(rx+rogW/2, backY+bH+rogH, zO),
+          p(rx-rogW/2, backY+bH+rogH, zO)
         ], hexDarken(fHex,.4), '#111', 1.5);
       });
     }
 
-    // 3. ZADNJA GREDA (na zidu, z≈0)
-    box(xOff,backY,0,pw,bH,bD,fMid,fDark,hexDarken(fHex,.45),'#111');
-    // 4. PREDNJA GREDA / OLUK (z=pp2)
-    box(xOff,frontY,pp2-bD,pw,bH,bD,fMid,fDark,hexDarken(fHex,.45),'#111');
+    // 3. ZADNJA GREDA (na zidu, z≈zO)
+    box(xOff,backY,zO,pw,bH,bD,fMid,fDark,hexDarken(fHex,.45),'#111');
+    // 4. PREDNJA GREDA / OLUK (z=zO+pp2)
+    box(xOff,frontY,zO+pp2-bD,pw,bH,bD,fMid,fDark,hexDarken(fHex,.45),'#111');
 
     // 5. BOČNI PROFILI — kao pune prizme (ne tanke linije)
     const sW=bD;
     // Levi profil (top + prednja vidljiva ploha)
-    poly([p(xOff-sW,backY+bH,0),p(xOff,backY+bH,0),p(xOff,frontY+bH,pp2),p(xOff-sW,frontY+bH,pp2)],fMid,'#111',1.5);
-    poly([p(xOff-sW,backY,0),p(xOff,backY,0),p(xOff,frontY,pp2),p(xOff-sW,frontY,pp2)],hexDarken(fHex,.55),'#111',1.5);
+    poly([p(xOff-sW,backY+bH,zO),p(xOff,backY+bH,zO),p(xOff,frontY+bH,zO+pp2),p(xOff-sW,frontY+bH,zO+pp2)],fMid,'#111',1.5);
+    poly([p(xOff-sW,backY,zO),p(xOff,backY,zO),p(xOff,frontY,zO+pp2),p(xOff-sW,frontY,zO+pp2)],hexDarken(fHex,.55),'#111',1.5);
     // Desni profil
-    poly([p(xOff+pw,backY+bH,0),p(xOff+pw+sW,backY+bH,0),p(xOff+pw+sW,frontY+bH,pp2),p(xOff+pw,frontY+bH,pp2)],fMid,'#111',1.5);
-    poly([p(xOff+pw,backY,0),p(xOff+pw+sW,backY,0),p(xOff+pw+sW,frontY,pp2),p(xOff+pw,frontY,pp2)],hexDarken(fHex,.5),'#111',1.5);
+    poly([p(xOff+pw,backY+bH,zO),p(xOff+pw+sW,backY+bH,zO),p(xOff+pw+sW,frontY+bH,zO+pp2),p(xOff+pw,frontY+bH,zO+pp2)],fMid,'#111',1.5);
+    poly([p(xOff+pw,backY,zO),p(xOff+pw+sW,backY,zO),p(xOff+pw+sW,frontY,zO+pp2),p(xOff+pw,frontY,zO+pp2)],hexDarken(fHex,.5),'#111',1.5);
 
     // 6. POPREČNI PROFILI — 3D kutije
     const nCross=Math.max(2,Math.round(pp2/80));
     for(let ci=0;ci<nCross;ci++){
       const cz2=(ci+1)*(pp2/(nCross+1));
       const cy2=backY+(frontY-backY)*(cz2/pp2)+bH-crossH-3;
-      box(xOff,cy2,cz2-crossD/2,pw,crossH,crossD,fMid,fDark,hexDarken(fHex,.45),'#111');
+      box(xOff,cy2,zO+cz2-crossD/2,pw,crossH,crossD,fMid,fDark,hexDarken(fHex,.45),'#111');
     }
 
     xOff+=pw+pgGap(pi);
@@ -1068,7 +1167,7 @@ function generate3D(){
   // 7. STUBOVI
   const posts=pgPP();
   posts.forEach((pt,i)=>{
-    const pp3=pgS.pergs[pt.pi].p;
+    const pp3=pgZOff(pt.pi)+pgS.pergs[pt.pi].p;
     const frontY=pgS.type==='klasicna'?pgS.passHeight:pgS.wallHeight;
     const pW2=pgS.postW,pD2=pgS.postD;
     const pCol=pt.sh?'#e94560':fHex;
