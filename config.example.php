@@ -6,3 +6,4 @@ define('DB_NAME', 'ime_baze');
 define('DB_USER', 'ime_korisnika');
 define('DB_PASS', 'lozinka_baze');
 define('API_KEY', 'sifra-za-sinhronizaciju');  // istu šifru uneti u aplikaciji (dugme ☁)
+define('NOTIFY_EMAIL', 'vas@email.com');       // na ovu adresu stižu mere koje kupci pošalju

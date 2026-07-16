@@ -121,8 +121,18 @@ body{font-family:var(--font);background:var(--paper);color:var(--ink);line-heigh
 .sbtn{display:flex;align-items:center;justify-content:center;gap:10px;padding:15px;border:none;border-radius:11px;font-size:14.5px;font-weight:800;cursor:pointer;font-family:var(--font);letter-spacing:.2px;text-decoration:none;color:#fff;transition:transform .15s,box-shadow .15s}
 .sbtn svg{width:19px;height:19px;flex-shrink:0}
 .sbtn:hover{transform:translateY(-2px);box-shadow:0 10px 24px -8px rgba(0,0,0,.5)}
+.sbtn.direct{grid-column:1/-1;background:linear-gradient(135deg,var(--accent),#d63851);font-size:16px;padding:17px}
 .sbtn.wa{background:#1faa53}
 .sbtn.vb{background:#665CAC}
+.sbtn-note{grid-column:1/-1;text-align:center;font-size:11.5px;color:rgba(255,255,255,.45);margin-top:-2px}
+.alt-lbl{display:flex;align-items:center;gap:14px;margin:16px 0 12px;font-size:10.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.alt-lbl::before,.alt-lbl::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.14)}
+.send-ok{display:none;text-align:center;padding:26px 10px 10px}
+.send-ok .okic{width:66px;height:66px;border-radius:50%;background:#10b981;margin:0 auto 16px;display:flex;align-items:center;justify-content:center}
+.send-ok .okic svg{width:34px;height:34px}
+.send-ok h4{font-size:20px;font-weight:800;margin-bottom:8px}
+.send-ok p{font-size:14px;color:rgba(255,255,255,.7);max-width:400px;margin:0 auto}
+.send-ok p b{color:#fff}
 .send .call{display:block;text-align:center;margin-top:18px;font-size:13px;color:rgba(255,255,255,.55)}
 .send .call a{color:#fff;font-weight:800;text-decoration:none;font-size:16px;letter-spacing:.5px}
 
@@ -401,23 +411,35 @@ footer b{color:var(--ink)}
   <!-- ═══ SLANJE ═══ -->
   <div class="sec-head"><span class="no">Dostava</span><h2>Pošaljite nam mere</h2></div>
   <div class="send">
-    <div class="eb">PROHORECA AG GROUP · Prijem mera</div>
-    <h3>Upišite mere — poruka se sama sastavlja</h3>
-    <p>Popunite polja i kliknite na dugme. Fotografije priložite direktno u razgovoru.</p>
-    <div class="sgrid">
-      <div class="sf full"><label>Vaše ime i mesto</label><input type="text" id="m_name" placeholder="npr. Marko Petrović, Novi Sad"></div>
-      <div class="sf fa"><label><i>A</i> Širina (cm)</label><input type="number" id="m_a" inputmode="numeric" placeholder="npr. 600"></div>
-      <div class="sf fb"><label><i>B</i> Visina (cm)</label><input type="number" id="m_b" inputmode="numeric" placeholder="npr. 260"></div>
-      <div class="sf fc"><label><i>C</i> Dubina (cm)</label><input type="number" id="m_c" inputmode="numeric" placeholder="npr. 400"></div>
-      <div class="sf"><label>Napomena / prepreke</label><input type="text" id="m_note" placeholder="npr. lampa na sredini zida"></div>
+    <div id="sendForm">
+      <div class="eb">PROHORECA AG GROUP · Prijem mera</div>
+      <h3>Upišite mere i pošaljite jednim klikom</h3>
+      <p>Popunite polja i kliknite na crveno dugme — mere nam stižu odmah, a mi vas zovemo.</p>
+      <div class="sgrid">
+        <div class="sf"><label>Vaše ime i mesto</label><input type="text" id="m_name" placeholder="npr. Marko Petrović, Novi Sad"></div>
+        <div class="sf"><label>Vaš telefon</label><input type="tel" id="m_phone" inputmode="tel" placeholder="npr. 06x xxx xxxx"></div>
+        <div class="sf fa"><label><i>A</i> Širina (cm)</label><input type="number" id="m_a" inputmode="numeric" placeholder="npr. 600"></div>
+        <div class="sf fb"><label><i>B</i> Visina (cm)</label><input type="number" id="m_b" inputmode="numeric" placeholder="npr. 260"></div>
+        <div class="sf fc"><label><i>C</i> Dubina (cm)</label><input type="number" id="m_c" inputmode="numeric" placeholder="npr. 400"></div>
+        <div class="sf"><label>Napomena / prepreke</label><input type="text" id="m_note" placeholder="npr. lampa na sredini zida"></div>
+        <input type="text" id="m_web" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-5000px" aria-hidden="true">
+      </div>
+      <div class="sbtns">
+        <a class="sbtn direct" id="btnDirect" href="#" onclick="return sendDirect()">&#10148;&nbsp; Pošalji mere odmah</a>
+        <div class="alt-lbl" style="grid-column:1/-1;margin:6px 0 0">ili preko aplikacije</div>
+        <a class="sbtn wa" href="#" onclick="return sendVia('wa')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.7 14.9L2 22l5.3-1.4A10 10 0 1 0 12 2Zm5.5 14.1c-.2.7-1.3 1.3-1.9 1.4-.5.1-1.1.2-3.4-.7-2.8-1.2-4.7-4-4.8-4.2-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.5-.4.7-.4h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .5-.3.6-.7.9-.5 1.3.7 1.2 1.6 2 2.7 2.6.3.2.5.1.7-.1l.8-1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.5.3.1.1.1.6-.2 1.3Z"/></svg>
+          WhatsApp</a>
+        <a class="sbtn vb" href="#" onclick="return sendVia('vb')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2C8 2 3 3.6 3 10.4c0 2.3.5 4.1 1.6 5.4.7.9 1.7 1.5 2.9 1.9l-.6 3.5c0 .4.4.7.8.5l3.5-2.3c.6 0 1.2.1 1.8.1 5 0 10-1.6 10-8.4S18 2 13 2Zm4.9 11.6c-.3.8-1.5 1.5-2.2 1.6-.6.1-1.3.1-3.8-.9-3.2-1.3-5.2-4.6-5.4-4.8-.1-.2-1.3-1.8-1.3-3.4 0-1.6.8-2.4 1.1-2.7.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .7.5.2.6.8 2.1.9 2.3.1.2.1.3 0 .5-.3.7-.7 1-.5 1.4.8 1.3 1.8 2.2 3 2.9.4.2.6.1.8-.1l.9-1.1c.2-.3.5-.2.8-.1l2.2 1.1c.3.2.5.2.6.4.1.1.1.7-.2 1.4Z" opacity=".9"/></svg>
+          Viber</a>
+        <div class="sbtn-note">Otvoriće se aplikacija sa već napisanom porukom — na Viberu samo izaberite naš kontakt.</div>
+      </div>
     </div>
-    <div class="sbtns">
-      <a class="sbtn wa" href="#" onclick="return sendVia('wa')">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.7 14.9L2 22l5.3-1.4A10 10 0 1 0 12 2Zm5.5 14.1c-.2.7-1.3 1.3-1.9 1.4-.5.1-1.1.2-3.4-.7-2.8-1.2-4.7-4-4.8-4.2-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.5-.4.7-.4h.5c.2 0 .4 0 .6.5s.8 1.9.8 2c.1.1.1.3 0 .5-.3.6-.7.9-.5 1.3.7 1.2 1.6 2 2.7 2.6.3.2.5.1.7-.1l.8-1c.2-.3.4-.2.7-.1l2 1c.3.1.5.2.5.3.1.1.1.6-.2 1.3Z"/></svg>
-        Pošalji na WhatsApp</a>
-      <a class="sbtn vb" href="#" onclick="return sendVia('vb')">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2C8 2 3 3.6 3 10.4c0 2.3.5 4.1 1.6 5.4.7.9 1.7 1.5 2.9 1.9l-.6 3.5c0 .4.4.7.8.5l3.5-2.3c.6 0 1.2.1 1.8.1 5 0 10-1.6 10-8.4S18 2 13 2Zm4.9 11.6c-.3.8-1.5 1.5-2.2 1.6-.6.1-1.3.1-3.8-.9-3.2-1.3-5.2-4.6-5.4-4.8-.1-.2-1.3-1.8-1.3-3.4 0-1.6.8-2.4 1.1-2.7.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .7.5.2.6.8 2.1.9 2.3.1.2.1.3 0 .5-.3.7-.7 1-.5 1.4.8 1.3 1.8 2.2 3 2.9.4.2.6.1.8-.1l.9-1.1c.2-.3.5-.2.8-.1l2.2 1.1c.3.2.5.2.6.4.1.1.1.7-.2 1.4Z" opacity=".9"/></svg>
-        Pošalji na Viber</a>
+    <div class="send-ok" id="sendOK">
+      <div class="okic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5L9.5 18L20 6"/></svg></div>
+      <h4>Mere su uspešno poslate!</h4>
+      <p>Hvala vam — javićemo vam se u najkraćem roku.<br>Fotografije nam pošaljite na Viber ili WhatsApp: <b>064 89 79 242</b>.</p>
     </div>
     <span class="call">ili nas pozovite &nbsp;·&nbsp; <a href="tel:+381648979242">064 89 79 242</a></span>
   </div>
@@ -431,24 +453,42 @@ footer b{color:var(--ink)}
 
 <script>
 const PHONE='381648979242';
+const v=id=>document.getElementById(id).value.trim();
 function buildMsg(){
-  const v=id=>document.getElementById(id).value.trim();
   let m='Mere za pergolu — PROHORECA:\n';
   if(v('m_name'))m+='Ime: '+v('m_name')+'\n';
+  if(v('m_phone'))m+='Telefon: '+v('m_phone')+'\n';
   m+='A (širina): '+(v('m_a')||'—')+' cm\n';
   m+='B (visina kačenja): '+(v('m_b')||'—')+' cm\n';
   m+='C (dubina): '+(v('m_c')||'—')+' cm';
   if(v('m_note'))m+='\nNapomena: '+v('m_note');
   return m;
 }
+async function sendDirect(){
+  if(!v('m_name')||!v('m_phone')){alert('Upišite ime i broj telefona da bismo mogli da vas pozovemo.');return false;}
+  if(!v('m_a')&&!v('m_b')&&!v('m_c')){alert('Upišite bar jednu meru (A, B ili C).');return false;}
+  const btn=document.getElementById('btnDirect'),txt=btn.innerHTML;
+  btn.style.pointerEvents='none';btn.style.opacity='.65';btn.textContent='Slanje…';
+  try{
+    const r=await fetch('posalji.php',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ime:v('m_name'),telefon:v('m_phone'),a:v('m_a'),b:v('m_b'),c:v('m_c'),napomena:v('m_note'),izvor:location.hostname||'lokalno',website:v('m_web')})});
+    const j=await r.json();
+    if(!j.ok)throw new Error(j.error||'Greška u slanju.');
+    document.getElementById('sendForm').style.display='none';
+    document.getElementById('sendOK').style.display='block';
+  }catch(e){
+    alert((e.message||'Greška u slanju.')+'\n\nMožete poslati i preko WhatsApp ili Viber dugmeta ispod.');
+    btn.style.pointerEvents='';btn.style.opacity='';btn.innerHTML=txt;
+  }
+  return false;
+}
 function sendVia(ch){
   const msg=buildMsg();
   if(ch==='wa'){
     window.open('https://wa.me/'+PHONE+'?text='+encodeURIComponent(msg),'_blank');
   }else{
-    const done=()=>{alert('Poruka je kopirana — samo je nalepite u Viber poruku.');location.href='viber://chat?number=%2B'+PHONE;};
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(msg).then(done,done);}
-    else done();
+    // viber://forward otvara Viber sa gotovom porukom — kupac bira kontakt, bez lepljenja
+    location.href='viber://forward?text='+encodeURIComponent(msg+'\n(pošaljite na 064 89 79 242 — PROHORECA)');
   }
   return false;
 }
