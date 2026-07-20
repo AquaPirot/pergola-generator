@@ -99,7 +99,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .drawing-placeholder .placeholder-icon{font-size:64px;margin-bottom:20px;opacity:.3}
 .drawing-placeholder p{font-size:16px;font-weight:500}
 .drawing-placeholder .hint{font-size:13px;margin-top:8px;opacity:.6}
-#outputContainer,#output3dContainer{background:white;border-radius:var(--radius-sm);overflow:hidden}
+#outputContainer,#output3dContainer,#outputNalogContainer{background:white;border-radius:var(--radius-sm);overflow:hidden}
 .output-canvas{width:100%;display:block}
 .info-note{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:10px 12px;font-size:11px;color:#166534;margin-top:8px;line-height:1.5}
 .proj-list{display:flex;flex-direction:column;gap:6px}
@@ -161,6 +161,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 <div class="view-bar">
   <button class="view-btn active" onclick="switchView('2d',this)">&#9998; 2D Tehnički Crtež</button>
   <button class="view-btn" onclick="switchView('3d',this)">&#11041; 3D Tehnički Prikaz</button>
+  <button class="view-btn" id="pg_viewNalogBtn" style="display:none" onclick="switchView('nalog',this)">&#9874; Nalog — Konstrukcija</button>
 </div>
 
 <div class="app-container">
@@ -338,9 +339,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
         <button class="btn-generate" onclick="generatePergola()">&#9998; Generiši 2D Tehnički Crtež</button>
         <button class="btn-3d" onclick="generate3D()">&#11041; Generiši 3D Tehnički Prikaz</button>
+        <button class="btn-3d" id="pg_btnNalog" onclick="generateNalog()" style="display:none;background:linear-gradient(135deg,#475569,#1e293b)">&#9874; Radni Nalog — Konstrukcija</button>
         <button class="btn-export" onclick="exportPNG('outputCanvas')" id="pg_btnExport" style="display:none">&#128190; Preuzmi 2D PNG</button>
         <button class="btn-export" onclick="exportPDF('outputCanvas')" id="pg_btnPDF" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d)">&#128196; Preuzmi 2D PDF</button>
         <button class="btn-export" onclick="exportPNG('canvas3d')" id="pg_btn3dExport" style="display:none">&#128190; Preuzmi 3D PNG</button>
+        <button class="btn-export" onclick="exportPNG('canvasNalog')" id="pg_btnNalogExport" style="display:none">&#128190; Preuzmi Nalog PNG</button>
+        <button class="btn-export" onclick="exportPDF('canvasNalog')" id="pg_btnNalogPDF" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d)">&#128196; Preuzmi Nalog PDF</button>
         <button class="btn-export" onclick="exportPDF('canvas3d')" id="pg_btn3dPDF" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d)">&#128196; Preuzmi 3D PDF</button>
         <button class="btn-whatsapp" onclick="sharePNG()" id="pg_btnShare" style="display:none">&#128172; Podeli sliku</button>
       </div>
@@ -370,6 +374,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <canvas id="canvas3d" class="output-canvas" style="display:none"></canvas>
       </div>
     </div>
+
+    <div class="view-panel" id="panel-nalog">
+      <div id="outputNalogContainer">
+        <div class="drawing-placeholder" id="placeholderNalog"><div class="placeholder-icon">&#9874;</div><p>Radni nalog za čeličnu konstrukciju</p><div class="hint">Crtež za radionicu: mere, sastavnica, varenje, boja</div></div>
+        <canvas id="canvasNalog" class="output-canvas" style="display:none"></canvas>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -384,9 +395,9 @@ const RAL_HEX={'7016':'#383E42','9005':'#0A0A0A','9016':'#F1F0EA','7035':'#C5C7C
 function switchView(v,btn){
   document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
-  document.getElementById('panel-2d').classList.toggle('active',v==='2d');
-  document.getElementById('panel-3d').classList.toggle('active',v==='3d');
+  ['2d','3d','nalog'].forEach(k=>{const pnl=document.getElementById('panel-'+k);if(pnl)pnl.classList.toggle('active',v===k);});
   if(v==='3d'&&document.getElementById('outputCanvas').style.display!=='none'&&document.getElementById('canvas3d').style.display==='none')generate3D();
+  if(v==='nalog'&&document.getElementById('canvasNalog').style.display==='none'&&pgSteel())generateNalog();
 }
 
 /* ═══ UI HANDLERS ═══ */
@@ -397,6 +408,10 @@ function pgSelectSteelPosts(el){document.querySelectorAll('#pg_steelPostsSel .nu
 function pgMountUI(){
   const steel=pgS.mount!=='zid';
   document.getElementById('pg_steelFields').classList.toggle('visible',steel);
+  const nb=document.getElementById('pg_btnNalog'),vb=document.getElementById('pg_viewNalogBtn');
+  if(nb)nb.style.display=steel?'flex':'none';
+  if(vb)vb.style.display=steel?'block':'none';
+  if(!steel){const pnl=document.getElementById('panel-nalog');if(pnl&&pnl.classList.contains('active'))switchView('2d',document.querySelectorAll('.view-btn')[0]);}
   if(steel)document.getElementById('pg_steelNote').textContent=pgS.mount==='samostojeca'
     ?'Samostojeći objekat: čelična konstrukcija nosi zadnju stranu pergole — 2 ili 3 stuba ankerisana u temelj, greda zavarena odozgo. Polje „Visina na zidu" predstavlja visinu vrha konstrukcije.'
     :'Konstrukcija se postavlja uz objekat: 2 ili 3 stuba uz zid sa gredom zavarenom odozgo — pergola kreće od te grede, bez oslanjanja na fasadu.';
@@ -668,7 +683,7 @@ function exportPDF(id){
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${pn}</title><style>*{margin:0;padding:0}body{background:#fff}img{width:100%;display:block}@media print{@page{size:auto;margin:5mm}body{margin:0}}</style></head><body><img src="${img}" onload="setTimeout(()=>{window.print();},400)"></body></html>`);
   w.document.close();
 }
-async function sharePNG(){const id=document.getElementById('panel-2d').classList.contains('active')?'outputCanvas':'canvas3d';const c=document.getElementById(id);try{const b=await new Promise(r=>c.toBlob(r,'image/png'));const f=new File([b],'crtez.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'PROHORECA AG GROUP'});}else{exportPNG(id);}}catch(e){exportPNG(id);}}
+async function sharePNG(){const id=document.getElementById('panel-2d').classList.contains('active')?'outputCanvas':(document.getElementById('panel-nalog').classList.contains('active')?'canvasNalog':'canvas3d');const c=document.getElementById(id);try{const b=await new Promise(r=>c.toBlob(r,'image/png'));const f=new File([b],'crtez.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'PROHORECA AG GROUP'});}else{exportPNG(id);}}catch(e){exportPNG(id);}}
 function hexDarken(hex,f){if(!hex||hex[0]!=='#')return hex;const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;}
 
 /* ═══ CANVAS HELPERS ═══ */
@@ -1452,6 +1467,159 @@ function generate3D(){
     ['Gabarit',`${tw} × ${mp} cm`],
     ['Boja','RAL '+pgS.ralDisplay],
     ['Br. crteža',id],
+    ['Datum',d]
+  ]);
+  docFooter(c,CW,CH,id,d);
+  pgSaveState();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RADNI NALOG — ČELIČNA KONSTRUKCIJA (crtež za radionicu)
+   ═══════════════════════════════════════════════════════════ */
+function generateNalog(){
+  pgGather();
+  if(!pgSteel()){alert('Radni nalog postoji samo za čeličnu konstrukciju — izaberite „Konstr. uz objekat" ili „Samostojeća" u sekciji Način montaže.');return;}
+  if(pgS.pergs.some(p=>p.w<50||p.p<50||isNaN(p.w)||isNaN(p.p))){alert('Unesite validne dimenzije (min 50 cm).');return;}
+  if(pgS.wallHeight<100){alert('Unesite validnu visinu (min 100 cm).');return;}
+  const tw=pgTW(),H=pgS.wallHeight,spc=pgSteelP(),pmm=pgS.steelProfile,n=pgS.steelPosts,colH=H-spc,xs=pgSteelXs();
+  const id=genId('NK'),d=ds(),pn=document.getElementById('pg_projectName').value.trim();
+  const ralTxt='RAL '+pgS.ralDisplay,ralHex=RAL_HEX[pgS.ralDisplay]||RAL_HEX[pgS.ral]||'#383E42';
+  const CW=1600;
+  const y0=105,pnH=pn?42:0,frameY=y0+pnH+12;
+  const vy=frameY+58,viewH=560;
+  const ty=vy+viewH+40;
+  const byBar=ty+300+26;
+  const CH=byBar+44+300;
+
+  document.getElementById('placeholderNalog').style.display='none';
+  document.getElementById('canvasNalog').style.display='block';
+  document.getElementById('pg_btnNalogExport').style.display='flex';
+  document.getElementById('pg_btnNalogPDF').style.display='flex';
+  document.getElementById('pg_btnShare').style.display='flex';
+  switchView('nalog',document.getElementById('pg_viewNalogBtn'));
+
+  const c=initCanvas('canvasNalog',CW,CH);
+  docHeader(c,CW,'RADNI NALOG — ČELIČNA KONSTRUKCIJA',pgS.mount==='samostojeca'?'SAMOSTOJEĆA':'UZ OBJEKAT',id,d);
+  projInfo(c,CW,y0,pn);
+  const frameB=CH-75;
+  sheetFrame(c,16,frameY,CW-32,frameB-frameY);
+  paperGrid(c,17,frameY+1,CW-34,frameB-frameY-2);
+
+  /* ── FRONTALNI POGLED KONSTRUKCIJE ── */
+  secTitle(c,40,vy-10,'IZGLED KONSTRUKCIJE — FRONTALNO');
+  const vw=880;
+  const sc=Math.min((vw-160)/tw,(viewH-170)/H);
+  const sx=48+(vw-tw*sc)/2,gY=vy+44+H*sc,bY=gY-H*sc,bH=Math.max(11,spc*sc),colW=Math.max(11,spc*sc);
+  ground(c,sx-46,sx+tw*sc+46,gY);
+  // greda
+  c.fillStyle='#475569';c.fillRect(sx,bY,tw*sc,bH);
+  c.strokeStyle='#1e293b';c.lineWidth=2;c.strokeRect(sx,bY,tw*sc,bH);
+  if(bH>=13){c.fillStyle='#fff';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`GREDA — CEV ${pmm}×${pmm} mm — L = ${tw} cm`,sx+tw*sc/2,bY+bH/2+4);}
+  // stubovi + ankerne ploče + varovi
+  xs.forEach((kx,i)=>{
+    const cx=sx+kx*sc;
+    c.fillStyle='#64748b';c.fillRect(cx-colW/2,bY+bH,colW,gY-6-(bY+bH));
+    c.strokeStyle='#1e293b';c.lineWidth=1.6;c.strokeRect(cx-colW/2,bY+bH,colW,gY-6-(bY+bH));
+    c.fillStyle='#1e293b';c.fillRect(cx-colW/2-8,gY-6,colW+16,6);
+    [-1,1].forEach(dir=>{
+      const wx2=cx+dir*colW/2,wy2=bY+bH;
+      c.fillStyle='#e94560';c.beginPath();c.moveTo(wx2,wy2);c.lineTo(wx2+dir*7,wy2);c.lineTo(wx2,wy2+7);c.closePath();c.fill();
+    });
+    c.fillStyle='#1e293b';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';c.fillText('K'+(i+1),cx,gY+20);
+  });
+  // leader: var
+  {const cx=sx+xs[0]*sc;
+   c.strokeStyle='#e94560';c.lineWidth=1.4;c.beginPath();c.moveTo(cx+colW/2+4,bY+bH+5);c.lineTo(cx+colW/2+46,bY+bH+44);c.stroke();
+   c.fillStyle='#e94560';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='left';c.fillText('VAR — ugaoni šav po obimu',cx+colW/2+50,bY+bH+49);}
+  // leader: stub
+  {const cx=sx+xs[n-1]*sc;
+   c.strokeStyle='#334155';c.lineWidth=1.2;c.beginPath();c.moveTo(cx-colW/2-4,(bY+gY)/2);c.lineTo(cx-colW/2-40,(bY+gY)/2-16);c.stroke();
+   c.fillStyle='#334155';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='right';c.fillText(`STUB — CEV ${pmm}×${pmm} mm`,cx-colW/2-44,(bY+gY)/2-20);}
+  dimH(c,sx,bY-30,sx+tw*sc,`${tw}`);
+  for(let i=0;i<n-1;i++)dimH(c,sx+xs[i]*sc,gY+40,sx+xs[i+1]*sc,`${Math.round(xs[i+1]-xs[i])}`);
+  dimV(c,sx+tw*sc+36,bY,gY,`${H}`);
+  dimV(c,sx-36,bY+bH,gY,`stub ${colH}`);
+  c.fillStyle='#6b7280';c.font='italic 11px Segoe UI,sans-serif';c.textAlign='left';
+  c.fillText(pgS.mount==='samostojeca'?'Samostojeća konstrukcija — stubovi ankerisani u temelj/podlogu.':'Konstrukcija se postavlja uz objekat (uz zid) — bez oslanjanja na fasadu.',40,gY+66);
+  c.fillText('Sve mere u cm. Visina stuba = ukupna visina − profil grede ('+H+' − '+Math.round(spc)+' = '+colH+' cm).',40,gY+84);
+
+  /* ── DETALJ SPOJA GREDA–STUB ── */
+  secTitle(c,980,vy-10,'DETALJ SPOJA GREDA–STUB');
+  const dcx=1250,dtY=vy+66,dbW=420,dbH=96,dcW=96,dcH=200;
+  c.fillStyle='#475569';c.fillRect(dcx-dbW/2,dtY,dbW,dbH);
+  c.strokeStyle='#1e293b';c.lineWidth=2.5;c.strokeRect(dcx-dbW/2,dtY,dbW,dbH);
+  c.fillStyle='#fff';c.font='bold 15px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`GREDA ${pmm}×${pmm}`,dcx,dtY+dbH/2+5);
+  c.fillStyle='#64748b';c.fillRect(dcx-dcW/2,dtY+dbH,dcW,dcH);
+  c.strokeStyle='#1e293b';c.lineWidth=2.5;c.strokeRect(dcx-dcW/2,dtY+dbH,dcW,dcH);
+  c.save();c.translate(dcx,dtY+dbH+dcH/2);c.rotate(-Math.PI/2);c.fillStyle='#fff';c.font='bold 15px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`STUB ${pmm}×${pmm}`,0,5);c.restore();
+  [-1,1].forEach(dir=>{
+    const wx2=dcx+dir*dcW/2,wy2=dtY+dbH;
+    c.fillStyle='#e94560';c.beginPath();c.moveTo(wx2,wy2);c.lineTo(wx2+dir*22,wy2);c.lineTo(wx2,wy2+22);c.closePath();c.fill();
+  });
+  c.strokeStyle='#e94560';c.lineWidth=1.6;c.beginPath();c.moveTo(dcx+dcW/2+16,dtY+dbH+16);c.lineTo(dcx+dcW/2+78,dtY+dbH+58);c.stroke();
+  c.fillStyle='#e94560';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
+  c.fillText('ugaoni šav',dcx+dcW/2+82,dtY+dbH+56);c.fillText('po celom obimu',dcx+dcW/2+82,dtY+dbH+74);
+  c.fillStyle='#334155';c.font='13px Segoe UI,sans-serif';c.textAlign='left';
+  ['• Greda naleže ODOZGO na stubove — variti po celom','   obimu naleganja (ugaoni šav).','• Varove obrusiti/očistiti pre farbanja.','• Dno stuba: ankerna ploča + 4 ankera po stubu.'].forEach((t,i)=>c.fillText(t,1000,dtY+dbH+dcH+38+i*22));
+
+  /* ── SASTAVNICA ── */
+  secTitle(c,40,ty-10,'SASTAVNICA — POTREBAN MATERIJAL');
+  const tx=40,tblW=760,rh2=34,colsW=[60,240,240,130,90];
+  const heads=['POZ','NAZIV','PROFIL / MATERIJAL','DUŽINA','KOM'];
+  const rows2=[
+    ['1','Stub konstrukcije',`cev ${pmm}×${pmm} mm`,`${colH} cm`,`${n}`],
+    ['2','Greda (poprečna)',`cev ${pmm}×${pmm} mm`,`${tw} cm`,'1'],
+    ['3','Ankerna ploča','lim min. 200×200×8 mm','—',`${n}`],
+    ['4','Anker / vijak','M12 ili hemijski anker','—',`${4*n}`]
+  ];
+  let ry2=ty+8;
+  c.fillStyle='#1a1a2e';c.fillRect(tx,ry2,tblW,rh2);
+  c.fillStyle='#fff';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='left';
+  {let cxx=tx;heads.forEach((h2,i)=>{c.fillText(h2,cxx+12,ry2+22);cxx+=colsW[i];});}
+  ry2+=rh2;
+  rows2.forEach((r,i)=>{
+    c.fillStyle=i%2?'#f8f9fa':'#fff';c.fillRect(tx,ry2,tblW,rh2);
+    c.strokeStyle='#e5e7eb';c.lineWidth=1;c.strokeRect(tx,ry2,tblW,rh2);
+    c.fillStyle='#1a1a2e';c.font=(i<2?'bold ':'')+'13px Segoe UI,sans-serif';
+    let cxx=tx;r.forEach((v,j)=>{c.fillText(v,cxx+12,ry2+22);cxx+=colsW[j];});
+    ry2+=rh2;
+  });
+  const totM=((n*colH+tw)/100).toFixed(1);
+  c.fillStyle='#e94560';c.fillRect(tx,ry2,tblW,rh2);
+  c.fillStyle='#fff';c.font='bold 13px Segoe UI,sans-serif';
+  c.fillText(`UKUPNO CEVI ${pmm}×${pmm}: ≈ ${totM} m  (+ rezerva za sečenje)`,tx+12,ry2+22);
+
+  /* ── REDOSLED RADA ── */
+  secTitle(c,860,ty-10,'REDOSLED RADA');
+  const steps=[
+    `1. Iseći cevi ${pmm}×${pmm} na meru: ${n}× stub ${colH} cm, 1× greda ${tw} cm.`,
+    `2. Zavariti ankerne ploče na dno stubova.`,
+    pgS.mount==='samostojeca'
+      ?`3. Ankerisati stubove u temelj/podlogu — proveriti vertikalnost (libela).`
+      :`3. Postaviti stubove uz objekat i ankerisati — proveriti vertikalnost (libela).`,
+    `4. Postaviti gredu ODOZGO na stubove — proveriti ravnost i naleganje.`,
+    `5. Zavariti gredu za stubove — ugaoni šav po celom obimu naleganja.`,
+    `6. Obrusiti varove, odmastiti i ofarbati.`
+  ];
+  c.textAlign='left';
+  let syY=ty+30;
+  steps.forEach(s=>{c.fillStyle='#1a1a2e';c.font='13px Segoe UI,sans-serif';c.fillText(s,860,syY);syY+=30;});
+  c.fillStyle=ralHex;c.fillRect(860,syY-2,18,18);c.strokeStyle='#9ca3af';c.lineWidth=1;c.strokeRect(860,syY-2,18,18);
+  c.fillStyle='#1a1a2e';c.font='bold 13px Segoe UI,sans-serif';c.fillText(`Boja konstrukcije: ${ralTxt}`,886,syY+12);
+
+  /* ── TRAKA SA KLJUČNIM PODACIMA ── */
+  c.fillStyle='#1a1a2e';c.fillRect(17,byBar,CW-34,44);
+  c.fillStyle='rgba(255,255,255,.85)';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
+  const bits=[`Profil: cev ${pmm}×${pmm} mm`,`Stubova: ${n} (visina ${colH} cm)`,`Greda: ${tw} cm — zavarena odozgo`,`Boja: ${ralTxt}`];
+  const spn=(CW-80)/bits.length;
+  bits.forEach((b,i)=>c.fillText(b,44+i*spn,byBar+28));
+
+  titleBlock(c,CW,CH,[
+    ['Dokument','Radni nalog — konstrukcija'],
+    ['Projekat',pn||'—'],
+    ['Izvedba',pgS.mount==='samostojeca'?'Samostojeća':'Uz objekat'],
+    ['Profil',`cev ${pmm}×${pmm} mm`],
+    ['Br. naloga',id],
     ['Datum',d]
   ]);
   docFooter(c,CW,CH,id,d);
