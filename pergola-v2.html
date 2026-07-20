@@ -960,6 +960,7 @@ function pgDrawBocni(c,ox,oy,w,h,mP){
     c.strokeStyle='#0f172a';c.lineWidth=1.5;c.strokeRect(kx-bs/2,wTY,bs,bs);
     c.fillStyle='#475569';c.fillRect(kx-bs/2,wTY+bs,bs,gY-wTY-bs);
     c.strokeStyle='#1e293b';c.lineWidth=1.2;c.strokeRect(kx-bs/2,wTY+bs,bs,gY-wTY-bs);
+    c.fillStyle='#1e293b';c.fillRect(kx-bs*.9,gY-5,bs*1.8,5);
     c.strokeStyle='#e94560';c.lineWidth=2;c.beginPath();c.moveTo(kx-bs/2-4,wTY+bs);c.lineTo(kx+bs/2+4,wTY+bs);c.stroke();
     c.fillStyle='#1e293b';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='left';
     c.fillText(`GREDA ${pgS.steelProfile}×${pgS.steelProfile} mm — zavarena`,kx+bs/2+8,wTY+bs/2+4);
@@ -1210,6 +1211,7 @@ function generate3D(){
     pgSteelXs().forEach(kx=>{
       const kpi=pgPiAtX(kx);
       box(kx-spc/2,0,zOffs[kpi],spc,pgS.wallHeight-spc,spc,sTop,sFront,sSide,sLine);
+      box(kx-spc,0,zOffs[kpi],spc*2,2,spc,'#334155','#1e293b','#0f172a','#0f172a'); // stopa
     });
     for(let pi=0;pi<pgS.count;pi++){
       const bx0=pgXOff(pi)-(pi===0?spc/2:pgGap(pi-1)/2),bx1=pgXOff(pi)+pgS.pergs[pi].w+(pi===pgS.count-1?spc/2:pgGap(pi)/2);
@@ -1484,10 +1486,12 @@ function generateNalog(){
   const tw=pgTW(),H=pgS.wallHeight,spc=pgSteelP(),pmm=pgS.steelProfile,n=pgS.steelPosts,colH=H-spc,xs=pgSteelXs();
   const id=genId('NK'),d=ds(),pn=document.getElementById('pg_projectName').value.trim();
   const ralTxt='RAL '+pgS.ralDisplay,ralHex=RAL_HEX[pgS.ralDisplay]||RAL_HEX[pgS.ral]||'#383E42';
+  const plMM=pmm+100,holeD=14,rast=plMM-70; // stopa: profil + 100 mm, rupe 35 mm od ivice
   const CW=1600;
   const y0=105,pnH=pn?42:0,frameY=y0+pnH+12;
   const vy=frameY+58,viewH=560;
-  const ty=vy+viewH+40;
+  const syD=vy+viewH+34,stH=330;
+  const ty=syD+stH+40;
   const byBar=ty+300+26;
   const CH=byBar+44+300;
 
@@ -1527,6 +1531,9 @@ function generateNalog(){
     });
     c.fillStyle='#1e293b';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';c.fillText('K'+(i+1),cx,gY+20);
   });
+  // leader: stopa
+  {const cx=sx+xs[0]*sc;
+   c.fillStyle='#1e293b';c.font='italic 11px Segoe UI,sans-serif';c.textAlign='right';c.fillText('stopa',cx-colW/2-12,gY-8);}
   // leader: var
   {const cx=sx+xs[0]*sc;
    c.strokeStyle='#e94560';c.lineWidth=1.4;c.beginPath();c.moveTo(cx+colW/2+4,bY+bH+5);c.lineTo(cx+colW/2+46,bY+bH+44);c.stroke();
@@ -1560,7 +1567,58 @@ function generateNalog(){
   c.fillStyle='#e94560';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
   c.fillText('ugaoni šav',dcx+dcW/2+82,dtY+dbH+56);c.fillText('po celom obimu',dcx+dcW/2+82,dtY+dbH+74);
   c.fillStyle='#334155';c.font='13px Segoe UI,sans-serif';c.textAlign='left';
-  ['• Greda naleže ODOZGO na stubove — variti po celom','   obimu naleganja (ugaoni šav).','• Varove obrusiti/očistiti pre farbanja.','• Dno stuba: ankerna ploča + 4 ankera po stubu.'].forEach((t,i)=>c.fillText(t,1000,dtY+dbH+dcH+38+i*22));
+  ['• Greda naleže ODOZGO na stubove — variti po celom','   obimu naleganja (ugaoni šav).','• Varove obrusiti/očistiti pre farbanja.','• Dno stuba: stopa sa 4 ankera — vidi detalj stope.'].forEach((t,i)=>c.fillText(t,1000,dtY+dbH+dcH+38+i*22));
+
+  /* ── DETALJ STOPE (ankerna ploča) ── */
+  secTitle(c,40,syD-6,'DETALJ STOPE — ANKERNA PLOČA');
+  {
+    // Pogled odozgo
+    const sc2=Math.min(200/plMM,1.1);
+    const px0=190,pcy=syD+160,ps=plMM*sc2,ts=pmm*sc2;
+    c.fillStyle='#e2e8f0';c.fillRect(px0-ps/2,pcy-ps/2,ps,ps);
+    c.strokeStyle='#1e293b';c.lineWidth=2;c.strokeRect(px0-ps/2,pcy-ps/2,ps,ps);
+    c.fillStyle='#64748b';c.fillRect(px0-ts/2,pcy-ts/2,ts,ts);
+    c.strokeStyle='#e94560';c.lineWidth=2.5;c.strokeRect(px0-ts/2,pcy-ts/2,ts,ts);
+    const off2=(plMM/2-35)*sc2,hr=(holeD/2)*sc2;
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([qx,qy])=>{
+      c.beginPath();c.arc(px0+qx*off2,pcy+qy*off2,hr,0,Math.PI*2);
+      c.fillStyle='#fff';c.fill();c.strokeStyle='#1e293b';c.lineWidth=1.5;c.stroke();
+    });
+    c.strokeStyle='#e94560';c.lineWidth=1.3;c.beginPath();c.moveTo(px0+ts/2+2,pcy-ts/2-2);c.lineTo(px0+ts/2+38,pcy-ts/2-30);c.stroke();
+    c.fillStyle='#e94560';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='left';c.fillText('var po obimu cevi',px0+ts/2+42,pcy-ts/2-28);
+    dimH(c,px0-ps/2,pcy+ps/2+28,px0+ps/2,`${plMM} mm`);
+    dimV(c,px0-ps/2-28,pcy-ps/2,pcy+ps/2,`${plMM} mm`);
+    dimH(c,px0-off2,pcy-ps/2-24,px0+off2,`${rast}`);
+    c.fillStyle='#6b7280';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText('POGLED ODOZGO',px0,syD+26);
+  }
+  {
+    // Presek
+    const bx0=580,bgY=syD+256,cw2=44,pw2=110,pth=9;
+    c.fillStyle='#64748b';c.fillRect(bx0-cw2/2,syD+46,cw2,bgY-pth-(syD+46));
+    c.strokeStyle='#1e293b';c.lineWidth=1.8;c.strokeRect(bx0-cw2/2,syD+46,cw2,bgY-pth-(syD+46));
+    [-1,1].forEach(dir=>{const ax=bx0+dir*(pw2/2-14);
+      c.strokeStyle='#1e293b';c.lineWidth=2.5;c.beginPath();c.moveTo(ax,bgY-pth-10);c.lineTo(ax,bgY+34);c.stroke();
+      c.fillStyle='#1e293b';c.fillRect(ax-5,bgY-pth-14,10,4);
+    });
+    c.fillStyle='#334155';c.fillRect(bx0-pw2/2,bgY-pth,pw2,pth);
+    c.strokeStyle='#0f172a';c.lineWidth=1.5;c.strokeRect(bx0-pw2/2,bgY-pth,pw2,pth);
+    [-1,1].forEach(dir=>{const wx2=bx0+dir*cw2/2,wy2=bgY-pth;
+      c.fillStyle='#e94560';c.beginPath();c.moveTo(wx2,wy2);c.lineTo(wx2+dir*10,wy2);c.lineTo(wx2,wy2-10);c.closePath();c.fill();});
+    ground(c,bx0-120,bx0+120,bgY);
+    c.fillStyle='#6b7280';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText('PRESEK',bx0,syD+26);
+    c.fillStyle='#334155';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='left';
+    c.fillText(`STOPA ${plMM}×${plMM}×10`,bx0+pw2/2+12,bgY-14);
+    c.fillText('anker M12',bx0+pw2/2+12,bgY+26);
+    c.fillStyle='#64748b';c.fillText(`STUB ${pmm}×${pmm}`,bx0+cw2/2+12,syD+70);
+  }
+  c.fillStyle='#334155';c.font='13px Segoe UI,sans-serif';c.textAlign='left';
+  [`• Stopa: lim ${plMM}×${plMM} mm, debljina 8–10 mm — centrirati cev i zavariti po celom obimu (crveno).`,
+   `• 4 rupe Ø${holeD} mm za ankere M12 — raster rupa ${rast}×${rast} mm (35 mm od ivice ploče).`,
+   `• Ankerisati u beton (min. C20/25) — mehanički ili hemijski anker.`,
+   pgS.mount==='samostojeca'
+     ?'• Samostojeća konstrukcija: stope ankerisati u temeljne stope / armiranu betonsku podlogu.'
+     :'• Konstrukcija uz objekat: stope ankerisati u postojeću podlogu uz zid objekta.'
+  ].forEach((t,i)=>c.fillText(t,780,syD+66+i*28));
 
   /* ── SASTAVNICA ── */
   secTitle(c,40,ty-10,'SASTAVNICA — POTREBAN MATERIJAL');
@@ -1569,8 +1627,8 @@ function generateNalog(){
   const rows2=[
     ['1','Stub konstrukcije',`cev ${pmm}×${pmm} mm`,`${colH} cm`,`${n}`],
     ['2','Greda (poprečna)',`cev ${pmm}×${pmm} mm`,`${tw} cm`,'1'],
-    ['3','Ankerna ploča','lim min. 200×200×8 mm','—',`${n}`],
-    ['4','Anker / vijak','M12 ili hemijski anker','—',`${4*n}`]
+    ['3','Stopa (ankerna ploča)',`lim ${plMM}×${plMM}×10 mm`,'—',`${n}`],
+    ['4','Anker M12',`Ø${holeD} — mehanički / hemijski`,'—',`${4*n}`]
   ];
   let ry2=ty+8;
   c.fillStyle='#1a1a2e';c.fillRect(tx,ry2,tblW,rh2);
@@ -1593,7 +1651,7 @@ function generateNalog(){
   secTitle(c,860,ty-10,'REDOSLED RADA');
   const steps=[
     `1. Iseći cevi ${pmm}×${pmm} na meru: ${n}× stub ${colH} cm, 1× greda ${tw} cm.`,
-    `2. Zavariti ankerne ploče na dno stubova.`,
+    `2. Zavariti stope (${plMM}×${plMM} mm) na dno stubova — var po celom obimu.`,
     pgS.mount==='samostojeca'
       ?`3. Ankerisati stubove u temelj/podlogu — proveriti vertikalnost (libela).`
       :`3. Postaviti stubove uz objekat i ankerisati — proveriti vertikalnost (libela).`,
