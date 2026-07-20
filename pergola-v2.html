@@ -181,7 +181,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
         <div class="form-section">
           <div class="form-section-title">&#9670; Tip pergole</div>
-          <div class="type-selector">
+          <div class="type-selector" id="pg_typeSel">
             <div class="type-option active" data-type="bioklimatska" onclick="pgSelectType(this)"><span class="type-icon">&#9776;</span><span class="type-name">Bioklimatska</span></div>
             <div class="type-option" data-type="ravna" onclick="pgSelectType(this)"><span class="type-icon">&#9644;</span><span class="type-name">Ravna 3D</span></div>
             <div class="type-option" data-type="klasicna" onclick="pgSelectType(this)"><span class="type-icon">&#9651;</span><span class="type-name">Klasična</span></div>
@@ -189,8 +189,30 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         </div>
 
         <div class="form-section">
+          <div class="form-section-title">&#9670; Način montaže / Noseća konstrukcija</div>
+          <div class="type-selector" id="pg_mountSel">
+            <div class="type-option active" data-mount="zid" onclick="pgSelectMount(this)"><span class="type-icon">&#127968;</span><span class="type-name">Na zid</span></div>
+            <div class="type-option" data-mount="uzobjekat" onclick="pgSelectMount(this)"><span class="type-icon">&#127959;</span><span class="type-name">Konstr. uz objekat</span></div>
+            <div class="type-option" data-mount="samostojeca" onclick="pgSelectMount(this)"><span class="type-icon">&#9961;</span><span class="type-name">Samostojeća</span></div>
+          </div>
+          <div class="toggle-fields" id="pg_steelFields">
+            <div style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:8px">Čelična konstrukcija — cev 100×100, greda zavarena odozgo na stubove:</div>
+            <div class="form-row">
+              <div class="form-group"><label>Broj stubova konstrukcije</label>
+                <div class="num-selector" id="pg_steelPostsSel">
+                  <div class="num-option active" data-sp="2" onclick="pgSelectSteelPosts(this)">2</div>
+                  <div class="num-option" data-sp="3" onclick="pgSelectSteelPosts(this)">3</div>
+                </div>
+              </div>
+              <div class="form-group"><label>Profil cevi <span class="unit">(mm)</span></label><input type="number" id="pg_steelProfile" value="100" min="60" max="200" step="10"></div>
+            </div>
+            <div class="info-note" id="pg_steelNote"></div>
+          </div>
+        </div>
+
+        <div class="form-section">
           <div class="form-section-title">&#9670; Broj pergola u nizu</div>
-          <div class="num-selector">
+          <div class="num-selector" id="pg_countSel">
             <div class="num-option active" data-count="1" onclick="pgSelectCount(this)">1</div>
             <div class="num-option" data-count="2" onclick="pgSelectCount(this)">2</div>
             <div class="num-option" data-count="3" onclick="pgSelectCount(this)">3</div>
@@ -353,7 +375,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
 <script>
 /* ═══ STATE ═══ */
-let pgS={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back'};
+let pgS={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back',mount:'zid',steelPosts:2,steelProfile:100};
 const PG_TL={bioklimatska:'Bioklimatska pergola (pokretne lamele)',ravna:'Ravna pergola (3D Blockout platno)',klasicna:'Klasična pergola sa padom'};
 const PG_ML={bioklimatska:'Pokretne lamele',ravna:'3D Blockout platno',klasicna:'3D Blockout platno'};
 const RAL_HEX={'7016':'#383E42','9005':'#0A0A0A','9016':'#F1F0EA','7035':'#C5C7C4','8017':'#44322D','custom':'#383E42'};
@@ -368,8 +390,17 @@ function switchView(v,btn){
 }
 
 /* ═══ UI HANDLERS ═══ */
-function pgSelectType(el){document.querySelectorAll('.type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.type=el.dataset.type;}
-function pgSelectCount(el){document.querySelectorAll('.num-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.count=parseInt(el.dataset.count);pgBuildDims();document.getElementById('sharedPostSection').style.display=pgS.count>1?'block':'none';}
+function pgSelectType(el){document.querySelectorAll('#pg_typeSel .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.type=el.dataset.type;}
+function pgSelectCount(el){document.querySelectorAll('#pg_countSel .num-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.count=parseInt(el.dataset.count);pgBuildDims();document.getElementById('sharedPostSection').style.display=pgS.count>1?'block':'none';}
+function pgSelectMount(el){document.querySelectorAll('#pg_mountSel .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.mount=el.dataset.mount;pgMountUI();}
+function pgSelectSteelPosts(el){document.querySelectorAll('#pg_steelPostsSel .num-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.steelPosts=parseInt(el.dataset.sp);}
+function pgMountUI(){
+  const steel=pgS.mount!=='zid';
+  document.getElementById('pg_steelFields').classList.toggle('visible',steel);
+  if(steel)document.getElementById('pg_steelNote').textContent=pgS.mount==='samostojeca'
+    ?'Samostojeći objekat: čelična konstrukcija nosi zadnju stranu pergole — 2 ili 3 stuba ankerisana u temelj, greda zavarena odozgo. Polje „Visina na zidu" predstavlja visinu vrha konstrukcije.'
+    :'Konstrukcija se postavlja uz objekat: 2 ili 3 stuba uz zid sa gredom zavarenom odozgo — pergola kreće od te grede, bez oslanjanja na fasadu.';
+}
 function pgSelectColor(el){document.querySelectorAll('#pg_colors .color-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.ral=el.dataset.ral;document.getElementById('pg_customRalWrap').classList.toggle('visible',el.dataset.ral==='custom');}
 function pgSelectTube(el){document.querySelectorAll('#pg_tubeOptions .tube-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.wallTubeProfile=el.dataset.profile;const isC=el.dataset.profile==='custom';document.getElementById('pg_tubeCustomFields').style.display=isC?'block':'none';if(!isC){const p=el.dataset.profile.split('x');pgS.wallTubeH=parseInt(p[0])/10;pgS.wallTubeW=parseInt(p[1])/10;}}
 function pgToggleWallBase(){const c=document.getElementById('pg_hasWallBase').checked;pgS.hasWallBase=c;document.getElementById('pg_wallBaseFields').classList.toggle('visible',c);pgCalcWallBase();}
@@ -405,7 +436,7 @@ function pgBuildDims(){
 pgBuildDims();
 
 /* ═══ PERSIST ═══ */
-const PG_FIELDS=['pg_wallHeight','pg_passHeight','pg_postsPerPergola','pg_postW','pg_postD','pg_projectName','pg_notes','pg_customRal','pg_wallBaseH','pg_postHeight','pg_tubeW','pg_tubeH','pg_drain','pg_ceradaBoja'];
+const PG_FIELDS=['pg_wallHeight','pg_passHeight','pg_postsPerPergola','pg_postW','pg_postD','pg_projectName','pg_notes','pg_customRal','pg_wallBaseH','pg_postHeight','pg_tubeW','pg_tubeH','pg_drain','pg_ceradaBoja','pg_steelProfile'];
 function pgSnapshot(){
   const fv={};
   PG_FIELDS.forEach(f=>{const e=document.getElementById(f);if(e)fv[f]=e.value;});
@@ -415,8 +446,11 @@ function pgSnapshot(){
 }
 function pgApply(d){
   if(!d||!d.s)return;const s=d.s,fv=d.f||{};
-  if(s.type){pgS.type=s.type;document.querySelectorAll('.type-option').forEach(o=>o.classList.toggle('active',o.dataset.type===pgS.type));}
-  if(s.count){pgS.count=s.count;document.querySelectorAll('.num-option').forEach(o=>o.classList.toggle('active',parseInt(o.dataset.count)===pgS.count));pgBuildDims();document.getElementById('sharedPostSection').style.display=pgS.count>1?'block':'none';}
+  if(s.type){pgS.type=s.type;document.querySelectorAll('#pg_typeSel .type-option').forEach(o=>o.classList.toggle('active',o.dataset.type===pgS.type));}
+  if(s.count){pgS.count=s.count;document.querySelectorAll('#pg_countSel .num-option').forEach(o=>o.classList.toggle('active',parseInt(o.dataset.count)===pgS.count));pgBuildDims();document.getElementById('sharedPostSection').style.display=pgS.count>1?'block':'none';}
+  pgS.mount=s.mount||'zid';document.querySelectorAll('#pg_mountSel .type-option').forEach(o=>o.classList.toggle('active',o.dataset.mount===pgS.mount));
+  pgS.steelPosts=s.steelPosts||2;document.querySelectorAll('#pg_steelPostsSel .num-option').forEach(o=>o.classList.toggle('active',parseInt(o.dataset.sp)===pgS.steelPosts));
+  pgMountUI();
   if(s.ral){pgS.ral=s.ral;document.querySelectorAll('#pg_colors .color-option').forEach(o=>o.classList.toggle('active',o.dataset.ral===pgS.ral));document.getElementById('pg_customRalWrap').classList.toggle('visible',pgS.ral==='custom');}
   pgS.sharedPost=s.sharedPost!==false;document.getElementById('pg_sharedPost').checked=pgS.sharedPost;
   pgS.hasWallBase=!!s.hasWallBase;document.getElementById('pg_hasWallBase').checked=pgS.hasWallBase;document.getElementById('pg_wallBaseFields').classList.toggle('visible',pgS.hasWallBase);
@@ -539,6 +573,7 @@ function pgWarnings(){
     if(span>450)w.push(`P${i+1}: raspon između stubova ${Math.round(span)} cm prelazi 450 cm — preporučen dodatni stub ili ojačani profil.`);
   });
   if(pgS.type==='klasicna'){const sl=parseFloat(pgSl());if(sl>0&&sl<5)w.push(`Pad krova ${sl}% je manji od preporučenih 5% za siguran odvod vode.`);}
+  if(pgSteel()){const n=pgS.steelPosts||2,span=n>1?(pgTW()-pgSteelP())/(n-1):pgTW();if(span>600)w.push(`Čelična konstrukcija: raspon grede između stubova ${Math.round(span)} cm prelazi 600 cm — preporučen treći stub ili jači profil grede.`);}
   return w;
 }
 function pgRenderWarnings(){
@@ -549,8 +584,8 @@ function pgRenderWarnings(){
 }
 
 /* ═══ POČETNI EKRAN ═══ */
-const PG_DEF_S={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back'};
-const PG_DEF_F={pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',pg_postW:'12',pg_postD:'12',pg_projectName:'',pg_notes:'',pg_customRal:'',pg_wallBaseH:'40',pg_postHeight:'190',pg_tubeW:'40',pg_tubeH:'80',pg_drain:'none',pg_ceradaBoja:'',pw_0:'500',pp_0:'400',pm_0:'none',pw_1:'500',pp_1:'400',pm_1:'none',pw_2:'500',pp_2:'400',pm_2:'none',pg_gap_0:'0',pg_gap_1:'0'};
+const PG_DEF_S={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back',mount:'zid',steelPosts:2,steelProfile:100};
+const PG_DEF_F={pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',pg_postW:'12',pg_postD:'12',pg_projectName:'',pg_notes:'',pg_customRal:'',pg_wallBaseH:'40',pg_postHeight:'190',pg_tubeW:'40',pg_tubeH:'80',pg_drain:'none',pg_ceradaBoja:'',pg_steelProfile:'100',pw_0:'500',pp_0:'400',pm_0:'none',pw_1:'500',pp_1:'400',pm_1:'none',pw_2:'500',pp_2:'400',pm_2:'none',pg_gap_0:'0',pg_gap_1:'0'};
 function pgStartClose(){document.getElementById('pg_startOverlay').classList.remove('visible');}
 function pgStartNew(){pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F});pgSaveState();pgStartClose();}
 function pgStartContinue(){pgLoadState();pgStartClose();}
@@ -589,6 +624,7 @@ function pgGather(){
   pgS.showPrice=document.getElementById('pg_showPrice').checked;
   pgS.hasWallTube=document.getElementById('pg_hasWallTube').checked;
   if(pgS.hasWallTube&&pgS.wallTubeProfile==='custom'){pgS.wallTubeH=parseInt(document.getElementById('pg_tubeH').value||100)/10;pgS.wallTubeW=parseInt(document.getElementById('pg_tubeW').value||40)/10;}
+  pgS.steelProfile=parseInt(document.getElementById('pg_steelProfile').value)||100;
   pgS.ceradaBoja=document.getElementById('pg_ceradaBoja').value.trim();
   pgS.motorSides=[];for(let i=0;i<pgS.count;i++){const el=document.getElementById('pm_'+i);pgS.motorSides.push(el?el.value:'none');}
   pgS.gaps=[];for(let i=0;i<pgS.count-1;i++){const el=document.getElementById('pg_gap_'+i);pgS.gaps.push(el?(parseInt(el.value)||0):0);}
@@ -613,6 +649,10 @@ function pgPP(){
       if(si===0&&joinPrev)continue;
       pos.push({x:gx,pi,sh:joinNext&&si===pp-1});}}
   return pos;}
+function pgSteel(){return pgS.mount==='uzobjekat'||pgS.mount==='samostojeca';}
+function pgSteelP(){return (pgS.steelProfile||100)/10;} // profil cevi u cm
+function pgSteelXs(){const n=pgS.steelPosts||2,tw=pgTW(),sp=pgSteelP();const xs=[];for(let i=0;i<n;i++)xs.push(n===1?tw/2:sp/2+((tw-sp)/(n-1))*i);return xs;}
+function pgPiAtX(x){for(let i=0;i<pgS.count;i++){if(x<=pgXOff(i)+pgS.pergs[i].w+(i<pgS.count-1?pgGap(i)/2:1e9))return i;}return pgS.count-1;}
 
 /* ═══ UTILS ═══ */
 function genId(pre){const n=new Date();return `${pre}-${String(n.getFullYear()).slice(-2)}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}${String(Math.floor(Math.random()*100)).padStart(2,'0')}`;}
@@ -668,7 +708,7 @@ function pgSpecData(){
   const drainTxt={none:'—',left:'levi ugaoni stub',right:'desni ugaoni stub',both:'oba ugaona stuba'}[pgS.drain]||'—';
   const kon=[['Tip',PG_TL[pgS.type]],['Pokrivač',PG_ML[pgS.type]],['Boja konstrukcije','RAL '+pgS.ralDisplay],['Boja cerade/platna',pgS.ceradaBoja||'—'],['Stubovi',`${tp} kom — ${pgS.postW}×${pgS.postD} cm`]];
   if(pgS.count>1){const anyGap=pgGapSum()>0;kon.push(['Spoj pergola',anyGap?'razmaknute':(pgS.sharedPost?'zajednički stub':'odvojeni stubovi')]);}
-  const mere=[['Ukupna širina',`${tw} cm`],['Projekcija (max)',`${mp} cm`],['Visina na zidu',`${pgS.wallHeight} cm`],['Prolazna visina',`${pgS.passHeight} cm — do oluka`]];
+  const mere=[['Ukupna širina',`${tw} cm`],['Projekcija (max)',`${mp} cm`],[pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina na zidu',`${pgS.wallHeight} cm`],['Prolazna visina',`${pgS.passHeight} cm — do oluka`]];
   if(pgS.type==='klasicna')mere.push(['Pad krova',`${sl} %`]);
   mere.push(['Površina',`${ta.toFixed(2)} m²`]);
   const det=[
@@ -681,8 +721,9 @@ function pgSpecData(){
     ['Zidna cev',pgS.hasWallTube?`DA — ${pgS.wallTubeH*10}×${pgS.wallTubeW*10} mm`:'NE'],
     ['Odvod vode',drainTxt],
     ['Motor',(pgS.motorSides&&pgS.motorSides.some(m=>m!=='none'))?pgS.motorSides.map((m,i)=>m!=='none'?`P${i+1}: ${m==='levo'?'leva':'desna'}`:'').filter(Boolean).join(', '):'—'],
-    ['Montaža','uz objekat (zid)']
+    ['Montaža',{zid:'uz objekat (zid)',uzobjekat:'čelična konstrukcija uz objekat',samostojeca:'samostojeća — čelična konstrukcija'}[pgS.mount||'zid']]
   );
+  if(pgSteel())det.push(['Čel. konstrukcija',`${pgS.steelPosts} stuba — cev ${pgS.steelProfile}×${pgS.steelProfile} mm, greda zavarena odozgo`]);
   return{kon,mere,det};
 }
 function pgDrawSpec(c,ox,oy,w){
@@ -804,6 +845,7 @@ function pgDrawTlocrt(c,ox,oy,w,h,tW,mP){
   const offs=pgS.pergs.map((_,i)=>pgZOff(i)),anyOff=pgZDiff();
   // Zid — jedna traka kad su sve uz zid, po pergoli kad su zadnje ivice pomerene
   c.strokeStyle='#9ca3af';c.lineWidth=0.8;
+  if(pgS.mount!=='samostojeca'){
   if(!anyOff){
     c.fillStyle='#d1d5db';c.fillRect(sx-10,sy-14,dW+20,14);
     for(let hx=sx-10;hx<sx+dW+10;hx+=6){c.beginPath();c.moveTo(hx,sy-14);c.lineTo(hx+8,sy);c.stroke();}
@@ -816,6 +858,25 @@ function pgDrawTlocrt(c,ox,oy,w,h,tW,mP){
       for(let hx=wx0;hx<wx1;hx+=6){c.beginPath();c.moveTo(hx,wy-14);c.lineTo(hx+8,wy);c.stroke();}
       c.fillStyle='#6b7280';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.fillText('ZID',(wx0+wx1)/2,wy-4);
     }
+  }
+  }
+  // Čelična konstrukcija — greda (traka) + stubovi K1..K3 na zadnjoj liniji
+  if(pgSteel()){
+    const bt=Math.max(7,pgSteelP()*sc);
+    for(let pi=0;pi<pgS.count;pi++){
+      const bx0=sx+pgXOff(pi)*sc-(pi===0?4:pgGap(pi-1)*sc/2),bx1=sx+(pgXOff(pi)+pgS.pergs[pi].w)*sc+(pi===pgS.count-1?4:pgGap(pi)*sc/2),by=sy+offs[pi]*sc;
+      const ry=pgS.mount==='samostojeca'?by-bt:by;
+      c.fillStyle='#475569';c.fillRect(bx0,ry,bx1-bx0,bt);
+      c.strokeStyle='#1e293b';c.lineWidth=1.5;c.strokeRect(bx0,ry,bx1-bx0,bt);
+      if(pi===0&&bt>=9){c.fillStyle='#fff';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`ČELIČNA GREDA ${pgS.steelProfile}×${pgS.steelProfile} mm`,(bx0+bx1)/2,ry+bt/2+3.5);}
+    }
+    const ks=Math.max(pgSteelP()*sc+4,10);
+    pgSteelXs().forEach((kx,i)=>{
+      const kpi=pgPiAtX(kx),by=sy+offs[kpi]*sc,cy=pgS.mount==='samostojeca'?by-bt/2:by+bt/2,cx=sx+kx*sc;
+      c.fillStyle='#1e293b';c.fillRect(cx-ks/2,cy-ks/2,ks,ks);
+      c.strokeStyle='#e94560';c.lineWidth=1.5;c.strokeRect(cx-ks/2,cy-ks/2,ks,ks);
+      c.fillStyle='#1e293b';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.fillText('K'+(i+1),cx,cy+ks/2+11);
+    });
   }
   if(pgS.hasWallTube){
     c.font='bold 10px Segoe UI,sans-serif';
@@ -874,7 +935,22 @@ function pgDrawBocni(c,ox,oy,w,h,mP){
   const sc=Math.min(dh/(pgS.wallHeight+30),dw/mP)*.82;
   const wH=pgS.wallHeight*sc,pH=pgS.passHeight*sc,pW=mP*sc;
   const gY=dy+wH+20,wTY=gY-wH,pTY=gY-pH,wX=dx+20,sX=wX+pW;
-  ground(c,wX-30,sX+60,gY);wallHatch(c,wX-20,wTY-40,20,wH+40);
+  ground(c,wX-30,sX+60,gY);
+  if(pgS.mount!=='samostojeca')wallHatch(c,wX-20,wTY-40,20,wH+40);
+  // Čelična konstrukcija — stub 100×100 sa gredom zavarenom odozgo (vrh grede = visina montaže)
+  if(pgSteel()){
+    const bs=Math.max(9,pgSteelP()*sc);
+    const kx=pgS.mount==='samostojeca'?wX:wX+bs/2+1;
+    c.fillStyle='#334155';c.fillRect(kx-bs/2,wTY,bs,bs);
+    c.strokeStyle='#0f172a';c.lineWidth=1.5;c.strokeRect(kx-bs/2,wTY,bs,bs);
+    c.fillStyle='#475569';c.fillRect(kx-bs/2,wTY+bs,bs,gY-wTY-bs);
+    c.strokeStyle='#1e293b';c.lineWidth=1.2;c.strokeRect(kx-bs/2,wTY+bs,bs,gY-wTY-bs);
+    c.strokeStyle='#e94560';c.lineWidth=2;c.beginPath();c.moveTo(kx-bs/2-4,wTY+bs);c.lineTo(kx+bs/2+4,wTY+bs);c.stroke();
+    c.fillStyle='#1e293b';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='left';
+    c.fillText(`GREDA ${pgS.steelProfile}×${pgS.steelProfile} mm — zavarena`,kx+bs/2+8,wTY+bs/2+4);
+    const lxx=pgS.mount==='samostojeca'?kx-bs/2-10:kx+bs/2+12;
+    c.save();c.translate(lxx,(wTY+gY)/2+30);c.rotate(-Math.PI/2);c.textAlign='center';c.fillText(`ČELIČNI STUB ${pgS.steelProfile}×${pgS.steelProfile} mm`,0,0);c.restore();
+  }
   // Zidić
   if(pgS.hasWallBase){
     const wbH=pgS.wallBaseH*sc,wbW=20*sc;
@@ -908,7 +984,7 @@ function pgDrawBocni(c,ox,oy,w,h,mP){
   c.fillStyle='#374151';c.fillRect(sX-9,oTop,18,oBot-oTop);
   c.strokeStyle='#1a1a2e';c.lineWidth=1.2;c.strokeRect(sX-9,oTop,18,oBot-oTop);
   c.fillStyle='#374151';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='left';c.fillText('OLUK',sX+14,(oTop+oBot)/2+3);
-  if(!pgS.hasWallTube){c.fillStyle='#4b5563';c.fillRect(wX,wTY-4,14,8);}
+  if(!pgS.hasWallTube&&!pgSteel()){c.fillStyle='#4b5563';c.fillRect(wX,wTY-4,14,8);}
   if(pgS.type==='klasicna'){const mRX=(roofStartX+sX)/2,mRY=(wTY+roofFY)/2,a=Math.atan2(roofFY-wTY,sX-roofStartX);c.save();c.translate(mRX,mRY-16);c.rotate(a);c.fillStyle='#e94560';c.font='bold 14px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`pad: ${pgSl()}%`,0,0);c.restore();}
   dimH(c,wX,wTY-rT-28,sX,`${mP}`);dimV(c,wX-34,wTY,gY,`${pgS.wallHeight}`);
   if(!pgS.hasWallBase)dimV(c,sX+20,pTY,gY,`${pgS.passHeight}`);
@@ -927,9 +1003,21 @@ function pgDrawBocni(c,ox,oy,w,h,mP){
 function pgDrawFront(c,ox,oy,w,h,tW){
   c.save();secTitle(c,ox,oy-8,'FRONTALNI POGLED');
   const m={t:40,r:70,b:100,l:40},dw=w-m.l-m.r,dh=h-m.t-m.b,dx=ox+m.l,dy=oy+m.t;
-  const sc=Math.min(dw/tW,dh/(pgS.passHeight+20))*.85,dW=tW*sc,dpH=pgS.passHeight*sc;
-  const sx=dx+(dw-dW)/2,gY=dy+dpH+20,tY=gY-dpH;
+  const topRef=pgSteel()?Math.max(pgS.passHeight,pgS.wallHeight):pgS.passHeight;
+  const sc=Math.min(dw/tW,dh/(topRef+20))*.85,dW=tW*sc,dpH=pgS.passHeight*sc;
+  const sx=dx+(dw-dW)/2,gY=dy+topRef*sc+20,tY=gY-dpH;
   ground(c,sx-30,sx+dW+30,gY);
+  // Čelična konstrukcija iza pergole — skrivene ivice (isprekidano)
+  if(pgSteel()){
+    const bs=Math.max(6,pgSteelP()*sc),sTY=gY-pgS.wallHeight*sc;
+    c.save();c.setLineDash([6,4]);c.strokeStyle='#64748b';c.lineWidth=1.6;
+    c.strokeRect(sx,sTY,dW,bs);
+    pgSteelXs().forEach(kx=>{const cx=sx+kx*sc;c.strokeRect(cx-bs/2,sTY+bs,bs,gY-sTY-bs);});
+    c.setLineDash([]);
+    c.fillStyle='#64748b';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='left';
+    c.fillText(`ČELIČNA KONSTRUKCIJA ${pgS.steelProfile}×${pgS.steelProfile} mm — ${pgS.steelPosts} stuba (iza)`,sx,sTY-6);
+    c.restore();
+  }
   const oH2=16;
   // Oluk i zidić — po pergoli (razmak ostaje prazan)
   {let fo=0;for(let pi=0;pi<pgS.count;pi++){
@@ -995,12 +1083,13 @@ function generate3D(){
   const c=initCanvas('canvas3d',CW,CH);
   docHeader(c,CW,'3D TEHNIČKI PRIKAZ PERGOLE',PG_TL[pgS.type].toUpperCase(),id,d);
   let y=projInfo(c,CW,105,pn);if(!pn)y=105;
-  const dl=[`Širina: ${tw} cm`,`Projekcija: ${mp} cm`,`Visina na zidu: ${pgS.wallHeight} cm`,`Prolazna visina: ${pgS.passHeight} cm (do oluka)`];
+  const dl=[`Širina: ${tw} cm`,`Projekcija: ${mp} cm`,`${pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina na zidu'}: ${pgS.wallHeight} cm`,`Prolazna visina: ${pgS.passHeight} cm (do oluka)`];
   if(pgS.hasWallTube)dl.push(`Zidna cev: ${pgS.wallTubeH*10}×${pgS.wallTubeW*10} mm`);
+  if(pgSteel())dl.push(`Čelična konstrukcija: ${pgS.steelPosts} stuba, cev ${pgS.steelProfile}×${pgS.steelProfile} mm`);
   const kl=[`Pergola: ${pgS.count}`,`Stubova: ${tp}`,`Stub: ${pgS.postW}×${pgS.postD} cm`,`Površina: ${ta.toFixed(2)} m²`];
   y=infoBlock(c,CW,y,'DIMENZIJE',dl,'KONSTRUKCIJA',kl);
   if(notes){c.fillStyle='#6b7280';c.font='italic 14px Segoe UI,sans-serif';c.fillText('Napomena: '+notes,30,y+18);y+=30;}
-  y=matBar(c,CW,y,['Materijal: Aluminijum','Boja: RAL '+pgS.ralDisplay,'Tip: '+PG_ML[pgS.type]]);
+  y=matBar(c,CW,y,['Materijal: Aluminijum'+(pgSteel()?' + čelik':''),'Boja: RAL '+pgS.ralDisplay,'Tip: '+PG_ML[pgS.type]]);
   const price3=pgPrice();
   if(pgS.showPrice&&price3>0){
     c.fillStyle='#e94560';c.fillRect(0,y,CW,46);
@@ -1080,6 +1169,7 @@ function generate3D(){
 
   // Zid (laka šrafura) — po pergoli kad su zadnje ivice pomerene (objekti različite dubine)
   const zOffs=pgS.pergs.map((_,i)=>pgZOff(i)),anyZOff=pgZDiff();
+  if(pgS.mount!=='samostojeca'){
   if(!anyZOff){
     poly([p(0,0,0),p(tw,0,0),p(tw,pgS.wallHeight,0),p(0,pgS.wallHeight,0)],'#e8e8ec','#b0b0b8',1);
     c.strokeStyle='rgba(150,150,170,.4)';c.lineWidth=.5;
@@ -1095,6 +1185,24 @@ function generate3D(){
       c.fillStyle='#6b7280';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';
       const wMid=p((x0+x1)/2,pgS.wallHeight*.82,zo);c.fillText('ZID',wMid.x,wMid.y);
     }
+  }
+  }
+
+  // Čelična konstrukcija — stubovi 100×100 sa gredom zavarenom odozgo (vrh = visina montaže)
+  if(pgSteel()){
+    const spc=pgSteelP();
+    const sTop='#94a3b8',sFront='#64748b',sSide='#475569',sLine='#1e293b';
+    pgSteelXs().forEach(kx=>{
+      const kpi=pgPiAtX(kx);
+      box(kx-spc/2,0,zOffs[kpi],spc,pgS.wallHeight-spc,spc,sTop,sFront,sSide,sLine);
+    });
+    for(let pi=0;pi<pgS.count;pi++){
+      const bx0=pgXOff(pi)-(pi===0?spc/2:pgGap(pi-1)/2),bx1=pgXOff(pi)+pgS.pergs[pi].w+(pi===pgS.count-1?spc/2:pgGap(pi)/2);
+      box(bx0,pgS.wallHeight-spc,zOffs[pi],bx1-bx0,spc,spc,sTop,sFront,sSide,sLine);
+    }
+    const kp=p(pgS.pergs[0].w/2,pgS.wallHeight-spc/2,zOffs[0]+spc);
+    c.fillStyle='#fff';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';
+    c.fillText(`ČELIK ${pgS.steelProfile}×${pgS.steelProfile}`,kp.x,kp.y+4);
   }
 
   // Zidna cev — prati zadnju ivicu svake pergole
