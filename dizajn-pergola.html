@@ -39,6 +39,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 .app-header .logo-icon { width: 44px; height: 44px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; }
 .app-header h1 { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
 .app-header .subtitle { font-size: 11px; opacity: 0.7; letter-spacing: 0.5px; }
+.unit-switch { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); }
+.unit-switch-label { font-size: 10px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.8px; margin-right: 2px; font-weight: 600; }
+.unit-btn { padding: 6px 14px; border: none; border-radius: 7px; background: transparent; color: rgba(255,255,255,0.55); font-family: var(--font); font-size: 12px; font-weight: 700; cursor: pointer; transition: var(--transition); }
+.unit-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.unit-btn.active { background: var(--accent); color: #fff; }
 
 .product-tabs { display: flex; gap: 0; background: var(--primary); border-bottom: 3px solid var(--accent); overflow-x: auto; }
 .product-tab { padding: 14px 28px; color: rgba(255,255,255,0.5); font-size: 13px; font-weight: 600; cursor: pointer; transition: var(--transition); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.5px; border: none; background: none; font-family: var(--font); position: relative; }
@@ -137,6 +142,11 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
 
 <header class="app-header">
   <div class="logo"><div class="logo-icon">P</div><div><h1>PROHORECA AG GROUP</h1><div class="subtitle">Generator Tehničkih Crteža</div></div></div>
+  <div class="unit-switch" title="Jedinica kota na crtežu (unos uvek ostaje u cm)">
+    <span class="unit-switch-label">Kote na crtežu</span>
+    <button class="unit-btn active" data-unit="cm" onclick="setUnits('cm',event)">cm</button>
+    <button class="unit-btn" data-unit="mm" onclick="setUnits('mm',event)">mm</button>
+  </div>
 </header>
 
 <div class="product-tabs">
@@ -318,7 +328,33 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
    GLOBAL HELPERS
    ═══════════════════════════════════════════════════════════ */
 let currentProduct = 'pergola';
+
+/* ═══ JEDINICE MERE ═══
+   Sav interni proračun i svi unosi ostaju u CENTIMETRIMA.
+   Konverzija se radi samo na prikazu (crteži, stats, 3D kote). */
+let UNITS = 'cm';
+let lastGenerator = null;   // pamti poslednji crtež da ga precrtamo pri promeni jedinice
+let lastDrawingId = null;   // ID poslednjeg crteža
+let keepId = null;          // kad je postavljen, genId vraća isti ID (precrtavanje)
+
+function setUnits(u, evt) {
+  if (UNITS === u) return;
+  UNITS = u;
+  document.querySelectorAll('.unit-btn').forEach(b => b.classList.toggle('active', b.dataset.unit === u));
+  // Precrtaj isti crtež u novoj jedinici - ID crteža mora ostati isti
+  if (lastGenerator) { keepId = lastDrawingId; lastGenerator(); keepId = null; }
+}
+/* Broj u trenutnoj jedinici (cm -> cm|mm) */
+function uv(cm) { return UNITS === 'mm' ? Math.round(cm * 10) : cm; }
+/* Isto, ali kao string - koristi se u kotama */
+function us(cm) { return String(uv(cm)); }
+/* String sa oznakom jedinice, npr. "630 cm" */
+function usu(cm) { return uv(cm) + ' ' + UNITS; }
+/* Decimalna vrednost (npr. za pad krova ili nagib) */
+function uvf(cm, dec) { return (UNITS === 'mm' ? cm * 10 : cm).toFixed(dec == null ? 0 : dec); }
+
 function switchProduct(p, evt) {
+  lastGenerator = null;
   currentProduct = p;
   document.querySelectorAll('.product-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.product-panel').forEach(t => t.classList.remove('active'));
@@ -329,7 +365,12 @@ function switchProduct(p, evt) {
   document.getElementById('outputCanvas').style.display = 'none';
   document.querySelectorAll('.btn-export, .btn-whatsapp').forEach(b => b.style.display = 'none');
 }
-function genId(pre) { const n=new Date(); return `${pre}-${String(n.getFullYear()).slice(-2)}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}${String(Math.floor(Math.random()*100)).padStart(2,'0')}`; }
+function genId(pre) {
+  if (keepId) return keepId;
+  const n=new Date();
+  lastDrawingId = `${pre}-${String(n.getFullYear()).slice(-2)}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}${String(Math.floor(Math.random()*100)).padStart(2,'0')}`;
+  return lastDrawingId;
+}
 function ds() { const n=new Date(); return `${String(n.getDate()).padStart(2,'0')}.${String(n.getMonth()+1).padStart(2,'0')}.${n.getFullYear()}.`; }
 function exportCurrentPNG() { const c=document.getElementById('outputCanvas'),a=document.createElement('a'); a.download=genId(currentProduct==='pergola'?'PG':currentProduct==='sliding'?'SL':'GL')+'.png'; a.href=c.toDataURL('image/png'); a.click(); }
 async function sharePNG() { const c=document.getElementById('outputCanvas'); try { const b=await new Promise(r=>c.toBlob(r,'image/png')); const f=new File([b],'tehnicki-crtez.png',{type:'image/png'}); if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'PROHORECA AG GROUP'});}else{exportCurrentPNG();} } catch(e){exportCurrentPNG();} }
@@ -339,8 +380,8 @@ function setStat(i,v,l) { document.getElementById('stat'+i).textContent=v; docum
 
 /* Canvas helpers */
 function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();}
-function dimH(c,x1,y,x2,label){c.save();c.strokeStyle='#6b7280';c.lineWidth=1.5;c.beginPath();c.moveTo(x1,y);c.lineTo(x2,y);c.stroke();c.beginPath();c.moveTo(x1,y-6);c.lineTo(x1,y+6);c.moveTo(x2,y-6);c.lineTo(x2,y+6);c.stroke();[x1,x2].forEach((a,i)=>{c.beginPath();if(i===0){c.moveTo(a,y);c.lineTo(a+5,y-4);c.lineTo(a+5,y+4);}else{c.moveTo(a,y);c.lineTo(a-5,y-4);c.lineTo(a-5,y+4);}c.fillStyle='#6b7280';c.fill();});const mx=(x1+x2)/2;c.font='bold 14px Segoe UI, sans-serif';c.textAlign='center';const tw=c.measureText(label).width+10;c.fillStyle='#fff';c.fillRect(mx-tw/2,y-9,tw,18);c.fillStyle='#1a1a2e';c.fillText(label,mx,y+5);c.restore();}
-function dimV(c,x,y1,y2,label){c.save();c.strokeStyle='#6b7280';c.lineWidth=1.5;c.beginPath();c.moveTo(x,y1);c.lineTo(x,y2);c.stroke();c.beginPath();c.moveTo(x-6,y1);c.lineTo(x+6,y1);c.moveTo(x-6,y2);c.lineTo(x+6,y2);c.stroke();[y1,y2].forEach((a,i)=>{c.beginPath();if(i===0){c.moveTo(x,a);c.lineTo(x-4,a+5);c.lineTo(x+4,a+5);}else{c.moveTo(x,a);c.lineTo(x-4,a-5);c.lineTo(x+4,a-5);}c.fillStyle='#6b7280';c.fill();});const my=(y1+y2)/2;c.save();c.translate(x,my);c.rotate(-Math.PI/2);c.font='bold 14px Segoe UI, sans-serif';c.textAlign='center';const tw=c.measureText(label).width+10;c.fillStyle='#fff';c.fillRect(-tw/2,-9,tw,18);c.fillStyle='#1a1a2e';c.fillText(label,0,5);c.restore();c.restore();}
+function dimH(c,x1,y,x2,label){label=(typeof label==='number')?us(label):label;c.save();c.strokeStyle='#6b7280';c.lineWidth=1.5;c.beginPath();c.moveTo(x1,y);c.lineTo(x2,y);c.stroke();c.beginPath();c.moveTo(x1,y-6);c.lineTo(x1,y+6);c.moveTo(x2,y-6);c.lineTo(x2,y+6);c.stroke();[x1,x2].forEach((a,i)=>{c.beginPath();if(i===0){c.moveTo(a,y);c.lineTo(a+5,y-4);c.lineTo(a+5,y+4);}else{c.moveTo(a,y);c.lineTo(a-5,y-4);c.lineTo(a-5,y+4);}c.fillStyle='#6b7280';c.fill();});const mx=(x1+x2)/2;c.font='bold 14px Segoe UI, sans-serif';c.textAlign='center';const tw=c.measureText(label).width+10;c.fillStyle='#fff';c.fillRect(mx-tw/2,y-9,tw,18);c.fillStyle='#1a1a2e';c.fillText(label,mx,y+5);c.restore();}
+function dimV(c,x,y1,y2,label){label=(typeof label==='number')?us(label):label;c.save();c.strokeStyle='#6b7280';c.lineWidth=1.5;c.beginPath();c.moveTo(x,y1);c.lineTo(x,y2);c.stroke();c.beginPath();c.moveTo(x-6,y1);c.lineTo(x+6,y1);c.moveTo(x-6,y2);c.lineTo(x+6,y2);c.stroke();[y1,y2].forEach((a,i)=>{c.beginPath();if(i===0){c.moveTo(x,a);c.lineTo(x-4,a+5);c.lineTo(x+4,a+5);}else{c.moveTo(x,a);c.lineTo(x-4,a-5);c.lineTo(x+4,a-5);}c.fillStyle='#6b7280';c.fill();});const my=(y1+y2)/2;c.save();c.translate(x,my);c.rotate(-Math.PI/2);c.font='bold 14px Segoe UI, sans-serif';c.textAlign='center';const tw=c.measureText(label).width+10;c.fillStyle='#fff';c.fillRect(-tw/2,-9,tw,18);c.fillStyle='#1a1a2e';c.fillText(label,0,5);c.restore();c.restore();}
 function docHeader(c,CW,t1,t2,id,d){c.fillStyle='#1a1a2e';c.fillRect(0,0,CW,100);c.fillStyle='#e94560';c.fillRect(0,100,CW,5);c.fillStyle='#e94560';roundRect(c,24,18,58,58,12);c.fill();c.fillStyle='#fff';c.font='bold 32px Segoe UI, sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('P',53,49);c.textAlign='left';c.fillStyle='#fff';c.font='bold 28px Segoe UI, sans-serif';c.fillText('PROHORECA AG GROUP',96,38);c.fillStyle='rgba(255,255,255,0.7)';c.font='15px Segoe UI, sans-serif';c.fillText(t1,96,64);c.textAlign='right';c.fillStyle='#fff';c.font='bold 17px Segoe UI, sans-serif';c.fillText(t2,CW-28,38);c.fillStyle='rgba(255,255,255,0.6)';c.font='14px Segoe UI, sans-serif';c.fillText(id+'  |  '+d,CW-28,62);c.textAlign='left';c.textBaseline='alphabetic';}
 function docFooter(c,CW,CH,id,d){const fy=CH-65;c.fillStyle='#e94560';c.fillRect(0,fy-4,CW,4);c.fillStyle='#1a1a2e';c.fillRect(0,fy,CW,65);c.fillStyle='rgba(255,255,255,0.7)';c.font='14px Segoe UI, sans-serif';c.textAlign='left';c.fillText('064 89 79 242  |  Proizvedeno u Srbiji \ud83c\uddf7\ud83c\uddf8',28,fy+34);c.textAlign='center';c.fillText(id+'  |  '+d,CW/2,fy+34);c.fillStyle='rgba(255,255,255,0.5)';c.font='13px Segoe UI, sans-serif';c.textAlign='right';c.fillText('PROHORECA AG GROUP',CW-28,fy+34);c.textAlign='left';}
 function projInfo(c,CW,y,name){if(!name)return y;c.fillStyle='#e94560';c.font='bold 16px Segoe UI, sans-serif';c.textAlign='left';c.fillText('PROJEKAT:',30,y+26);c.fillStyle='#1a1a2e';c.font='bold 22px Segoe UI, sans-serif';c.fillText(name,140,y+26);return y+42;}
@@ -407,20 +448,21 @@ function generatePergola(){
   pgGather();
   if(pgS.pergs.some(p=>p.w<50||p.p<50||isNaN(p.w)||isNaN(p.p))){alert('Unesite validne dimenzije pergole (min 50 cm).');return;}
   if(pgS.wallHeight<100||pgS.passHeight<100){alert('Unesite validne visine (min 100 cm).');return;}
+  lastGenerator=generatePergola;
   const tw=pgTW(),mp=pgMP(),ta=pgTA(),sl=pgSl(),tp=pgTP();
   const id=genId('PG'),d=ds(),pn=document.getElementById('pg_projectName').value.trim(),notes=document.getElementById('pg_notes').value.trim();
   document.getElementById('statsGrid').style.display='grid';
-  setStat(1,tw,'Ukupna Širina (cm)');setStat(2,ta.toFixed(1),'Površina (m²)');setStat(3,tp,'Ukupno Stubova');setStat(4,pgS.type==='klasicna'?sl+'%':'-','Pad Krova');
+  setStat(1,us(tw),'Ukupna Širina ('+UNITS+')');setStat(2,ta.toFixed(1),'Površina (m²)');setStat(3,tp,'Ukupno Stubova');setStat(4,pgS.type==='klasicna'?sl+'%':'-','Pad Krova');
   showOutput('pg');
   const CW=1600,CH=2200,c=initCanvas(CW,CH);
 
   docHeader(c,CW,'TEHNIČKI CRTEŽ PERGOLE',PG_TL[pgS.type].toUpperCase(),id,d);
   let y=projInfo(c,CW,105,pn);if(!pn)y=105;
-  const dl=[`Ukupna širina: ${tw} cm`,`Max projekcija: ${mp} cm`,`Visina na zidu: ${pgS.wallHeight} cm`,`Prolazna visina: ${pgS.passHeight} cm`];
+  const dl=[`Ukupna širina: ${usu(tw)}`,`Max projekcija: ${usu(mp)}`,`Visina na zidu: ${usu(pgS.wallHeight)}`,`Prolazna visina: ${usu(pgS.passHeight)}`];
   if(pgS.type==='klasicna')dl.push(`Pad krova: ${sl}%`);
-  if(pgS.hasWallBase)dl.push(`Zidić: ${pgS.wallBaseH} cm + Stub: ${pgS.postHeight} cm`);
-  dl.push(pgS.pergs.map((p,i)=>`P${i+1}: ${p.w}×${p.p}`).join('  |  ')+' cm');
-  const kl=[`Pergola: ${pgS.count}`,`Stubova: ${tp}`,`Stub: ${pgS.postW}×${pgS.postD} cm`,`Površina: ${ta.toFixed(2)} m²`];
+  if(pgS.hasWallBase)dl.push(`Zidić: ${usu(pgS.wallBaseH)} + Stub: ${usu(pgS.postHeight)}`);
+  dl.push(pgS.pergs.map((p,i)=>`P${i+1}: ${us(p.w)}×${us(p.p)}`).join('  |  ')+' '+UNITS);
+  const kl=[`Pergola: ${pgS.count}`,`Stubova: ${tp}`,`Stub: ${us(pgS.postW)}×${us(pgS.postD)} ${UNITS}`,`Površina: ${ta.toFixed(2)} m²`];
   y=infoBlock(c,CW,y,'DIMENZIJE',dl,'KONSTRUKCIJA',kl);
   if(notes){c.fillStyle='#6b7280';c.font='italic 14px Segoe UI, sans-serif';c.fillText('Napomena: '+notes,30,y+18);y+=30;}
   y=matBar(c,CW,y,['Materijal: Aluminijum','Boja: RAL '+pgS.ralDisplay,'Tip: '+PG_ML[pgS.type]]);
@@ -468,8 +510,8 @@ function pgDrawTlocrt(c,ox,oy,w,h,tW,mP){
   if(pgS.count>1){c.strokeStyle='#e94560';c.lineWidth=1.5;c.setLineDash([6,4]);let jx=0;for(let pi=0;pi<pgS.count-1;pi++){jx+=pgS.pergs[pi].w*sc;c.beginPath();c.moveTo(sx+jx,sy-14);c.lineTo(sx+jx,sy+mP*sc+10);c.stroke();}c.setLineDash([]);}
   const posts=pgPP(),dpW=Math.max(pgS.postW*sc*0.6,6),dpD=Math.max(pgS.postD*sc*0.6,6);
   posts.forEach((p,i)=>{const psx=sx+p.x*sc-dpW/2,ppr=pgS.pergs[p.pi].p*sc,psy=sy+ppr-dpD/2;c.fillStyle=p.sh?'#e94560':'#1a1a2e';c.fillRect(psx,psy,dpW,dpD);c.fillStyle='#1a1a2e';c.font='bold 11px Segoe UI, sans-serif';c.textAlign='center';c.fillText(`S${i+1}`,psx+dpW/2,psy+dpD+14);});
-  dimH(c,sx,sy-32,sx+dW,`${tW}`);dimV(c,sx+dW+20,sy,sy+mP*sc,`${mP}`);
-  let bx=0;for(let pi=0;pi<pgS.count;pi++){const pw=pgS.pergs[pi].w*sc;dimH(c,sx+bx,sy+mP*sc+24,sx+bx+pw,`${pgS.pergs[pi].w}`);bx+=pw;}
+  dimH(c,sx,sy-32,sx+dW,tW);dimV(c,sx+dW+20,sy,sy+mP*sc,mP);
+  let bx=0;for(let pi=0;pi<pgS.count;pi++){const pw=pgS.pergs[pi].w*sc;dimH(c,sx+bx,sy+mP*sc+24,sx+bx+pw,pgS.pergs[pi].w);bx+=pw;}
   c.restore();
 }
 
@@ -501,9 +543,9 @@ function pgDrawBocni(c,ox,oy,w,h,mP){
     const sW=Math.max(pgS.postW*sc*0.5,8);
     c.fillStyle='#374151';c.fillRect(sX-sW/2,gY-wbH-stubH,sW,stubH);
     // Kotiranje zidića
-    dimV(c,sX+40,gY-wbH,gY,`${pgS.wallBaseH}`);
+    dimV(c,sX+40,gY-wbH,gY,pgS.wallBaseH);
     // Kotiranje stuba
-    dimV(c,sX+56,gY-wbH-stubH,gY-wbH,`${pgS.postHeight}`);
+    dimV(c,sX+56,gY-wbH-stubH,gY-wbH,pgS.postHeight);
   } else {
     const sW=Math.max(pgS.postW*sc*0.5,8);
     c.fillStyle='#374151';c.fillRect(sX-sW/2,pTY,sW,pH);
@@ -517,9 +559,9 @@ function pgDrawBocni(c,ox,oy,w,h,mP){
   const bB=pgS.type==='klasicna'?pTY:wTY;
   c.fillStyle='#4b5563';c.fillRect(sX-6,bB,12,12);c.fillRect(wX,wTY-4,14,8);
   if(pgS.type==='klasicna'){const mRX=(wX+sX)/2,mRY=(wTY+pTY)/2,a=Math.atan2(pTY-wTY,sX-wX);c.save();c.translate(mRX,mRY-16);c.rotate(a);c.fillStyle='#e94560';c.font='bold 14px Segoe UI, sans-serif';c.textAlign='center';c.fillText(`pad: ${pgSl()}%`,0,0);c.restore();}
-  dimH(c,wX,wTY-rT-28,sX,`${mP}`);
-  dimV(c,wX-34,wTY,gY,`${pgS.wallHeight}`);
-  if(!pgS.hasWallBase)dimV(c,sX+34,pTY,gY,`${pgS.passHeight}`);
+  dimH(c,wX,wTY-rT-28,sX,mP);
+  dimV(c,wX-34,wTY,gY,pgS.wallHeight);
+  if(!pgS.hasWallBase)dimV(c,sX+34,pTY,gY,pgS.passHeight);
   c.restore();
 }
 
@@ -540,7 +582,7 @@ function pgDrawFront(c,ox,oy,w,h,tW){
     c.strokeStyle='rgba(139,125,107,0.3)';c.lineWidth=0.6;
     for(let wy=gY-wbH;wy<gY;wy+=6){c.beginPath();c.moveTo(sx,wy);c.lineTo(sx+dW,wy);c.stroke();}
     c.fillStyle='#8b7d6b';c.font='bold 13px Segoe UI, sans-serif';c.textAlign='center';
-    c.fillText('ZIDIĆ '+pgS.wallBaseH+' cm',sx+dW/2,gY-wbH/2+4);
+    c.fillText('ZIDIĆ '+usu(pgS.wallBaseH),sx+dW/2,gY-wbH/2+4);
   }
 
   c.fillStyle='#374151';const bH=10;c.fillRect(sx,tY-bH,dW,bH);c.strokeStyle='#1a1a2e';c.lineWidth=1;c.strokeRect(sx,tY-bH,dW,bH);
@@ -548,8 +590,8 @@ function pgDrawFront(c,ox,oy,w,h,tW){
   const stubTopY=pgS.hasWallBase?gY-pgS.wallBaseH*sc:gY;
   posts.forEach((p,i)=>{const px=sx+p.x*sc-sWSc/2;c.fillStyle=p.sh?'#e94560':'#374151';c.fillRect(px,tY,sWSc,stubTopY-tY);c.fillStyle='#1a1a2e';c.font='bold 11px Segoe UI, sans-serif';c.textAlign='center';c.fillText(`S${i+1}`,px+sWSc/2,gY+16);});
   if(pgS.count>1){c.strokeStyle='#e94560';c.lineWidth=1.5;c.setLineDash([6,4]);let jx=0;for(let pi=0;pi<pgS.count-1;pi++){jx+=pgS.pergs[pi].w*sc;c.beginPath();c.moveTo(sx+jx,tY-bH-10);c.lineTo(sx+jx,gY+5);c.stroke();}c.setLineDash([]);}
-  dimH(c,sx,tY-bH-26,sx+dW,`${tW}`);dimV(c,sx+dW+24,tY,gY,`${pgS.passHeight}`);
-  let bx=0;for(let pi=0;pi<pgS.count;pi++){const pw=pgS.pergs[pi].w*sc;dimH(c,sx+bx,gY+32,sx+bx+pw,`P${pi+1}: ${pgS.pergs[pi].w}×${pgS.pergs[pi].p}`);bx+=pw;}
+  dimH(c,sx,tY-bH-26,sx+dW,tW);dimV(c,sx+dW+24,tY,gY,pgS.passHeight);
+  let bx=0;for(let pi=0;pi<pgS.count;pi++){const pw=pgS.pergs[pi].w*sc;dimH(c,sx+bx,gY+32,sx+bx+pw,`P${pi+1}: ${us(pgS.pergs[pi].w)}×${us(pgS.pergs[pi].p)}`);bx+=pw;}
   c.restore();
 }
 
@@ -578,17 +620,18 @@ function slGather(){slS.fields=[];for(let i=0;i<slS.count;i++)slS.fields.push({w
 function generateSliding(){
   slGather();
   if(slS.fields.some(f=>f.w<30||f.h<50||isNaN(f.w)||isNaN(f.h))){alert('Unesite validne dimenzije polja (min Š:30, V:50 cm).');return;}
+  lastGenerator=generateSliding;
   const tw=slS.fields.reduce((s,f)=>s+f.w,0),mH=Math.max(...slS.fields.map(f=>f.h)),tA=slS.fields.reduce((s,f)=>s+(f.w*f.h)/10000,0),tP=slS.fields.reduce((s,f)=>s+f.panels,0);
   const id=genId('SL'),d=ds(),pn=document.getElementById('sl_projectName').value.trim(),notes=document.getElementById('sl_notes').value.trim();
   document.getElementById('statsGrid').style.display='grid';
-  setStat(1,tw,'Ukupna Širina (cm)');setStat(2,tA.toFixed(1),'Površina (m²)');setStat(3,tP,'Ukupno Panela');setStat(4,'4+14+4','Staklo (mm)');
+  setStat(1,us(tw),'Ukupna Širina ('+UNITS+')');setStat(2,tA.toFixed(1),'Površina (m²)');setStat(3,tP,'Ukupno Panela');setStat(4,'4+14+4','Staklo (mm)');
   showOutput('sl');
   const CW=1600,CH=1400,c=initCanvas(CW,CH);
   const sysL=slS.type==='bezprag'?'KLIZNI SISTEM BEZ PRAGA':'KLIZNI SISTEM SA PRAGOM';
   docHeader(c,CW,'TEHNIČKI CRTEŽ - KLIZNO STAKLO',sysL,id,d);
   let y=projInfo(c,CW,105,pn);if(!pn)y=105;
   const fStr=slS.fields.map((f,i)=>`F${i+1}: ${f.w}×${f.h} (${f.panels}p, ${f.dir==='left'?'L':f.dir==='right'?'D':'C'})`).join('  |  ');
-  y=infoBlock(c,CW,y,'DIMENZIJE',[`Ukupna širina: ${tw} cm`,`Max visina: ${mH} cm`,fStr,`Površina: ${tA.toFixed(2)} m²`],'KONSTRUKCIJA',[`Polja: ${slS.count}`,`Ukupno panela: ${tP}`,`Staklo: duplo 4+14+4 mm`,`Boja: RAL 7016`]);
+  y=infoBlock(c,CW,y,'DIMENZIJE',[`Ukupna širina: ${usu(tw)}`,`Max visina: ${usu(mH)}`,fStr,`Površina: ${tA.toFixed(2)} m²`],'KONSTRUKCIJA',[`Polja: ${slS.count}`,`Ukupno panela: ${tP}`,`Staklo: duplo 4+14+4 mm`,`Boja: RAL 7016`]);
   if(notes){c.fillStyle='#6b7280';c.font='italic 14px Segoe UI, sans-serif';c.fillText('Napomena: '+notes,30,y+18);y+=30;}
   y=matBar(c,CW,y,['Materijal: Aluminijum','Staklo: Duplo 4+14+4 mm','Boja: RAL 7016']);
 
@@ -619,8 +662,8 @@ function generateSliding(){
     fxO+=fw;
   }
   if(slS.count>1){c.strokeStyle='#e94560';c.lineWidth=1.5;c.setLineDash([6,4]);let jx=0;for(let fi=0;fi<slS.count-1;fi++){jx+=slS.fields[fi].w*fSc;c.beginPath();c.moveTo(fSx+jx,fTy-30);c.lineTo(fSx+jx,fGy+5);c.stroke();}c.setLineDash([]);}
-  dimH(c,fSx,fTy-38,fSx+fW,`${tw}`);dimV(c,fSx+fW+20,fTy,fGy,`${mH}`);
-  let fbx=0;for(let fi=0;fi<slS.count;fi++){const fw=slS.fields[fi].w*fSc;dimH(c,fSx+fbx,fGy+28,fSx+fbx+fw,`F${fi+1}: ${slS.fields[fi].w}×${slS.fields[fi].h}`);fbx+=fw;}
+  dimH(c,fSx,fTy-38,fSx+fW,tw);dimV(c,fSx+fW+20,fTy,fGy,mH);
+  let fbx=0;for(let fi=0;fi<slS.count;fi++){const fw=slS.fields[fi].w*fSc;dimH(c,fSx+fbx,fGy+28,fSx+fbx+fw,`F${fi+1}: ${us(slS.fields[fi].w)}×${us(slS.fields[fi].h)}`);fbx+=fw;}
 
   // TLOCRT
   const tlY=fGy+80;secTitle(c,30,tlY-8,'TLOCRT (pogled odozgo)');
@@ -633,7 +676,7 @@ function generateSliding(){
     c.strokeStyle='#9ca3af';c.lineWidth=0.8;c.beginPath();c.moveTo(tfx,tlSy+6);c.lineTo(tfx+fw,tlSy+6);c.stroke();c.beginPath();c.moveTo(tfx,tlSy+tlD-6);c.lineTo(tfx+fw,tlSy+tlD-6);c.stroke();
     c.fillStyle='#e94560';c.font='bold 13px Segoe UI, sans-serif';c.textAlign='center';c.fillText(`F${fi+1}`,tfx+fw/2,tlSy+tlD/2+4);
     tlxO+=fw;}
-  dimH(c,tlSx,tlSy-18,tlSx+tlW,`${tw}`);
+  dimH(c,tlSx,tlSy-18,tlSx+tlW,tw);
   docFooter(c,CW,CH,id,d);
 }
 
@@ -652,17 +695,18 @@ function generateGuillotine(){
   if(glS.fields.some(f=>f.w<30||f.h<50||isNaN(f.w)||isNaN(f.h))){alert('Unesite validne dimenzije polja (min Š:30, V:50 cm).');return;}
   const seg=glS.type==='2seg'?2:3;
   const tw=glS.fields.reduce((s,f)=>s+f.w,0),mH=Math.max(...glS.fields.map(f=>f.h)),tA=glS.fields.reduce((s,f)=>s+(f.w*f.h)/10000,0);
+  lastGenerator=generateGuillotine;
   const segH=Math.round(mH/seg); // visina jednog segmenta = visina ograde kad je otvoreno
   const id=genId('GL'),d=ds(),pn=document.getElementById('gl_projectName').value.trim(),notes=document.getElementById('gl_notes').value.trim();
   document.getElementById('statsGrid').style.display='grid';
-  setStat(1,tw,'Ukupna Širina (cm)');setStat(2,tA.toFixed(1),'Površina (m²)');setStat(3,glS.count*seg,'Ukupno Segmenata');setStat(4,segH+' cm','Visina Ograde (otv.)');
+  setStat(1,us(tw),'Ukupna Širina ('+UNITS+')');setStat(2,tA.toFixed(1),'Površina (m²)');setStat(3,glS.count*seg,'Ukupno Segmenata');setStat(4,usu(segH),'Visina Ograde (otv.)');
   showOutput('gl');
   const CW=1600,CH=1500,c=initCanvas(CW,CH);
   const segL=glS.type==='2seg'?'GILJOTINA 2 SEGMENTA':'GILJOTINA 3 SEGMENTA';
   docHeader(c,CW,'TEHNIČKI CRTEŽ - GILJOTINA STAKLO',segL,id,d);
   let y=projInfo(c,CW,105,pn);if(!pn)y=105;
-  const fStr=glS.fields.map((f,i)=>`G${i+1}: ${f.w}×${f.h}`).join('  |  ');
-  y=infoBlock(c,CW,y,'DIMENZIJE',[`Ukupna širina: ${tw} cm`,`Max visina: ${mH} cm`,fStr+' cm',`Površina: ${tA.toFixed(2)} m²`],'KONSTRUKCIJA',[`Polja: ${glS.count}`,`Segmenata: ${seg}`,`Visina segmenta: ~${segH} cm`,`Visina ograde (otv.): ~${segH} cm`,`Staklo: duplo 4+14+4 mm`,`Boja: RAL 7016`]);
+  const fStr=glS.fields.map((f,i)=>`G${i+1}: ${us(f.w)}×${us(f.h)}`).join('  |  ');
+  y=infoBlock(c,CW,y,'DIMENZIJE',[`Ukupna širina: ${usu(tw)}`,`Max visina: ${usu(mH)}`,fStr+' '+UNITS,`Površina: ${tA.toFixed(2)} m²`],'KONSTRUKCIJA',[`Polja: ${glS.count}`,`Segmenata: ${seg}`,`Visina segmenta: ~${usu(segH)}`,`Visina ograde (otv.): ~${usu(segH)}`,`Staklo: duplo 4+14+4 mm`,`Boja: RAL 7016`]);
   if(notes){c.fillStyle='#6b7280';c.font='italic 14px Segoe UI, sans-serif';c.fillText('Napomena: '+notes,30,y+18);y+=30;}
   y=matBar(c,CW,y,['Materijal: Aluminijum','Staklo: Duplo 4+14+4 mm','Boja: RAL 7016']);
 
@@ -685,7 +729,7 @@ function generateGuillotine(){
     c.fillStyle='#e94560';c.font='bold 14px Segoe UI, sans-serif';c.textAlign='center';c.fillText(`G${fi+1}`,fx+fw/2,fy-12);
     fxO+=fw;
   }
-  dimH(c,fSx,fTy-28,fSx+fW,`${tw}`);dimV(c,fSx+fW+14,fTy,fGy,`${mH}`);
+  dimH(c,fSx,fTy-28,fSx+fW,tw);dimV(c,fSx+fW+14,fTy,fGy,mH);
 
   // ─── OTVORENO (desno) - stakla se spuste dole iza najnižeg ───
   const oX=CW/2+10;
@@ -729,7 +773,7 @@ function generateGuillotine(){
 
     // Oznaka ograde
     c.fillStyle='#e94560';c.font='bold 13px Segoe UI, sans-serif';
-    c.fillText(`OGRADA ~${segH} cm`,fx+fw/2,fenceTop+fenceH/2);
+    c.fillText(`OGRADA ~${usu(segH)}`,fx+fw/2,fenceTop+fenceH/2);
 
     // Oznaka otvorenog dela
     c.fillStyle='#10b981';c.font='bold 15px Segoe UI, sans-serif';
@@ -740,14 +784,14 @@ function generateGuillotine(){
   }
 
   // Dimenzije desno
-  dimV(c,oSx+fW+14,fGy-fH,fGy,`${mH}`);
+  dimV(c,oSx+fW+14,fGy-fH,fGy,mH);
   // Visina ograde
-  dimV(c,oSx+fW+40,fGy-fH/seg,fGy,`~${segH}`);
+  dimV(c,oSx+fW+40,fGy-fH/seg,fGy,`~${us(segH)}`);
 
   // Per-field dims ispod
   let bx1=0;
   for(let fi=0;fi<glS.count;fi++){const fw=glS.fields[fi].w*fSc;
-    dimH(c,fSx+bx1,fGy+24,fSx+bx1+fw,`G${fi+1}: ${glS.fields[fi].w}×${glS.fields[fi].h}`);bx1+=fw;}
+    dimH(c,fSx+bx1,fGy+24,fSx+bx1+fw,`G${fi+1}: ${us(glS.fields[fi].w)}×${us(glS.fields[fi].h)}`);bx1+=fw;}
 
   docFooter(c,CW,CH,id,d);
 }
