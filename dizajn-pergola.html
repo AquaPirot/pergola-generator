@@ -1542,6 +1542,181 @@ function makeLabel3D(scene,text,pos,size,color,opts){
   scene.add(sp); return sp;
 }
 
+/* ---- PROFIL LAMELE ----
+   Prava bioklimatska lamela nije kvadar nego izduzen aerodinamican
+   profil sa preklopnom usnom, da zaptiva kad se zatvori.
+   Geometrija se pravi JEDNOM i deli na sve lamele. ---- */
+function lamellaGeo(len,chord,thick){
+  chord=chord||0.115; thick=thick||0.024;
+  var c=chord/2, t=thick/2;
+  var sh=new THREE.Shape();
+  sh.moveTo(-c,0);
+  sh.lineTo(-c*0.78,t*0.92);
+  sh.lineTo(c*0.62,t);
+  sh.lineTo(c*0.94,t*0.45);
+  sh.lineTo(c,-t*0.10);          // usna za preklop
+  sh.lineTo(c*0.80,-t*0.86);
+  sh.lineTo(-c*0.70,-t);
+  sh.lineTo(-c*0.93,-t*0.40);
+  sh.closePath();
+  var geo=new THREE.ExtrudeGeometry(sh,{depth:len,bevelEnabled:false,curveSegments:4});
+  geo.translate(0,0,-len/2);
+  geo.rotateY(Math.PI/2);        // duzina lamele ide po X osi
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/* ---- HARMONIKA TENDA ----
+   Platno se provesava izmedju poprecnih rebara, a rebra se skupljaju
+   ka zidu dok se tenda uvlaci - kao na fotografijama.
+   Geometrija se azurira u mestu, ne pravi se nanovo. ---- */
+function makeAwning(scene,cx,halfW,pp,backY,frontY,drop,ribN,fabMat,ribMat){
+  var segX=2, segZ=ribN*3, i,j,k,r;
+  var geo=new THREE.BufferGeometry();
+  var nv=(segX+1)*(segZ+1);
+  var pos=new Float32Array(nv*3), uv=new Float32Array(nv*2), idx=[];
+  for(j=0;j<=segZ;j++) for(i=0;i<=segX;i++){
+    k=j*(segX+1)+i; uv[k*2]=i/segX; uv[k*2+1]=j/segZ;
+  }
+  for(j=0;j<segZ;j++) for(i=0;i<segX;i++){
+    var a=j*(segX+1)+i, b=a+1, c=a+segX+1, d=c+1;
+    idx.push(a,c,b, b,c,d);
+  }
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('uv',new THREE.BufferAttribute(uv,2));
+  geo.setIndex(idx);
+  var mesh=new THREE.Mesh(geo,fabMat);
+  mesh.castShadow=true; mesh.receiveShadow=true; mesh.frustumCulled=false;
+  scene.add(mesh);
+
+  var ribs=[];
+  for(r=0;r<ribN;r++){
+    var rb=makeBox(halfW*2+0.01,0.020,0.032,0,0,0,ribMat);
+    rb.receiveShadow=false; scene.add(rb); ribs.push(rb);
+  }
+  function yAt(zn){ return backY+(frontY-backY)*zn; }
+
+  function update(f){
+    f=Math.max(0.02,f);
+    var P=geo.attributes.position;
+    for(j=0;j<=segZ;j++){
+      var t=j/segZ;
+      var ribT=t*(ribN-1), frac=ribT-Math.floor(ribT);
+      var sag=Math.sin(frac*Math.PI)*0.048*Math.min(1,f*1.5);   // proves izmedju rebara
+      var y=yAt(t*f)-drop-sag, z=t*pp*f;
+      for(i=0;i<=segX;i++){
+        k=j*(segX+1)+i;
+        P.setXYZ(k, cx-halfW+(i/segX)*halfW*2, y, z);
+      }
+    }
+    P.needsUpdate=true;
+    geo.computeVertexNormals(); geo.computeBoundingSphere();
+    for(r=0;r<ribN;r++){
+      var tr=(ribN===1?0:r/(ribN-1));
+      ribs[r].position.set(cx, yAt(tr*f)-drop+0.009, tr*pp*f);
+      ribs[r].visible = f>0.05;
+    }
+    mesh.visible = f>0.04;
+  }
+  update(1);
+  return {mesh:mesh,ribs:ribs,update:update};
+}
+
+/* ---- ZID OBJEKTA SA OTVOROM ----
+   Bez otvora zid izgleda kao lebdeca bela ploca. Sa balkonskim
+   vratima odmah se cita kao kuca i daje merilo celoj sceni. ---- */
+function buildWallWithOpening(scene,w,h,t,cx,cz,wallMat,frameMat,op){
+  op=op||{};
+  var ow=op.w||1.6, oh=op.h||2.15, ox=(op.x==null?0:op.x), sill=op.sill||0;
+  var L=cx-w/2, R=cx+w/2;
+  var oL=cx+ox-ow/2, oR=cx+ox+ow/2;
+  if(oL<=L+0.25||oR>=R-0.25||oh+sill>=h-0.15){
+    scene.add(makeBox(w,h,t,cx,h/2,cz,wallMat));
+    return;
+  }
+  scene.add(makeBox(oL-L,h,t,(L+oL)/2,h/2,cz,wallMat));                    // levo od otvora
+  scene.add(makeBox(R-oR,h,t,(oR+R)/2,h/2,cz,wallMat));                    // desno od otvora
+  scene.add(makeBox(ow,h-sill-oh,t,cx+ox,sill+oh+(h-sill-oh)/2,cz,wallMat));// nadvratnik
+  if(sill>0.01) scene.add(makeBox(ow,sill,t,cx+ox,sill/2,cz,wallMat));      // parapet
+  // Balkonska vrata u otvoru
+  var gm=new THREE.MeshStandardMaterial({color:0x2a3238,roughness:0.12,metalness:0.25,envMapIntensity:0.9});
+  scene.add(makeBox(ow-0.10,oh-0.10,0.03,cx+ox,sill+oh/2,cz+t/2-0.02,gm));
+  var bar=0.05;
+  scene.add(makeBox(ow,bar,t*0.55,cx+ox,sill+oh-bar/2,cz+t/2-0.01,frameMat));
+  scene.add(makeBox(ow,bar,t*0.55,cx+ox,sill+bar/2,cz+t/2-0.01,frameMat));
+  scene.add(makeBox(bar,oh,t*0.55,oL+bar/2,sill+oh/2,cz+t/2-0.01,frameMat));
+  scene.add(makeBox(bar,oh,t*0.55,oR-bar/2,sill+oh/2,cz+t/2-0.01,frameMat));
+  scene.add(makeBox(bar*0.7,oh-bar*2,t*0.5,cx+ox,sill+oh/2,cz+t/2-0.005,frameMat));
+
+  // Opcioni prozor na drugoj strani zida
+  if(op.win){
+    var ww=op.win.w, wh2=op.win.h, wx=cx+op.win.x, ws=op.win.sill;
+    scene.add(makeBox(ww-0.08,wh2-0.08,0.03,wx,ws+wh2/2,cz+t/2-0.02,gm));
+    var wb=0.045;
+    scene.add(makeBox(ww,wb,t*0.5,wx,ws+wh2-wb/2,cz+t/2-0.01,frameMat));
+    scene.add(makeBox(ww,wb,t*0.5,wx,ws+wb/2,cz+t/2-0.01,frameMat));
+    scene.add(makeBox(wb,wh2,t*0.5,wx-ww/2+wb/2,ws+wh2/2,cz+t/2-0.01,frameMat));
+    scene.add(makeBox(wb,wh2,t*0.5,wx+ww/2-wb/2,ws+wh2/2,cz+t/2-0.01,frameMat));
+    // Solbank
+    scene.add(makeBox(ww+0.10,0.035,t*0.75,wx,ws-0.018,cz+t/2-0.02,
+      new THREE.MeshStandardMaterial({color:0xd8d4cb,roughness:0.85})));
+  }
+}
+
+/* Streha kuce - venac koji prepusta preko zida. Bez nje zid
+   izgleda kao lebdeca ploca umesto kao objekat. */
+function buildEave(scene,w,overhang,atY,cx,cz,wallT){
+  var fasciaMat=new THREE.MeshStandardMaterial({color:0xe6e2d8,roughness:0.9,metalness:0});
+  var soffMat=new THREE.MeshStandardMaterial({color:0xcfcabe,roughness:0.95,metalness:0});
+  var tileMat=new THREE.MeshStandardMaterial({color:0xa8542f,roughness:0.85,metalness:0.02});
+  var zc=cz+wallT/2+overhang/2;
+  var soff=makeBox(w,0.05,overhang,cx,atY,zc,soffMat);
+  soff.castShadow=true; soff.receiveShadow=true; scene.add(soff);
+  scene.add(makeBox(w,0.14,0.06,cx,atY+0.075,cz+wallT/2+overhang,fasciaMat));
+  // Nagovestaj crepa iznad venca
+  var tl=makeBox(w,0.09,overhang*0.85,cx,atY+0.10,zc-0.02,tileMat);
+  tl.rotation.x=-0.16; tl.castShadow=true; scene.add(tl);
+}
+
+/* ---- PRESET POGLEDI ----
+   Klijent retko ume da rotira scenu; dugmad ga vode na prave uglove. ---- */
+function viewUI(camera,controls,views){
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:absolute;top:78px;left:14px;z-index:20;display:flex;gap:6px;'+
+    'background:rgba(255,255,255,0.94);padding:7px 8px;border-radius:22px;'+
+    'box-shadow:0 6px 22px rgba(0,0,0,.20);font:600 11px Segoe UI,sans-serif';
+  var anim=null;
+  views.forEach(function(v,i){
+    var btn=document.createElement('button');
+    btn.textContent=v.label;
+    btn.style.cssText='border:none;border-radius:16px;padding:6px 13px;cursor:pointer;'+
+      'font:600 11px Segoe UI,sans-serif;background:'+(i===0?'#1a1a2e':'transparent')+';'+
+      'color:'+(i===0?'#fff':'#4b5563')+';transition:background .2s,color .2s';
+    btn.addEventListener('click',function(){
+      Array.prototype.forEach.call(wrap.children,function(b,j){
+        b.style.background = j===i ? '#1a1a2e' : 'transparent';
+        b.style.color = j===i ? '#fff' : '#4b5563';
+      });
+      anim={
+        fromP:camera.position.clone(), toP:new THREE.Vector3().fromArray(v.pos),
+        fromT:controls.target.clone(), toT:new THREE.Vector3().fromArray(v.target),
+        t0:(window.performance&&performance.now?performance.now():Date.now()), dur:650
+      };
+    });
+    wrap.appendChild(btn);
+  });
+  document.body.appendChild(wrap);
+  return {tick:function(){
+    if(!anim) return;
+    var now=(window.performance&&performance.now?performance.now():Date.now());
+    var t=Math.min(1,(now-anim.t0)/anim.dur);
+    var e=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    camera.position.lerpVectors(anim.fromP,anim.toP,e);
+    controls.target.lerpVectors(anim.fromT,anim.toT,e);
+    if(t>=1) anim=null;
+  }};
+}
+
 /* ---- NEBO: gradijent + silueta drvoreda na horizontu ---- */
 function buildSky(scene,radius){
   radius=radius||80;
@@ -1621,11 +1796,11 @@ function grassTexture(rep){
 function paveTexture(cols,rows){
   var cv=document.createElement('canvas'); cv.width=256; cv.height=256;
   var ct=cv.getContext('2d');
-  ct.fillStyle='#a9a49b'; ct.fillRect(0,0,256,256);
+  ct.fillStyle='#948e85'; ct.fillRect(0,0,256,256);
   var i,x,y;
   for(i=0;i<7000;i++){
     x=Math.random()*256; y=Math.random()*256;
-    ct.fillStyle='rgba('+(140+Math.random()*60|0)+','+(136+Math.random()*58|0)+','+(128+Math.random()*54|0)+',0.5)';
+    ct.fillStyle='rgba('+(122+Math.random()*54|0)+','+(118+Math.random()*52|0)+','+(110+Math.random()*48|0)+',0.5)';
     ct.fillRect(x,y,1.4,1.4);
   }
   ct.strokeStyle='rgba(90,86,80,0.45)'; ct.lineWidth=3;
@@ -1668,7 +1843,7 @@ function glassFrosted(){
   });
 }
 function fabricMat(col){
-  return new THREE.MeshStandardMaterial({color:col||0xece7d2,roughness:0.88,metalness:0.02,side:THREE.DoubleSide});
+  return new THREE.MeshStandardMaterial({color:col||0xc9bd9e,roughness:0.95,metalness:0.0,envMapIntensity:0.12,side:THREE.DoubleSide});
 }
 
 /* ═══ CAD KOTE U 3D ═══ */
@@ -1791,7 +1966,7 @@ function animUI(label,onChange,opts){
 function baseScene(opts){
   opts=opts||{};
   var scene=new THREE.Scene();
-  scene.fog=new THREE.Fog(0xdae8f2,70,220);
+  scene.fog=new THREE.Fog(0xd2e2ee,110,300);
   var hdr=document.getElementById('header');
   var hH=hdr?hdr.offsetHeight:60;
   var cW=window.innerWidth, cH=window.innerHeight-hH;
@@ -1802,7 +1977,7 @@ function baseScene(opts){
   renderer.shadowMap.enabled=true;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=0.94;
+  renderer.toneMappingExposure=0.88;
   renderer.outputEncoding=THREE.sRGBEncoding;
   document.body.appendChild(renderer.domElement);
   var controls=new THREE.OrbitControls(camera,renderer.domElement);
@@ -1827,10 +2002,10 @@ function baseScene(opts){
     pmrem.dispose(); eqTex.dispose();
   }catch(e){ /* stariji three - radi i bez env mape */ }
 
-  scene.add(new THREE.AmbientLight(0xffffff,0.18));
-  scene.add(new THREE.HemisphereLight(0x9ec9e8,0x4a5a35,0.24));
-  var sun=new THREE.DirectionalLight(0xfff6e0,1.0);
-  sun.position.set(opts.sunX==null?7:opts.sunX,14,opts.sunZ==null?9:opts.sunZ);
+  scene.add(new THREE.AmbientLight(0xffffff,0.10));
+  scene.add(new THREE.HemisphereLight(0x9ec9e8,0x4a5a35,0.20));
+  var sun=new THREE.DirectionalLight(0xffeecd,1.32);
+  sun.position.set(opts.sunX==null?9:opts.sunX,13,opts.sunZ==null?11:opts.sunZ);
   sun.castShadow=true;
   sun.shadow.mapSize.width=2048; sun.shadow.mapSize.height=2048;
   sun.shadow.camera.near=0.5; sun.shadow.camera.far=70;
@@ -1850,6 +2025,44 @@ function baseScene(opts){
     renderer.setSize(window.innerWidth,window.innerHeight-nh);
   });
   return {scene:scene,camera:camera,renderer:renderer,controls:controls,sun:sun};
+}
+
+/* Podignuta terasa sa vidljivom ivicom i stepenicama - kao na fotografijama.
+   GORNJA POVRSINA JE NA y=0, trava je na -h, pa konstrukcija ostaje
+   u istom koordinatnom sistemu i kote se ne menjaju. */
+function buildTerrace(scene,w,d,cx,cz,h){
+  h=h||0.34;
+  var grass=new THREE.Mesh(new THREE.PlaneGeometry(200,200),
+    new THREE.MeshStandardMaterial({map:grassTexture(70),roughness:0.97,metalness:0}));
+  grass.rotation.x=-Math.PI/2; grass.position.y=-h; grass.receiveShadow=true;
+  scene.add(grass);
+
+  var sideMat=new THREE.MeshStandardMaterial({color:0x746f68,roughness:0.93,metalness:0.02});
+  var topMat=new THREE.MeshStandardMaterial({
+    map:paveTexture(Math.max(2,Math.round(w*1.5)),Math.max(2,Math.round(d*1.5))),
+    roughness:0.82,metalness:0.02});
+
+  var body=makeBox(w,h,d,cx,-h/2-0.03,cz,sideMat);
+  body.castShadow=true; body.receiveShadow=true; scene.add(body);
+  var top=makeBox(w+0.06,0.06,d+0.06,cx,-0.03,cz,topMat);
+  top.castShadow=true; top.receiveShadow=true; scene.add(top);
+
+  // Stepenice silaze sa terase ka travi
+  var nSt=Math.max(2,Math.round(h/0.17));
+  var stW=Math.min(w*0.40,2.0), stD=0.33;
+  for(var i2=0;i2<nSt;i2++){
+    var topY=-h*(i2+1)/nSt;      // gornja ravan gazista
+    var stH=topY+h;              // od gazista nadole do trave
+    if(stH<=0.01) continue;
+    var st=makeBox(stW,stH,stD,cx+w*0.16,topY-stH/2,cz+d/2+stD*(i2+0.5),topMat);
+    st.castShadow=true; st.receiveShadow=true; scene.add(st);
+  }
+  return h;
+}
+
+/* Podnozje ispod zida, da zid ne lebdi iznad trave */
+function buildWallPlinth(scene,w,h,t,cx,cz,mat){
+  var m=makeBox(w,h,t,cx,-h/2,cz,mat); m.receiveShadow=true; scene.add(m);
 }
 
 /* Teren: trava + poplocana ploca ispod konstrukcije */
@@ -2014,19 +2227,23 @@ DIM_TEXT=Math.max(0.14,Math.min(0.42,Math.max(totalW,1.5)*0.042));
 var RAL_COLORS={'7016':0x383E42,'9005':0x0A0A0A,'9016':0xF1F0EA,'7035':0xC5C7C4,'8017':0x44322D};
 var frameColor=RAL_COLORS[ral]||0x383E42;
 var frameMat=new THREE.MeshStandardMaterial({color:frameColor,roughness:0.42,metalness:0.45,envMapIntensity:0.40});
-var wallMat=new THREE.MeshStandardMaterial({map:plasterTexture(),roughness:0.95,metalness:0,envMapIntensity:0.5});
+var wallMat=new THREE.MeshStandardMaterial({map:plasterTexture(),roughness:0.96,metalness:0,envMapIntensity:0.22});
 var wallBaseMat=new THREE.MeshStandardMaterial({color:0xb8a89a,roughness:0.85});
-var canvasMat=fabricMat(0xece7d2);
+var canvasMat=fabricMat(0xc9bd9e);
 var ledMat=new THREE.MeshBasicMaterial({color:0xfff5e0});
-var ledGlowMat=new THREE.MeshBasicMaterial({color:0xfff0c8,transparent:true,opacity:0.4});
+var ledGlowMat=new THREE.MeshBasicMaterial({color:0xffeeb8,transparent:true,opacity:0.55,depthWrite:false});
 
-// Teren: trava + poplocana terasa
-buildGround(scene,totalW+0.9,maxP+0.9,totalW/2,maxP/2);
+// Teren: trava + podignuta terasa sa stepenicama
+var TERR=buildTerrace(scene,totalW+1.0,maxP+0.9,totalW/2,maxP/2-0.15,0.34);
 
-// Zid objekta
-var wallH=wH*S+0.42;
-var wMesh=makeBox(totalW+0.9,wallH,0.25,totalW/2,wallH/2-0.05,-0.13,wallMat);
-scene.add(wMesh);
+// Zid kuce sa balkonskim vratima - daje merilo i cita se kao objekat
+var wallH=wH*S+1.15, wallWd=totalW+1.9;
+buildWallPlinth(scene,wallWd,TERR+0.04,0.26,totalW/2,-0.14,wallMat);
+buildWallWithOpening(scene,wallWd,wallH,0.26,totalW/2,-0.14,wallMat,frameMat,
+  {w:Math.min(1.9,totalW*0.38),h:2.25,x:-totalW*0.17,sill:0,
+   win:{w:Math.min(1.25,totalW*0.24),h:1.25,x:totalW*0.22,sill:0.95}});
+// Streha kuce iznad pergole - bez nje zid izgleda kao lebdeca ploca
+buildEave(scene,wallWd+0.45,0.55,wallH,totalW/2,-0.14,0.26);
 
 // Pokretni delovi za animaciju
 var lamellas=[], awnings=[];
@@ -2042,114 +2259,88 @@ for(var pi=0;pi<count;pi++){
   var profileH=0.10; // profile height (10cm)
   var profileW=0.06; // profile width (6cm)
 
-  // ═══ PERIMETER FRAME ═══
-  // Back beam (at wall)
-  scene.add(makeBox(pw+0.02,profileH,profileW,xOffset+pw/2,roofBackY,0,frameMat));
-  // Front beam
-  scene.add(makeBox(pw+0.02,profileH,profileW,xOffset+pw/2,roofFrontY,pp,frameMat));
+  // ═══ NOSECE GREDE ═══
+  var beamH=0.20, beamW=0.09;                 // prednja greda je visoka, kao na slikama
+  // Zidna montazna greda + konzole
+  scene.add(makeBox(pw+0.02,0.14,0.08,xOffset+pw/2,roofBackY-0.02,0.015,frameMat));
+  var nBr=Math.max(2,Math.round(pw/1.2));
+  for(var bi=0;bi<=nBr;bi++){
+    scene.add(makeBox(0.05,0.20,0.05,xOffset+(pw/nBr)*bi,roofBackY-0.06,-0.045,frameMat));
+  }
+  // Prednja greda sa oluk profilom
+  scene.add(makeBox(pw+0.02,beamH,beamW,xOffset+pw/2,roofFrontY-beamH/2+0.05,pp,frameMat));
+  // Zaobljena kapa preko grede
+  var capGeo=new THREE.CylinderGeometry(beamW*0.52,beamW*0.52,pw+0.03,14,1,false,0,Math.PI);
+  var cap=new THREE.Mesh(capGeo,frameMat);
+  cap.rotation.z=Math.PI/2; cap.rotation.y=Math.PI/2;
+  cap.position.set(xOffset+pw/2,roofFrontY+0.05,pp);
+  cap.castShadow=true; cap.receiveShadow=true; scene.add(cap);
+  // Poklopci na krajevima grede
+  for(var ec=0;ec<2;ec++){
+    scene.add(makeBox(0.022,beamH+0.05,beamW+0.02,xOffset+(ec?pw+0.02:-0.02),roofFrontY-beamH/2+0.07,pp,frameMat));
+  }
 
-  // ═══ ROOF STRUCTURE ═══
+  // ═══ KROV ═══
   if(type==='bioklimatska'){
-    // BIOKLIMATSKA: Pokretne lamele (aluminum louvers)
-    var numLam=Math.max(8,Math.round(pp/0.12));
+    // Pokretne lamele sa pravim profilom (aerodinamican, sa usnom za preklop)
+    var numLam=Math.max(8,Math.round(pp/0.125));
+    var lamStep=pp/numLam;
+    var lamG=lamellaGeo(pw-0.05,Math.min(0.125,lamStep*1.02),0.024);
     for(var li=0;li<numLam;li++){
-      var lz=(li+0.5)*(pp/numLam);
+      var lz=(li+0.5)*lamStep;
       var ly=roofBackY-(roofBackY-roofFrontY)*(lz/pp);
-      var lamGeo=new THREE.BoxGeometry(pw-0.04,0.012,0.10);
-      var lam=new THREE.Mesh(lamGeo,frameMat);
-      lam.position.set(xOffset+pw/2,ly-profileH/2,lz);
-      lam.rotation.x=0.35;
-      lam.castShadow=true;scene.add(lam);
+      var lam=new THREE.Mesh(lamG,frameMat);
+      lam.position.set(xOffset+pw/2,ly-0.10,lz);
+      lam.castShadow=true; lam.receiveShadow=true;
+      scene.add(lam);
       lamellas.push(lam);
     }
+    // Kaseta motora na jednoj strani
+    scene.add(makeBox(0.13,0.16,pp,xOffset+pw+0.055,roofBackY-0.11,pp/2,frameMat));
+
   } else {
-    // RAVNA / KLASICNA: Rogovi + Ceradono platno + Poprečni profili sa LED
-    // Rogovi idu gde su stubovi (koliko stubova, toliko rogova)
-    // Smer: od zida (roofBackY) do oluka (roofFrontY), duž projekcije (Z osa)
-    var rafterPositions=[];
-    for(var rsi=0;rsi<ppp;rsi++){
-      var rpx;
-      if(ppp===1) rpx=xOffset+pw/2;
-      else if(ppp===2) rpx=rsi===0?xOffset:xOffset+pw;
-      else rpx=xOffset+(pw/(ppp-1))*rsi;
-      rafterPositions.push(rpx);
-    }
+    // ═══ ROGOVI + HARMONIKA TENDA ═══
+    // Rogovi se dele po sirini (na ~1 m), nezavisno od broja stubova
+    var nBays=Math.max(2,Math.round(pw/1.05));
+    var rafX=[];
+    for(var ri=0;ri<=nBays;ri++) rafX.push(xOffset+(pw/nBays)*ri);
 
-    // Gornji rogovi (ON TOP) - idu od zida (Z=0) do prednje grede (Z=pp)
-    // Rog je dugačak = pp (projekcija), visina profila ~7cm, širina ~6cm
-    for(var ri=0;ri<rafterPositions.length;ri++){
-      var rx=rafterPositions[ri];
-      // Za svaku Z poziciju duž roga, računamo Y visinu (linearna interpolacija)
-      // Rog ide od (rx, roofBackY, 0) do (rx, roofFrontY, pp)
-      var rogGeo=new THREE.BoxGeometry(0.06,0.08,pp);
-      var rogMesh=new THREE.Mesh(rogGeo,frameMat);
-      rogMesh.position.set(rx,(roofBackY+roofFrontY)/2,pp/2);
-      // Nagib roga za klasičnu (oko X ose)
-      if(type==='klasicna'){
-        rogMesh.rotation.x=Math.atan2(roofBackY-roofFrontY,pp);
-      }
-      rogMesh.castShadow=true;scene.add(rogMesh);
-    }
+    var rafH=0.15, rafW=0.070;
+    var rafLen=Math.sqrt(pp*pp+Math.pow(roofBackY-roofFrontY,2));
+    var rafAng=Math.atan2(roofBackY-roofFrontY,pp);
 
-    // Ceradono platno IZMEĐU rogova, malo ispod vrha rogova
-    var canvasDropY=0.03; // platno visi 3cm ispod vrha roga
-    for(var ci=0;ci<rafterPositions.length-1;ci++){
-      var cx1=rafterPositions[ci]+0.04;
-      var cx2=rafterPositions[ci+1]-0.04;
-      var canvasW=cx2-cx1;
-      var canvasCx=(cx1+cx2)/2;
+    for(var ri2=0;ri2<rafX.length;ri2++){
+      var rx=rafX[ri2];
+      // Rog: gornja ivica je u ravni krova, donja viri ispod platna
+      var rog=new THREE.Mesh(new THREE.BoxGeometry(rafW,rafH,rafLen),frameMat);
+      rog.position.set(rx,(roofBackY+roofFrontY)/2-rafH/2,pp/2);
+      rog.rotation.x=rafAng;
+      rog.castShadow=true; rog.receiveShadow=true; scene.add(rog);
 
-      var canvasGeo=new THREE.PlaneGeometry(canvasW,pp,1,10);
-      var posAttr=canvasGeo.attributes.position;
-      for(var vi=0;vi<posAttr.count;vi++){
-        var cvx=posAttr.getX(vi);
-        var cvy=posAttr.getY(vi);
-        // Blago provesavanje
-        var sagX=1-Math.pow(2*cvx/canvasW,2);
-        var sagZ=1-Math.pow(2*cvy/pp,2);
-        posAttr.setZ(vi,-sagX*sagZ*0.018);
-      }
-      canvasGeo.computeVertexNormals();
-      var canvasPanel=new THREE.Mesh(canvasGeo,canvasMat);
-      canvasPanel.rotation.x=-Math.PI/2;
-      if(type==='klasicna'){
-        canvasPanel.rotation.x=-Math.PI/2+Math.atan2(roofBackY-roofFrontY,pp);
-        canvasPanel.position.set(canvasCx,(roofBackY+roofFrontY)/2-canvasDropY,pp/2);
-      } else {
-        canvasPanel.position.set(canvasCx,roofBackY-canvasDropY,pp/2);
-      }
-      canvasPanel.castShadow=true;canvasPanel.receiveShadow=true;
-      scene.add(canvasPanel);
-      awnings.push({m:canvasPanel,pp:pp,backY:roofBackY,frontY:roofFrontY,drop:canvasDropY,cx:canvasCx});
-    }
-
-    // ═══ POPREČNI PROFILI ISPOD sa LED svetlima ═══
-    // Idu poprecno (X pravac), na odredjenim Z pozicijama
-    var numCross=Math.max(2,Math.round(pp/0.8));
-    var crossDrop=0.08; // koliko ispod gornjeg roga
-    for(var ci=0;ci<numCross;ci++){
-      var cz=(ci+1)*(pp/(numCross+1));
-      var cy=roofBackY-(roofBackY-roofFrontY)*(cz/pp);
-      // Poprečni profil
-      scene.add(makeBox(pw-0.02,0.04,0.035,xOffset+pw/2,cy-crossDrop,cz,frameMat));
-
-      // LED svetla
-      var numLeds=Math.max(2,Math.round(pw/0.35));
-      for(var li=0;li<numLeds;li++){
-        var lx=xOffset+0.12+(li*(pw-0.24)/(Math.max(numLeds-1,1)));
-        scene.add(makeBox(0.07,0.01,0.022,lx,cy-crossDrop-0.03,cz,ledMat));
-        var glow=makeBox(0.10,0.025,0.035,lx,cy-crossDrop-0.045,cz,ledGlowMat);
-        glow.castShadow=false;scene.add(glow);
+      // LED spotovi ugradjeni u donju stranu roga - vide se odozdo
+      var nLed=Math.max(3,Math.round(pp/0.50));
+      for(var le=0;le<nLed;le++){
+        var lt=(le+0.5)/nLed;
+        var lz2=lt*pp;
+        var ly2=roofBackY-(roofBackY-roofFrontY)*lt-rafH;   // donja ravan roga
+        // Traka mora da bude ISPOD donje ravni roga, inace je rog zaklanja
+        var led=makeBox(rafW*0.60,0.010,0.085,rx,ly2-0.004,lz2,ledMat);
+        led.castShadow=false; scene.add(led);
+        var gl=makeBox(rafW*1.15,0.022,0.145,rx,ly2-0.016,lz2,ledGlowMat);
+        gl.castShadow=false; scene.add(gl);
       }
     }
 
-    // Donji podužni profili (ispod svakog roga)
-    for(var ri=0;ri<rafterPositions.length;ri++){
-      var rx=rafterPositions[ri];
-      var underP=makeBox(0.04,0.03,pp,rx,(roofBackY+roofFrontY)/2-crossDrop,pp/2,frameMat);
-      if(type==='klasicna') underP.rotation.x=Math.atan2(roofBackY-roofFrontY,pp);
-      scene.add(underP);
+    // Platno u poljima izmedju rogova
+    var ribN=Math.max(3,Math.round(pp/0.68));
+    for(var by=0;by<rafX.length-1;by++){
+      var x1=rafX[by]+rafW/2, x2=rafX[by+1]-rafW/2;
+      var aw=makeAwning(scene,(x1+x2)/2,(x2-x1)/2,pp,
+                        roofBackY,roofFrontY,0.055,ribN,canvasMat,frameMat);
+      awnings.push(aw);
     }
+    // Kaseta u koju se platno namotava, uz zid
+    scene.add(makeBox(pw+0.02,0.17,0.19,xOffset+pw/2,roofBackY-0.10,0.115,frameMat));
   }
 
   // ═══ STUBOVI (Posts) ═══
@@ -2172,11 +2363,33 @@ for(var pi=0;pi<count;pi++){
       scene.add(makeBox(postWS*2.5,wbH*S,postDS*2.5,px,wbH*S/2,pp,wallBaseMat));
     }
 
-    // Post (stub)
-    scene.add(makeBox(postWS,postHt,postDS,px,postBaseY+postHt/2,pp,frameMat));
+    // Stub - stoji ispod prednje grede, ne do njenog vrha
+    var postTop2=postTopY-beamH+0.05;
+    scene.add(makeBox(postWS,postTop2-postBaseY,postDS,px,postBaseY+(postTop2-postBaseY)/2,pp,frameMat));
 
-    // Post cap (spoj stuba i grede)
-    scene.add(makeBox(postWS+0.02,0.03,postDS+0.04,px,postTopY-0.015,pp,frameMat));
+    // Anker ploca sa vijcima
+    scene.add(makeBox(postWS*1.55,0.018,postDS*1.55,px,postBaseY+0.009,pp,frameMat));
+    var bolt=new THREE.CylinderGeometry(0.008,0.008,0.022,8);
+    for(var bx=-1;bx<=1;bx+=2) for(var bz=-1;bz<=1;bz+=2){
+      var bm=new THREE.Mesh(bolt,frameMat);
+      bm.position.set(px+bx*postWS*0.58,postBaseY+0.026,pp+bz*postDS*0.58);
+      bm.castShadow=true; scene.add(bm);
+    }
+    // Maska spoja stuba i grede
+    scene.add(makeBox(postWS+0.028,0.05,postDS+0.028,px,postTop2-0.012,pp,frameMat));
+
+    // Olucna cev kroz krajnji stub
+    if(si===ppp-1&&pi===count-1){
+      var dpH=postTop2-postBaseY-0.10;
+      var dp=new THREE.Mesh(new THREE.CylinderGeometry(0.032,0.032,dpH,12),frameMat);
+      dp.position.set(px+postWS*0.5+0.036,postBaseY+0.05+dpH/2,pp-postDS*0.18);
+      dp.castShadow=true; scene.add(dp);
+      // Koleno ka gredi
+      var el=new THREE.Mesh(new THREE.CylinderGeometry(0.032,0.032,0.11,12),frameMat);
+      el.rotation.z=Math.PI/2;
+      el.position.set(px+postWS*0.5,postBaseY+0.05+dpH+0.03,pp-postDS*0.18);
+      el.castShadow=true; scene.add(el);
+    }
   }
   xOffset+=pw;
 }
@@ -2191,14 +2404,6 @@ if(type!=='bioklimatska'){
     scene.add(new THREE.PointLight(0xfff0c8,0.3,2.5).translateX(lxC-totalW*0.3).translateY(lyC).translateZ(lzC));
     scene.add(new THREE.PointLight(0xfff0c8,0.3,2.5).translateX(lxC+totalW*0.3).translateY(lyC).translateZ(lzC));
   }
-}
-
-// ═══ KASETA TENDE uz zid (tu se platno namotava) ═══
-for(var ai=0;ai<awnings.length;ai++){
-  var aw=awnings[ai];
-  var casW=Math.abs(aw.m.geometry.parameters.width)+0.09;
-  var cas=makeBox(casW,0.16,0.17,aw.cx,aw.backY-0.055,0.10,frameMat);
-  scene.add(cas);
 }
 
 // ═══ KOTE (CAD stil) ═══
@@ -2243,23 +2448,25 @@ var animLabel = type==='bioklimatska' ? 'Lamele' : 'Tenda';
 function applyAnim(t){
   if(type==='bioklimatska'){
     // t=0 zatvorene (ravno), t=1 otvorene (uspravno)
-    for(var k=0;k<lamellas.length;k++) lamellas[k].rotation.x=t*1.45;
+    for(var k=0;k<lamellas.length;k++) lamellas[k].rotation.x=t*1.42;
   } else {
     // t=0 tenda uvucena u kasetu, t=1 potpuno izvucena
-    var f=Math.max(0.012,t);
-    for(var k=0;k<awnings.length;k++){
-      var a=awnings[k];
-      a.m.scale.y=f;
-      a.m.position.z=a.pp*f/2;
-      a.m.position.y=a.backY-(a.backY-a.frontY)*(f/2)-a.drop;
-      a.m.visible=t>0.02;
-    }
+    for(var k=0;k<awnings.length;k++) awnings[k].update(t);
   }
 }
 var anim=animUI(animLabel,applyAnim,{start:type==='bioklimatska'?0.35:1});
 
+// Preset uglovi - klijent retko ume sam da rotira scenu
+var _cx=totalW/2, _cy=wH*S*0.35, _cz=mppM*0.45;
+var views=viewUI(camera,controls,[
+  {label:'3/4', pos:[totalW/2+totalW*0.62,Math.max(wH*S*1.38,3.0),mppM+totalW*0.55+2.8], target:[_cx,_cy,_cz]},
+  {label:'Iz bašte', pos:[-totalW*0.55,Math.max(wH*S*0.60,1.65),mppM+Math.max(totalW,mppM)*0.95], target:[_cx,wH*S*0.52,_cz*0.8]},
+  {label:'Ispod', pos:[totalW/2-totalW*0.30,pH*S*0.42,mppM*0.86], target:[_cx,wH*S*0.92,0.1]},
+  {label:'Odozgo', pos:[totalW/2+0.01,Math.max(wH*S*2.6,7.5),mppM*0.60], target:[_cx,0,_cz]}
+]);
+
 window.addEventListener('resize',function(){var rH=document.getElementById('header');var nh=rH?rH.offsetHeight:60;var nw=window.innerWidth,nch=window.innerHeight-nh;camera.aspect=nw/nch;camera.updateProjectionMatrix();renderer.setSize(nw,nch)});
-function animate(){requestAnimationFrame(animate);anim.tick();controls.update();renderer.render(scene,camera)}animate();`;
+function animate(){requestAnimationFrame(animate);anim.tick();views.tick();controls.update();renderer.render(scene,camera)}animate();`;
 
   var html = threejsBase(PG_TL[type], 'Interaktivni 3D model pergole', dimsHTML, sceneCode);
   download3DHTML(html, 'PG-3D');
