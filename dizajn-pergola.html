@@ -153,6 +153,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
   <button class="product-tab active" onclick="switchProduct('pergola',event)"><span class="tab-icon">&#9776;</span> Pergole</button>
   <button class="product-tab" onclick="switchProduct('sliding',event)"><span class="tab-icon">&#10697;</span> Klizni Stakleni Sistemi</button>
   <button class="product-tab" onclick="switchProduct('guillotine',event)"><span class="tab-icon">&#8597;</span> Giljotina Staklo</button>
+  <button class="product-tab" onclick="switchProduct('winter',event)"><span class="tab-icon">&#9962;</span> Zimska Bašta</button>
 </div>
 
 <div class="app-container">
@@ -308,6 +309,102 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); line
     </div>
   </div>
 
+    <!-- ═══ ZIMSKA BASTA (kombinovani proizvod) ═══ -->
+    <div class="product-panel" id="panel-winter">
+      <div class="card">
+        <div class="card-header"><div class="icon">&#9962;</div> Zimska Bašta</div>
+        <div class="card-body">
+          <div class="form-section">
+            <div class="form-section-title">&#9670; Projekat</div>
+            <div class="form-row single"><div class="form-group"><label>Naziv projekta / klijent</label><input type="text" id="zb_projectName" placeholder="npr. Vila Marković - terasa"></div></div>
+            <div class="form-row single"><div class="form-group"><label>Napomena</label><textarea id="zb_notes" placeholder="Dodatne informacije..."></textarea></div></div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">&#9670; Gabarit</div>
+            <div class="form-row">
+              <div class="form-group"><label>Širina <span class="unit">(cm)</span></label><input type="number" id="zb_w" value="630" min="150" max="1200" step="10"></div>
+              <div class="form-group"><label>Projekcija <span class="unit">(cm)</span></label><input type="number" id="zb_p" value="450" min="150" max="900" step="10"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Visina na zidu <span class="unit">(cm)</span></label><input type="number" id="zb_wallH" value="345" min="200" max="500"></div>
+              <div class="form-group"><label>Prednja visina <span class="unit">(cm)</span></label><input type="number" id="zb_frontH" value="260" min="180" max="450"></div>
+            </div>
+            <div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:2px" id="zb_slopeCalc">Pad krova: -</div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">&#9670; Krov</div>
+            <div class="type-selector" style="grid-template-columns:1fr 1fr">
+              <div class="type-option active" data-type="staklo" onclick="zbSelectRoof(this)"><span class="type-icon">&#9647;</span><span class="type-name">Staklo</span></div>
+              <div class="type-option" data-type="panel" onclick="zbSelectRoof(this)"><span class="type-icon">&#9644;</span><span class="type-name">Sendvič panel</span></div>
+              <div class="type-option" data-type="lamele" onclick="zbSelectRoof(this)"><span class="type-icon">&#9776;</span><span class="type-name">Lamele</span></div>
+              <div class="type-option" data-type="tenda" onclick="zbSelectRoof(this)"><span class="type-icon">&#9707;</span><span class="type-name">Tenda</span></div>
+            </div>
+            <div class="checkbox-row" id="zb_awningRow">
+              <input type="checkbox" id="zb_hasAwning" onchange="zbSync()">
+              <label for="zb_hasAwning">Dodatna tenda ispod staklenog krova</label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">&#9670; Stranice</div>
+            <div class="form-row">
+              <div class="form-group"><label>Prednja strana</label><select id="zb_front" onchange="zbSync()">
+                <option value="klizno" selected>Klizno staklo</option><option value="fiksno">Fiksno</option><option value="bez">Otvoreno</option></select></div>
+              <div class="form-group"><label>Broj polja (prednja)</label><select id="zb_frontFields">
+                <option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option></select></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Leva strana</label><select id="zb_left" onchange="zbSync()">
+                <option value="fiksno" selected>Fiksno</option><option value="klizno">Klizno</option><option value="bez">Otvoreno</option></select></div>
+              <div class="form-group"><label>Desna strana</label><select id="zb_right" onchange="zbSync()">
+                <option value="fiksno" selected>Fiksno</option><option value="klizno">Klizno</option><option value="bez">Otvoreno</option></select></div>
+            </div>
+            <div class="checkbox-row">
+              <input type="checkbox" id="zb_hasParapet" onchange="zbSync()">
+              <label for="zb_hasParapet">Mutni parapet u donjoj zoni</label>
+            </div>
+            <div class="wall-fields" id="zb_parapetFields">
+              <div class="form-row single"><div class="form-group"><label>Visina parapeta <span class="unit">(cm)</span></label><input type="number" id="zb_parapetH" value="90" min="30" max="160" step="5"></div></div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">&#9670; Ulazna vrata</div>
+            <div class="form-row">
+              <div class="form-group"><label>Strana</label><select id="zb_doorSide" onchange="zbSync()">
+                <option value="prednja" selected>Prednja</option><option value="leva">Leva</option><option value="desna">Desna</option><option value="bez">Bez vrata</option></select></div>
+              <div class="form-group"><label>Broj krila</label><select id="zb_doorLeaves"><option value="1" selected>Jednokrilna</option><option value="2">Dvokrilna</option></select></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>Širina vrata <span class="unit">(cm)</span></label><input type="number" id="zb_doorW" value="100" min="70" max="220" step="5"></div>
+              <div class="form-group"><label>Smer otvaranja</label><select id="zb_doorSwing"><option value="out" selected>Napolje</option><option value="in">Unutra</option></select></div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title">&#9670; Boja konstrukcije</div>
+            <div class="color-options" id="zb_colors">
+              <div class="color-option active" data-ral="7016" onclick="zbSelectColor(this)"><div class="color-swatch" style="background:#383E42"></div><span class="color-name">RAL 7016</span></div>
+              <div class="color-option" data-ral="9005" onclick="zbSelectColor(this)"><div class="color-swatch" style="background:#0A0A0A"></div><span class="color-name">RAL 9005</span></div>
+              <div class="color-option" data-ral="9016" onclick="zbSelectColor(this)"><div class="color-swatch" style="background:#F1F0EA"></div><span class="color-name">RAL 9016</span></div>
+              <div class="color-option" data-ral="7035" onclick="zbSelectColor(this)"><div class="color-swatch" style="background:#C5C7C4"></div><span class="color-name">RAL 7035</span></div>
+              <div class="color-option" data-ral="8017" onclick="zbSelectColor(this)"><div class="color-swatch" style="background:#44322D"></div><span class="color-name">RAL 8017</span></div>
+              <div class="color-option" data-ral="custom" onclick="zbSelectColor(this)"><div class="color-swatch" style="background:linear-gradient(135deg,#f00,#0f0,#00f)"></div><span class="color-name">Po izboru</span></div>
+            </div>
+            <div class="custom-ral-input" id="zb_customRalWrap"><div class="form-group" style="margin-top:8px"><label>RAL broj</label><input type="text" id="zb_customRal" placeholder="npr. 3020" maxlength="4"></div></div>
+          </div>
+
+          <button class="btn-generate" onclick="generateWinter()">&#9998; Generiši Tehnički Crtež</button>
+          <button class="btn-export" onclick="exportCurrentPNG()" id="zb_btnExport" style="display:none">&#128190; Preuzmi PNG</button>
+          <button class="btn-whatsapp" onclick="sharePNG()" id="zb_btnShare" style="display:none">&#128172; Podeli sliku</button>
+          <button class="btn-3d" onclick="export3DWinter()">&#127912; Generiši 3D za klijenta (HTML)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- DRAWING OUTPUT -->
   <div class="drawing-output">
     <div class="stats-grid" id="statsGrid" style="display:none">
@@ -372,7 +469,7 @@ function genId(pre) {
   return lastDrawingId;
 }
 function ds() { const n=new Date(); return `${String(n.getDate()).padStart(2,'0')}.${String(n.getMonth()+1).padStart(2,'0')}.${n.getFullYear()}.`; }
-function exportCurrentPNG() { const c=document.getElementById('outputCanvas'),a=document.createElement('a'); a.download=genId(currentProduct==='pergola'?'PG':currentProduct==='sliding'?'SL':'GL')+'.png'; a.href=c.toDataURL('image/png'); a.click(); }
+function exportCurrentPNG() { const c=document.getElementById('outputCanvas'),a=document.createElement('a'); a.download=genId(currentProduct==='pergola'?'PG':currentProduct==='sliding'?'SL':currentProduct==='guillotine'?'GL':'ZB')+'.png'; a.href=c.toDataURL('image/png'); a.click(); }
 async function sharePNG() { const c=document.getElementById('outputCanvas'); try { const b=await new Promise(r=>c.toBlob(r,'image/png')); const f=new File([b],'tehnicki-crtez.png',{type:'image/png'}); if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'PROHORECA AG GROUP'});}else{exportCurrentPNG();} } catch(e){exportCurrentPNG();} }
 
 function showOutput(prefix) { document.getElementById(prefix+'_btnExport').style.display='flex'; document.getElementById(prefix+'_btnShare').style.display='flex'; document.getElementById('placeholder').style.display='none'; document.getElementById('outputCanvas').style.display='block'; }
@@ -917,6 +1014,372 @@ function generateGuillotine(){
 }
 
 /* ═══════════════════════════════════════════════════════════
+   ZIMSKA BASTA - kombinovani proizvod
+   Krov + ostakljene stranice + ulazna vrata kao jedan sklop.
+   ═══════════════════════════════════════════════════════════ */
+let zbS={roof:'staklo',ral:'7016'};
+const ZB_ROOF_L={staklo:'Stakleni krov',panel:'Sendvič panel krov',lamele:'Bioklimatske lamele',tenda:'Tenda'};
+const ZB_SIDE_L={klizno:'Klizno staklo',fiksno:'Fiksno ostakljenje',bez:'Otvoreno'};
+
+function zbSelectRoof(el){document.querySelectorAll('#panel-winter .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');zbS.roof=el.dataset.type;zbSync();}
+function zbSelectColor(el){document.querySelectorAll('#zb_colors .color-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');zbS.ral=el.dataset.ral;document.getElementById('zb_customRalWrap').classList.toggle('visible',el.dataset.ral==='custom');}
+
+function zbSync(){
+  const wallH=parseInt(document.getElementById('zb_wallH').value)||345;
+  const frontH=parseInt(document.getElementById('zb_frontH').value)||260;
+  const proj=parseInt(document.getElementById('zb_p').value)||450;
+  const sl=proj>0?(((wallH-frontH)/proj)*100).toFixed(1):0;
+  document.getElementById('zb_slopeCalc').textContent =
+    (wallH>frontH? 'Pad krova: '+sl+'% (odvod ka prednjoj strani)' : 'Pad krova: 0% - prednja visina mora biti manja od visine na zidu');
+  document.getElementById('zb_parapetFields').classList.toggle('visible',document.getElementById('zb_hasParapet').checked);
+  document.getElementById('zb_awningRow').style.display = zbS.roof==='staklo'?'flex':'none';
+}
+['zb_wallH','zb_frontH','zb_p'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',zbSync);});
+zbSync();
+
+function zbGather(){
+  const g=id=>document.getElementById(id);
+  zbS.w=parseInt(g('zb_w').value)||630;
+  zbS.p=parseInt(g('zb_p').value)||450;
+  zbS.wallH=parseInt(g('zb_wallH').value)||345;
+  zbS.frontH=parseInt(g('zb_frontH').value)||260;
+  zbS.front=g('zb_front').value;
+  zbS.left=g('zb_left').value;
+  zbS.right=g('zb_right').value;
+  zbS.frontFields=parseInt(g('zb_frontFields').value)||4;
+  zbS.hasParapet=g('zb_hasParapet').checked;
+  zbS.parapetH=parseInt(g('zb_parapetH').value)||90;
+  zbS.hasAwning=g('zb_hasAwning').checked && zbS.roof==='staklo';
+  zbS.doorSide=g('zb_doorSide').value;
+  zbS.doorLeaves=parseInt(g('zb_doorLeaves').value)||1;
+  zbS.doorW=parseInt(g('zb_doorW').value)||100;
+  zbS.doorSwing=g('zb_doorSwing').value;
+  zbS.ralDisplay=zbS.ral==='custom'?(g('zb_customRal').value||'7016'):zbS.ral;
+}
+function zbSlope(){return zbS.p>0?(((zbS.wallH-zbS.frontH)/zbS.p)*100):0;}
+/* Kosa duzina krova (stvarna duzina rogova) */
+function zbRoofLen(){const dh=Math.max(0,zbS.wallH-zbS.frontH);return Math.sqrt(zbS.p*zbS.p+dh*dh);}
+/* Povrsina ostakljenja stranica u m2 */
+function zbGlassArea(){
+  let a=0;
+  const hAvg=(zbS.wallH+zbS.frontH)/2;
+  if(zbS.front!=='bez') a+=zbS.w*zbS.frontH/10000;
+  if(zbS.left!=='bez')  a+=zbS.p*hAvg/10000;
+  if(zbS.right!=='bez') a+=zbS.p*hAvg/10000;
+  return a;
+}
+/* Podela prednje strane: polja + eventualna vrata na desnom kraju */
+function zbFrontLayout(){
+  const items=[];
+  const hasDoor=zbS.doorSide==='prednja';
+  const dW=hasDoor?Math.min(zbS.doorW,zbS.w-60):0;
+  const rest=zbS.w-dW;
+  const n=Math.max(1,zbS.frontFields);
+  for(let i=0;i<n;i++) items.push({kind:zbS.front==='bez'?'bez':zbS.front,w:rest/n});
+  if(hasDoor) items.push({kind:'vrata',w:dW});
+  return items;
+}
+/* Podela bocne strane */
+function zbSideLayout(side){
+  const items=[];
+  const mode=side==='leva'?zbS.left:zbS.right;
+  const hasDoor=zbS.doorSide===side;
+  const dW=hasDoor?Math.min(zbS.doorW,zbS.p-40):0;
+  const rest=zbS.p-dW;
+  if(rest>0) items.push({kind:mode==='bez'?'bez':mode,w:rest});
+  if(hasDoor) items.push({kind:'vrata',w:dW});
+  return items;
+}
+
+function generateWinter(){
+  zbGather();
+  if(zbS.w<100||zbS.p<100){alert('Unesite validan gabarit (min 100 cm).');return;}
+  if(zbS.wallH<150||zbS.frontH<130){alert('Unesite validne visine.');return;}
+  if(zbS.frontH>=zbS.wallH){alert('Prednja visina mora biti manja od visine na zidu (zbog pada krova).');return;}
+  lastGenerator=generateWinter;
+
+  const fa=zbS.w*zbS.p/10000, ga=zbGlassArea(), sl=zbSlope(), rl=zbRoofLen();
+  const id=genId('ZB'),d=ds();
+  const pn=document.getElementById('zb_projectName').value.trim();
+  const notes=document.getElementById('zb_notes').value.trim();
+
+  document.getElementById('statsGrid').style.display='grid';
+  setStat(1,us(zbS.w),'Ukupna Širina ('+UNITS+')');
+  setStat(2,fa.toFixed(1),'Osnova (m²)');
+  setStat(3,ga.toFixed(1),'Ostakljenje (m²)');
+  setStat(4,sl.toFixed(1)+'%','Pad Krova');
+  showOutput('zb');
+
+  const CW=1600,CH=1720,c=initCanvas(CW,CH);
+  docHeader(c,CW,'TEHNIČKI CRTEŽ - ZIMSKA BAŠTA',ZB_ROOF_L[zbS.roof].toUpperCase(),id,d);
+  let y=projInfo(c,CW,105,pn); if(!pn) y=105;
+
+  const dl=[`Gabarit: ${us(zbS.w)} × ${us(zbS.p)} ${UNITS}`,
+            `Visina na zidu: ${usu(zbS.wallH)}`,
+            `Prednja visina: ${usu(zbS.frontH)}`,
+            `Pad krova: ${sl.toFixed(1)}%  (kosa dužina ${usu(Math.round(rl))})`,
+            `Osnova: ${fa.toFixed(2)} m²   |   Ostakljenje: ${ga.toFixed(2)} m²`];
+  if(zbS.hasParapet) dl.push(`Parapet (mutno staklo): ${usu(zbS.parapetH)}`);
+  const kl=[`Krov: ${ZB_ROOF_L[zbS.roof]}`,
+            `Prednja: ${ZB_SIDE_L[zbS.front]} (${zbS.frontFields} polja)`,
+            `Leva: ${ZB_SIDE_L[zbS.left]}   |   Desna: ${ZB_SIDE_L[zbS.right]}`,
+            zbS.doorSide==='bez'?'Vrata: nema':`Vrata: ${zbS.doorLeaves==2?'dvokrilna':'jednokrilna'} ${us(zbS.doorW)} ${UNITS}, ${zbS.doorSide} strana, ${zbS.doorSwing==='out'?'napolje':'unutra'}`,
+            zbS.hasAwning?'Dodatna tenda ispod krova: da':'Dodatna tenda: ne'];
+  y=infoBlock(c,CW,y,'DIMENZIJE',dl,'SASTAV',kl);
+  if(notes){c.fillStyle='#6b7280';c.font='italic 14px Segoe UI, sans-serif';c.fillText('Napomena: '+notes,30,y+18);y+=30;}
+  y=matBar(c,CW,y,['Materijal: Aluminijum sa termoprekidom','Staklo: Duplo 4+14+4 mm','Boja: RAL '+zbS.ralDisplay]);
+
+  const topY=y+42;
+  zbDrawTlocrt(c,30,topY,CW*0.56-40,640);
+  zbDrawBocni(c,30+(CW*0.56-40)+30,topY,CW*0.44-40,640);
+  zbDrawFront(c,30,topY+640+60,CW-60,560);
+  docFooter(c,CW,CH,id,d);
+}
+
+/* ─── TLOCRT ─── */
+function zbDrawTlocrt(c,ox,oy,w,h){
+  c.save(); secTitle(c,ox,oy-8,'TLOCRT (pogled odozgo)');
+  const m={t:52,r:74,b:78,l:40},dw=w-m.l-m.r,dh=h-m.t-m.b;
+  const sc=Math.min(dw/zbS.w,dh/zbS.p)*0.86;
+  const dW=zbS.w*sc,dP=zbS.p*sc;
+  const sx=ox+m.l+(dw-dW)/2, sy=oy+m.t+8;
+
+  // Zid objekta
+  c.fillStyle='#d1d5db';c.fillRect(sx-12,sy-16,dW+24,16);
+  c.strokeStyle='#9ca3af';c.lineWidth=0.8;
+  for(let hx=sx-12;hx<sx+dW+12;hx+=6){c.beginPath();c.moveTo(hx,sy-16);c.lineTo(hx+8,sy);c.stroke();}
+  c.fillStyle='#6b7280';c.font='bold 12px Segoe UI, sans-serif';c.textAlign='center';c.fillText('ZID OBJEKTA',sx+dW/2,sy-4);
+
+  // Osnova + sematski prikaz krova
+  c.fillStyle='rgba(59,130,246,0.05)';c.fillRect(sx,sy,dW,dP);
+  c.strokeStyle='rgba(26,26,46,0.18)';c.lineWidth=0.8;
+  if(zbS.roof==='lamele'){for(let ly=sy+10;ly<sy+dP;ly+=11){c.beginPath();c.moveTo(sx,ly);c.lineTo(sx+dW,ly);c.stroke();}}
+  else{const nR=Math.max(2,Math.round(zbS.w/120));for(let r=1;r<nR;r++){const rx=sx+dW*r/nR;c.beginPath();c.moveTo(rx,sy);c.lineTo(rx,sy+dP);c.stroke();}}
+  c.strokeStyle='#1a1a2e';c.lineWidth=2.5;c.strokeRect(sx,sy,dW,dP);
+
+  const wallT=6;
+  // Prednja strana
+  zbTlocrtSide(c,zbFrontLayout(),sx,sy+dP,sc,'h',wallT,'prednja');
+  // Leva strana
+  zbTlocrtSide(c,zbSideLayout('leva'),sx,sy,sc,'v',wallT,'leva');
+  // Desna strana
+  zbTlocrtSide(c,zbSideLayout('desna'),sx+dW,sy,sc,'v',wallT,'desna');
+
+  // Stubovi na uglovima
+  const cs=Math.max(7,10*sc*1.2);
+  [[sx,sy],[sx+dW,sy],[sx,sy+dP],[sx+dW,sy+dP]].forEach(pt=>{
+    c.fillStyle='#1a1a2e';c.fillRect(pt[0]-cs/2,pt[1]-cs/2,cs,cs);
+  });
+
+  // Kote
+  dimH(c,sx,sy-34,sx+dW,zbS.w);
+  dimV(c,sx+dW+26,sy,sy+dP,zbS.p);
+  // Lanac polja prednje strane
+  let bx=0;const fl=zbFrontLayout();
+  // Ako su vrata na prednjoj strani, spusti kotni lanac ispod luka otvaranja
+  const arcClear = zbS.doorSide==='prednja' ? Math.min(zbS.doorW,zbS.w-60)*sc/Math.max(1,zbS.doorLeaves)+14 : 0;
+  for(let i=0;i<fl.length;i++){const fw=fl[i].w*sc;dimH(c,sx+bx,sy+dP+30+arcClear,sx+bx+fw,Math.round(fl[i].w));bx+=fw;}
+  c.restore();
+}
+
+/* Jedna stranica u tlocrtu.
+   dir 'h' = duz X (prednja), 'v' = duz Y (bocna).
+   ox,oy = vektor "napolje" (normala stranice) u koordinatama platna. */
+function zbTlocrtSide(c,items,x0,y0,sc,dir,t,which){
+  const outV = which==='prednja' ? {x:0,y:1} : (which==='leva' ? {x:-1,y:0} : {x:1,y:0});
+  const alongV = dir==='h' ? {x:1,y:0} : {x:0,y:1};
+  const swingSign = zbS.doorSwing==='out' ? 1 : -1;
+  let off=0;
+  for(let i=0;i<items.length;i++){
+    const it=items[i], len=it.w*sc;
+    const bx = dir==='h' ? x0+off : x0-t/2;
+    const by = dir==='h' ? y0-t/2 : y0+off;
+    const bw = dir==='h' ? len : t;
+    const bh = dir==='h' ? t : len;
+
+    if(it.kind==='bez'){
+      c.strokeStyle='#9ca3af';c.lineWidth=1;c.setLineDash([4,4]);
+      c.strokeRect(bx,by,bw,bh);c.setLineDash([]);
+    } else if(it.kind==='vrata'){
+      const nL=zbS.doorLeaves, lLen=len/nL;
+      for(let L=0;L<nL;L++){
+        // Sarka: kod dvokrilnih na spoljnim ivicama, kod jednokrilnih na pocetku
+        const atStart = nL===2 ? (L===0) : true;
+        const dAlong = atStart ? (off+L*lLen) : (off+(L+1)*lLen);
+        const hx = (dir==='h' ? x0 : x0) + alongV.x*dAlong;
+        const hy = (dir==='h' ? y0 : y0) + alongV.y*dAlong;
+        const closedDir = atStart ? 1 : -1;
+        // Zatvoreno krilo (u ravni stranice)
+        const cxe = hx + alongV.x*lLen*closedDir, cye = hy + alongV.y*lLen*closedDir;
+        c.strokeStyle='rgba(26,26,46,0.30)';c.lineWidth=2;
+        c.beginPath();c.moveTo(hx,hy);c.lineTo(cxe,cye);c.stroke();
+        // Otvoreno krilo (upravno na stranicu)
+        const oxe = hx + outV.x*lLen*swingSign, oye = hy + outV.y*lLen*swingSign;
+        c.strokeStyle='#1a1a2e';c.lineWidth=2.5;
+        c.beginPath();c.moveTo(hx,hy);c.lineTo(oxe,oye);c.stroke();
+        // Luk izmedju ta dva polozaja
+        const a0=Math.atan2(cye-hy,cxe-hx), a1=Math.atan2(oye-hy,oxe-hx);
+        let d=a1-a0; while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI;
+        c.strokeStyle='#e94560';c.lineWidth=1.4;c.setLineDash([5,3]);
+        c.beginPath();c.arc(hx,hy,lLen,a0,a0+d,d<0);c.stroke();c.setLineDash([]);
+      }
+      // Prag u ravni stranice
+      c.fillStyle='rgba(233,69,96,0.18)';c.fillRect(bx,by,bw,bh);
+      c.strokeStyle='#e94560';c.lineWidth=2;c.strokeRect(bx,by,bw,bh);
+    } else {
+      c.fillStyle = it.kind==='klizno' ? 'rgba(59,130,246,0.32)' : 'rgba(59,130,246,0.15)';
+      c.fillRect(bx,by,bw,bh);
+      c.strokeStyle='#1a1a2e';c.lineWidth=2;c.strokeRect(bx,by,bw,bh);
+      if(it.kind==='klizno'){
+        // Sematski prikaz preklopa panela
+        const np=Math.max(2,Math.round(it.w/95));
+        c.strokeStyle='rgba(26,26,46,0.45)';c.lineWidth=1.6;
+        for(let q=0;q<np;q++){
+          const s0=off+q*(len/np)+2, s1=off+(q+1)*(len/np)-2;
+          const px0=(dir==='h'?x0:x0)+alongV.x*s0, py0=(dir==='h'?y0:y0)+alongV.y*s0;
+          const px1=(dir==='h'?x0:x0)+alongV.x*s1, py1=(dir==='h'?y0:y0)+alongV.y*s1;
+          const nOff=(q%2===0?-1:1)*1.8;
+          c.beginPath();
+          c.moveTo(px0+outV.x*nOff,py0+outV.y*nOff);
+          c.lineTo(px1+outV.x*nOff,py1+outV.y*nOff);
+          c.stroke();
+        }
+      }
+    }
+    off+=len;
+  }
+}
+
+/* ─── BOCNI PRESEK ─── */
+function zbDrawBocni(c,ox,oy,w,h){
+  c.save(); secTitle(c,ox,oy-8,'BOČNI PRESEK');
+  const m={t:52,r:72,b:78,l:78},dw=w-m.l-m.r,dh=h-m.t-m.b;
+  const sc=Math.min(dw/zbS.p,dh/zbS.wallH)*0.84;
+  const pW=zbS.p*sc, wH=zbS.wallH*sc, fH=zbS.frontH*sc;
+  const wX=ox+m.l, gY=oy+m.t+wH+16, sX=wX+pW;
+  const wTY=gY-wH, fTY=gY-fH;
+
+  ground(c,wX-34,sX+46,gY);
+  wallHatch(c,wX-22,wTY-46,22,wH+46);
+
+  // Krov
+  const rT=9;
+  c.fillStyle=zbS.roof==='staklo'?'rgba(59,130,246,0.22)':(zbS.roof==='tenda'?'rgba(236,231,210,0.85)':'rgba(55,65,81,0.85)');
+  c.beginPath();c.moveTo(wX,wTY);c.lineTo(sX,fTY);c.lineTo(sX,fTY-rT);c.lineTo(wX,wTY-rT);c.closePath();c.fill();
+  c.strokeStyle='#1a1a2e';c.lineWidth=3;
+  c.beginPath();c.moveTo(wX,wTY);c.lineTo(sX,fTY);c.stroke();
+  if(zbS.roof==='lamele'){
+    c.strokeStyle='rgba(26,26,46,0.5)';c.lineWidth=1.4;
+    const n=Math.max(6,Math.round(zbS.p/40));
+    for(let i=1;i<n;i++){const t=i/n,lx=wX+(sX-wX)*t,ly=wTY+(fTY-wTY)*t;c.beginPath();c.moveTo(lx,ly);c.lineTo(lx+5,ly+7);c.stroke();}
+  }
+  // Dodatna tenda ispod krova
+  if(zbS.hasAwning){
+    c.strokeStyle='#c9c2a8';c.lineWidth=5;c.setLineDash([]);
+    c.beginPath();c.moveTo(wX+10,wTY+13);c.lineTo(sX-8,fTY+13);c.stroke();
+    c.fillStyle='#8b7d5a';c.font='italic 11px Segoe UI, sans-serif';c.textAlign='left';
+    c.fillText('tenda',wX+16,wTY+28);
+  }
+  // Pad
+  const mrx=(wX+sX)/2,mry=(wTY+fTY)/2,ang=Math.atan2(fTY-wTY,sX-wX);
+  c.save();c.translate(mrx,mry-20);c.rotate(ang);
+  c.fillStyle='#e94560';c.font='bold 14px Segoe UI, sans-serif';c.textAlign='center';
+  c.fillText('pad: '+zbSlope().toFixed(1)+'%',0,0);c.restore();
+
+  // Prednji stub
+  const postW=Math.max(8,12*sc*0.6);
+  c.fillStyle='#374151';c.fillRect(sX-postW/2,fTY,postW,gY-fTY);
+  // Bocno ostakljenje (sematski)
+  const sideMode=zbS.left;
+  if(sideMode!=='bez'){
+    c.fillStyle='rgba(59,130,246,0.10)';
+    c.beginPath();c.moveTo(wX+3,wTY+rT);c.lineTo(sX-postW/2,fTY+rT);c.lineTo(sX-postW/2,gY-2);c.lineTo(wX+3,gY-2);c.closePath();c.fill();
+    c.strokeStyle='rgba(59,130,246,0.5)';c.lineWidth=1.2;c.stroke();
+  }
+  // Parapet
+  if(zbS.hasParapet){
+    const ph=zbS.parapetH*sc;
+    c.fillStyle='rgba(200,210,214,0.75)';c.fillRect(wX+3,gY-ph,sX-postW/2-wX-3,ph);
+    c.strokeStyle='#94a3b8';c.lineWidth=1.4;c.strokeRect(wX+3,gY-ph,sX-postW/2-wX-3,ph);
+    c.fillStyle='#64748b';c.font='bold 11px Segoe UI, sans-serif';c.textAlign='center';
+    c.fillText('PARAPET',(wX+sX)/2,gY-ph/2+4);
+  }
+
+  dimH(c,wX,wTY-rT-30,sX,zbS.p);
+  dimV(c,wX-40,wTY,gY,zbS.wallH);
+  dimV(c,sX+34,fTY,gY,zbS.frontH);
+  c.restore();
+}
+
+/* ─── FRONTALNI POGLED ─── */
+function zbDrawFront(c,ox,oy,w,h){
+  c.save(); secTitle(c,ox,oy-8,'FRONTALNI POGLED');
+  const m={t:48,r:80,b:86,l:60},dw=w-m.l-m.r,dh=h-m.t-m.b;
+  const sc=Math.min(dw/zbS.w,dh/zbS.frontH)*0.88;
+  const dW=zbS.w*sc,dH=zbS.frontH*sc;
+  const sx=ox+m.l+(dw-dW)/2, gY=oy+m.t+dH+14, tY=gY-dH;
+
+  ground(c,sx-34,sx+dW+34,gY);
+
+  // Greda / oluk
+  c.fillStyle='#374151';c.fillRect(sx-6,tY-12,dW+12,12);
+  c.strokeStyle='#1a1a2e';c.lineWidth=1.2;c.strokeRect(sx-6,tY-12,dW+12,12);
+
+  const items=zbFrontLayout();
+  let fx=sx;
+  const parH=zbS.hasParapet?zbS.parapetH*sc:0;
+  for(let i=0;i<items.length;i++){
+    const it=items[i], fw=it.w*sc;
+    c.strokeStyle='#1a1a2e';c.lineWidth=2.5;c.strokeRect(fx,tY,fw,dH);
+    if(it.kind==='bez'){
+      c.fillStyle='rgba(156,163,175,0.10)';c.fillRect(fx,tY,fw,dH);
+      c.fillStyle='#9ca3af';c.font='bold 12px Segoe UI, sans-serif';c.textAlign='center';
+      c.fillText('OTVORENO',fx+fw/2,tY+dH/2);
+    } else if(it.kind==='vrata'){
+      const nL=zbS.doorLeaves, lW=fw/nL;
+      for(let L=0;L<nL;L++){
+        const lx=fx+L*lW;
+        c.fillStyle='rgba(59,130,246,0.12)';c.fillRect(lx+3,tY+4,lW-6,dH-8);
+        c.strokeStyle='#1a1a2e';c.lineWidth=2;c.strokeRect(lx+3,tY+4,lW-6,dH-8);
+        const hingeLeft = nL===2 ? (L===0) : true;
+        const hx = hingeLeft ? lx+3 : lx+lW-3;
+        const oxx = hingeLeft ? lx+lW-3 : lx+3;
+        c.strokeStyle='#e94560';c.lineWidth=1.6;
+        if(zbS.doorSwing==='in')c.setLineDash([7,4]);
+        c.beginPath();c.moveTo(oxx,tY+4);c.lineTo(hx,tY+dH/2);c.lineTo(oxx,tY+dH-4);c.stroke();c.setLineDash([]);
+        c.fillStyle='#374151';c.fillRect(hingeLeft?lx+lW-15:lx+8,tY+dH*0.50,7,26);
+      }
+      c.fillStyle='#e94560';c.font='bold 11px Segoe UI, sans-serif';c.textAlign='center';
+      c.fillText('VRATA',fx+fw/2,tY+dH-14);
+    } else {
+      // Ostakljeno polje, sa parapetom ako je izabran
+      if(parH>0){
+        c.fillStyle='rgba(203,213,219,0.8)';c.fillRect(fx+3,gY-parH,fw-6,parH-3);
+        c.strokeStyle='#94a3b8';c.lineWidth=1.2;c.strokeRect(fx+3,gY-parH,fw-6,parH-3);
+      }
+      const gTop=tY+4, gBot=gY-parH-3;
+      c.fillStyle='rgba(59,130,246,0.09)';c.fillRect(fx+3,gTop,fw-6,gBot-gTop);
+      c.strokeStyle='rgba(59,130,246,0.45)';c.lineWidth=1.4;c.strokeRect(fx+3,gTop,fw-6,gBot-gTop);
+      if(it.kind==='klizno'){
+        c.fillStyle='#6b7280';c.fillRect(fx+fw/2-2,tY+dH*0.42,4,dH*0.16);
+        c.fillStyle='#e94560';c.font='bold 13px Segoe UI, sans-serif';c.textAlign='center';
+        c.fillText('→',fx+fw/2,gTop+18);
+      }
+    }
+    c.fillStyle='#e94560';c.font='bold 12px Segoe UI, sans-serif';c.textAlign='center';
+    c.fillText((it.kind==='vrata'?'V':'F'+(i+1)),fx+fw/2,tY-24);
+    fx+=fw;
+  }
+
+  dimH(c,sx,tY-52,sx+dW,zbS.w);
+  dimV(c,sx+dW+28,tY,gY,zbS.frontH);
+  if(zbS.hasParapet) dimV(c,sx-30,gY-parH,gY,zbS.parapetH);
+  let bx=0;
+  for(let i=0;i<items.length;i++){const fw=items[i].w*sc;dimH(c,sx+bx,gY+34,sx+bx+fw,Math.round(items[i].w));bx+=fw;}
+  c.restore();
+}
+
+/* ═══════════════════════════════════════════════════════════
    3D HTML EXPORT FUNCTIONS
    ═══════════════════════════════════════════════════════════ */
 
@@ -1005,6 +1468,45 @@ function makeSash(w,h,th,bar,fMat,gMat,opts){
     var gl=makeBox(innerW,innerH,th*0.3,0,cy,0,gMat);
     gl.castShadow=false; g.add(gl);
   }
+  return g;
+}
+
+/* ---- TRAPEZNO KRILO: prati kosinu krova ----
+   Ishodiste je na DNU panela (y=0), za razliku od makeSash.
+   hL = visina na levoj ivici, hR = visina na desnoj. ---- */
+function makeTrapSash(w,hL,hR,th,bar,fMat,gMat,opts){
+  opts=opts||{};
+  var g=new THREE.Group();
+  th=th||0.034; bar=bar||0.055;
+  if(w<=bar*2.2||Math.min(hL,hR)<=bar*2.2){
+    g.add(makeBox(w,Math.max(hL,hR),th,0,Math.max(hL,hR)/2,0,fMat));
+    return g;
+  }
+  g.add(makeBox(w,bar,th,0,bar/2,0,fMat));                              // donja letva
+  g.add(makeBox(bar,hL-bar,th,-w/2+bar/2,bar+(hL-bar)/2,0,fMat));       // leva vertikala
+  g.add(makeBox(bar,hR-bar,th,w/2-bar/2,bar+(hR-bar)/2,0,fMat));        // desna vertikala
+  var topLen=Math.sqrt(w*w+(hR-hL)*(hR-hL));
+  var top=new THREE.Mesh(new THREE.BoxGeometry(topLen,bar,th),fMat);
+  top.position.set(0,(hL+hR)/2-bar/2,0);
+  top.rotation.z=Math.atan2(hR-hL,w);
+  top.castShadow=true; top.receiveShadow=true; g.add(top);
+
+  var iw=w/2-bar, m=(hR-hL)/w, hM=(hL+hR)/2;
+  var topAt=function(x){ return hM+m*x-bar; };
+  var yBase=bar;
+  if(opts.parapet>bar*1.4 && opts.parapet<Math.min(hL,hR)-bar*1.4){
+    // Precka + mutni parapet u donjoj zoni
+    g.add(makeBox(w-bar*2,bar*0.8,th,0,opts.parapet,0,fMat));
+    var pr=new THREE.Mesh(new THREE.PlaneGeometry(iw*2,opts.parapet-bar-bar*0.4),opts.lowerMat||gMat);
+    pr.position.set(0,bar+(opts.parapet-bar-bar*0.4)/2,0);
+    pr.receiveShadow=true; g.add(pr);
+    yBase=opts.parapet+bar*0.4;
+  }
+  var sh=new THREE.Shape();
+  sh.moveTo(-iw,yBase); sh.lineTo(iw,yBase);
+  sh.lineTo(iw,topAt(iw)); sh.lineTo(-iw,topAt(-iw)); sh.closePath();
+  var gl=new THREE.Mesh(new THREE.ShapeGeometry(sh),gMat);
+  gl.receiveShadow=true; g.add(gl);
   return g;
 }
 
@@ -1362,7 +1864,8 @@ function buildGround(scene,w,d,cx,cz){
 `;
 
 function threejsBase(title, subtitle, dims, sceneCode) {
-  const pn = document.getElementById(currentProduct==='pergola'?'pg_projectName':currentProduct==='sliding'?'sl_projectName':'gl_projectName').value.trim() || '';
+  const pnEl = document.getElementById(currentProduct==='pergola'?'pg_projectName':currentProduct==='sliding'?'sl_projectName':currentProduct==='guillotine'?'gl_projectName':'zb_projectName');
+  const pn = pnEl ? pnEl.value.trim() : '';
   return `<!DOCTYPE html>
 <html lang="sr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>${title} - PROHORECA AG GROUP</title>
@@ -1900,6 +2403,255 @@ function animate(){requestAnimationFrame(animate);anim.tick();controls.update();
 
   var html = threejsBase(sysType==='bezprag'?'Klizni sistem bez praga':'Klizni sistem sa pragom', 'Interaktivni 3D model kliznog stakla', dimsHTML, sceneCode);
   download3DHTML(html, 'SL-3D');
+}
+
+/* === 3D ZIMSKA BASTA EXPORT === */
+function export3DWinter() {
+  zbGather();
+  if(zbS.w<100||zbS.p<100){alert('Unesite validan gabarit.');return;}
+  if(zbS.frontH>=zbS.wallH){alert('Prednja visina mora biti manja od visine na zidu.');return;}
+  var S=0.01;
+  var fa=zbS.w*zbS.p/10000, ga=zbGlassArea(), sl=zbSlope();
+  var front=JSON.stringify(zbFrontLayout());
+  var leftL=JSON.stringify(zbSideLayout('leva'));
+  var rightL=JSON.stringify(zbSideLayout('desna'));
+
+  var dimsHTML = `<div class="dim">Gabarit: ${us(zbS.w)} × ${us(zbS.p)} ${UNITS}</div>
+<div class="dim">Visina na zidu: ${usu(zbS.wallH)}</div>
+<div class="dim">Prednja visina: ${usu(zbS.frontH)}</div>
+<div class="dim">Pad krova: ${sl.toFixed(1)}%</div>
+<div class="dim">Osnova: ${fa.toFixed(2)} m² | Staklo: ${ga.toFixed(2)} m²</div>
+<div class="dim">Boja: RAL ${zbS.ralDisplay}</div>`;
+
+  var sceneCode = `
+var S=${S}, W=${zbS.w}, P=${zbS.p}, WH=${zbS.wallH}, FH=${zbS.frontH};
+var roof='${zbS.roof}', ral='${zbS.ralDisplay}';
+var front=${front}, leftL=${leftL}, rightL=${rightL};
+var hasPar=${zbS.hasParapet}, parH=${zbS.parapetH};
+var hasAwn=${zbS.hasAwning}, doorSide='${zbS.doorSide}', doorSwing='${zbS.doorSwing}';
+var DOOR_LEAVES=${zbS.doorLeaves};
+
+var w=W*S, p=P*S, wh=WH*S, fh=FH*S;
+var totalW=w;
+var B=baseScene({shadowSpan:Math.max(12,w*1.5),skyRadius:Math.max(80,w*9),maxDistance:90});
+var scene=B.scene, camera=B.camera, renderer=B.renderer, controls=B.controls;
+DIM_TEXT=Math.max(0.16,Math.min(0.45,w*0.045));
+
+var RAL={'7016':0x383E42,'9005':0x0A0A0A,'9016':0xF1F0EA,'7035':0xC5C7C4,'8017':0x44322D};
+var frameCol=RAL[ral]||0x383E42;
+var frameMat=new THREE.MeshStandardMaterial({color:frameCol,roughness:0.42,metalness:0.45,envMapIntensity:0.40});
+var wallMat=new THREE.MeshStandardMaterial({map:plasterTexture(),roughness:0.95,metalness:0,envMapIntensity:0.5});
+var panelMat=new THREE.MeshStandardMaterial({color:0xdedcd4,roughness:0.75,metalness:0.05});
+var gClear=glassClear(), gFrost=glassFrosted();
+var awnMat=fabricMat(0xece7d2);
+
+buildGround(scene,w+1.3,p+1.3,w/2,p/2);
+
+// Zid objekta iza
+var wallHt=wh+0.5;
+scene.add(makeBox(w+1.0,wallHt,0.26,w/2,wallHt/2-0.05,-0.14,wallMat));
+
+var PROF=0.09;            // visina profila
+var postS=0.10;           // stub 10x10
+var roofDrop=wh-fh;
+var roofAng=Math.atan2(roofDrop,p);
+var roofLen=Math.sqrt(p*p+roofDrop*roofDrop);
+
+function yAt(z){ return wh-roofDrop*(z/p); }   // visina krova na dubini z
+
+// ═══ NOSECA KONSTRUKCIJA ═══
+scene.add(makeBox(w,PROF,0.08,w/2,wh,0.02,frameMat));            // greda uz zid
+scene.add(makeBox(w,PROF,0.10,w/2,fh,p,frameMat));               // prednja greda / oluk
+// Bocne kose grede
+for(var sgn=0;sgn<2;sgn++){
+  var bx=sgn===0?0:w;
+  var beam=new THREE.Mesh(new THREE.BoxGeometry(0.07,PROF,roofLen),frameMat);
+  beam.position.set(bx,(wh+fh)/2,p/2);
+  beam.rotation.x=roofAng;
+  beam.castShadow=true;beam.receiveShadow=true;scene.add(beam);
+}
+// Prednji stubovi
+scene.add(makeBox(postS,fh,postS,0,fh/2,p,frameMat));
+scene.add(makeBox(postS,fh,postS,w,fh/2,p,frameMat));
+
+// ═══ KROV ═══
+var lamellas=[], awnings=[];
+var nRaf=Math.max(2,Math.round(W/110));
+for(var r=1;r<nRaf;r++){
+  var rx=w*r/nRaf;
+  var rf=new THREE.Mesh(new THREE.BoxGeometry(0.06,PROF*0.85,roofLen),frameMat);
+  rf.position.set(rx,(wh+fh)/2,p/2); rf.rotation.x=roofAng;
+  rf.castShadow=true; scene.add(rf);
+}
+if(roof==='lamele'){
+  var nL=Math.max(8,Math.round(P/14));
+  for(var i=0;i<nL;i++){
+    var lz=(i+0.5)*(p/nL);
+    var lam=new THREE.Mesh(new THREE.BoxGeometry(w-0.06,0.014,p/nL*0.92),frameMat);
+    lam.position.set(w/2,yAt(lz)-PROF*0.55,lz);
+    lam.rotation.x=roofAng;
+    lam.castShadow=true; scene.add(lam);
+    lamellas.push({m:lam,base:roofAng});
+  }
+} else {
+  var rMat = roof==='staklo'? gClear : (roof==='tenda'? awnMat : panelMat);
+  for(var r2=0;r2<nRaf;r2++){
+    var x1=w*r2/nRaf+0.04, x2=w*(r2+1)/nRaf-0.04;
+    var seg=new THREE.Mesh(new THREE.BoxGeometry(x2-x1,0.012,roofLen-0.03),rMat);
+    seg.position.set((x1+x2)/2,(wh+fh)/2-PROF*0.5,p/2);
+    seg.rotation.x=roofAng;
+    seg.receiveShadow=true;
+    if(roof!=='staklo') seg.castShadow=true;
+    scene.add(seg);
+  }
+}
+// Dodatna tenda ispod staklenog krova
+if(hasAwn){
+  var nA=Math.max(1,Math.round(W/320));
+  for(var a=0;a<nA;a++){
+    var ax1=w*a/nA+0.06, ax2=w*(a+1)/nA-0.06;
+    var aw=new THREE.Mesh(new THREE.PlaneGeometry(ax2-ax1,roofLen-0.10),awnMat);
+    aw.rotation.x=-Math.PI/2+roofAng;
+    aw.position.set((ax1+ax2)/2,(wh+fh)/2-PROF*0.95,p/2);
+    aw.receiveShadow=true; scene.add(aw);
+    awnings.push({m:aw,len:roofLen-0.10,cx:(ax1+ax2)/2});
+    scene.add(makeBox(ax2-ax1+0.07,0.14,0.15,(ax1+ax2)/2,wh-PROF*1.05,0.13,frameMat));
+  }
+}
+
+// ═══ STRANICE ═══
+var doors=[], sliders=[];
+
+/* Gradi jednu stranicu.
+   axis 'x' = prednja (ide duz X na z=p), axis 'z' = bocna (ide duz Z).
+   Sva krila imaju ishodiste na dnu, a bocna prate kosinu krova. */
+function buildSide(items,axis,xFix,zStart,sideName){
+  var off=0,i;
+  for(i=0;i<items.length;i++){
+    var it=items[i], segW=it.w*S;
+    if(it.kind==='bez'){ off+=segW; continue; }
+
+    // Svetska pozicija segmenta i visine na njegovim krajevima
+    var cx,cz,rotY,hL,hR;
+    if(axis==='x'){
+      cx=off+segW/2; cz=p; rotY=0;
+      hL=fh; hR=fh;
+    } else {
+      cx=xFix; cz=zStart+off+segW/2; rotY=Math.PI/2;
+      // rotY=PI/2 preslikava lokalno +X u svetsko -Z, pa je leva ivica dalja po Z
+      hL=yAt(zStart+off+segW);
+      hR=yAt(zStart+off);
+    }
+    var hMin=Math.min(hL,hR);
+    var parOpt = hasPar ? {parapet:parH*S,lowerMat:gFrost} : null;
+
+    if(it.kind==='vrata'){
+      var nLv=DOOR_LEAVES, lW=segW/nLv;
+      for(var L=0;L<nLv;L++){
+        var hingeLeft = nLv===2 ? (L===0) : true;
+        var localX = -segW/2 + L*lW + (hingeLeft?0:lW);
+        var pivot=new THREE.Group();
+        pivot.rotation.y=rotY;
+        pivot.position.set(
+          axis==='x' ? cx+localX : cx,
+          0,
+          axis==='x' ? cz : cz-localX
+        );
+        scene.add(pivot);
+        var leaf=new THREE.Group();
+        var dh=hMin-0.06;
+        var sash=makeTrapSash(lW-0.04,dh,dh,0.038,0.06,frameMat,gClear,null);
+        sash.position.x = hingeLeft ? (lW-0.04)/2 : -(lW-0.04)/2;
+        leaf.add(sash);
+        var khx = hingeLeft ? (lW-0.09) : -(lW-0.09);
+        leaf.add(makeBox(0.024,0.14,0.03,khx,dh*0.48,0.034,frameMat));
+        pivot.add(leaf);
+        var ang=(doorSwing==='out'?1:-1)*(hingeLeft?-1:1)*1.45;
+        doors.push({p:pivot,ang:ang,r0:rotY});
+      }
+      // Prag ispod vrata
+      scene.add(makeBox(axis==='x'?segW:0.07,0.05,axis==='x'?0.07:segW,cx,0.025,cz,frameMat));
+
+    } else if(it.kind==='klizno'){
+      var np=Math.max(2,Math.round(it.w/95));
+      var panW=segW/np;
+      for(var q=0;q<np;q++){
+        var lx=-segW/2+q*panW+panW/2;
+        // visina panela na njegovoj sredini
+        var ph = axis==='x' ? fh : yAt(cz-lx);
+        var grp=new THREE.Group();
+        var sash=makeTrapSash(panW-0.02,ph-0.08,ph-0.08,0.032,0.052,frameMat,gClear,parOpt);
+        grp.add(sash);
+        grp.rotation.y=rotY;
+        var wx = axis==='x' ? cx+lx : cx;
+        var wz = axis==='x' ? cz : cz-lx;
+        grp.position.set(wx,0,wz);
+        scene.add(grp);
+        var travel=(np-1-q)*panW;
+        sliders.push({g:grp,axis:axis,bx:wx,bz:wz,travel:travel});
+      }
+      // Sina gore
+      scene.add(makeBox(axis==='x'?segW:0.09,0.035,axis==='x'?0.09:segW,cx,hMin-0.02,cz,frameMat));
+
+    } else {
+      var fx=makeTrapSash(segW-0.03,hL-0.02,hR-0.02,0.034,0.055,frameMat,gClear,parOpt);
+      var g3=new THREE.Group(); g3.add(fx);
+      g3.rotation.y=rotY;
+      g3.position.set(cx,0,cz);
+      scene.add(g3);
+    }
+    off+=segW;
+  }
+}
+
+buildSide(front,'x',0,0,'prednja');
+buildSide(leftL,'z',0,0,'leva');
+buildSide(rightL,'z',w,0,'desna');
+
+// ═══ KOTE ═══
+var Zf=new THREE.Vector3(0,0,1), Xn=new THREE.Vector3(-1,0,0);
+var fSegs=[]; for(var q2=0;q2<front.length;q2++) fSegs.push(front[q2].w);
+dimChain3D(scene,new THREE.Vector3(0,0.02,p),new THREE.Vector3(1,0,0),fSegs,S,
+  {dir:Zf,offset:0.46,step:0.38});
+dim3D(scene,new THREE.Vector3(0,0.02,0),new THREE.Vector3(0,0.02,p),
+  {dir:Xn,offset:0.44,cm:P});
+dim3D(scene,new THREE.Vector3(0,0,0),new THREE.Vector3(0,wh,0),
+  {dir:Xn,offset:1.15,cm:WH,color:0x2563eb,textColor:'#1d4ed8'});
+dim3D(scene,new THREE.Vector3(w,0,p),new THREE.Vector3(w,fh,p),
+  {dir:new THREE.Vector3(1,0,0),offset:0.44,cm:FH,color:0x2563eb,textColor:'#1d4ed8'});
+if(hasPar){
+  dim3D(scene,new THREE.Vector3(0,0,p),new THREE.Vector3(0,parH*S,p),
+    {dir:Zf,offset:0.24,cm:parH,size:DIM_TEXT*0.78,color:0x10b981,textColor:'#047857'});
+}
+
+camera.position.set(w/2+w*0.72,Math.max(wh*1.25,3.4),p+w*0.62+3.0);
+controls.target.set(w/2,wh*0.38,p*0.45);
+
+// ═══ ANIMACIJA ═══
+var animLabel = roof==='lamele'?'Lamele':(hasAwn?'Tenda':(doors.length?'Vrata':'Otvaranje'));
+function applyAnim(t){
+  for(var k=0;k<lamellas.length;k++) lamellas[k].m.rotation.x=lamellas[k].base+t*1.35;
+  for(var k2=0;k2<awnings.length;k2++){
+    var a=awnings[k2], f=Math.max(0.012,t);
+    a.m.scale.y=f;
+    var zc=p*f/2;
+    a.m.position.z=zc;
+    a.m.position.y=wh-PROF*0.95-(wh-fh)*(f/2);
+    a.m.visible=t>0.02;
+  }
+  for(var k3=0;k3<doors.length;k3++) doors[k3].p.rotation.y=doors[k3].r0+doors[k3].ang*t;
+  for(var k4=0;k4<sliders.length;k4++){
+    var sd=sliders[k4];
+    if(sd.axis==='x') sd.g.position.x=sd.bx+sd.travel*t;
+    else sd.g.position.z=sd.bz-sd.travel*t;
+  }
+}
+var anim=animUI(animLabel,applyAnim,{start:0});
+
+function animate(){requestAnimationFrame(animate);anim.tick();controls.update();renderer.render(scene,camera)}animate();`;
+
+  var html = threejsBase('Zimska bašta - '+ZB_ROOF_L[zbS.roof], 'Interaktivni 3D model zimske bašte', dimsHTML, sceneCode);
+  download3DHTML(html, 'ZB-3D');
 }
 
 /* === 3D GUILLOTINE GLASS EXPORT === */
