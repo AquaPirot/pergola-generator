@@ -832,8 +832,11 @@ function generateSliding(){
         c.fillStyle='#374151';
         c.fillRect(hingeLeft?lx+lW-14:lx+7,fy+fh*0.52,7,26);
       }
-      c.fillStyle='#e94560';c.font='bold 12px Segoe UI, sans-serif';c.textAlign='center';
-      c.fillText((f.leaves==2?'DVOKRILNA':'JEDNOKRILNA')+' • '+(f.swing==='out'?'napolje':'unutra'),fx+fw/2,fy+fh-22);
+      const dTxt=(f.leaves==2?'DVOKRILNA':'JEDNOKRILNA')+' • '+(f.swing==='out'?'napolje':'unutra');
+      c.font='bold 12px Segoe UI, sans-serif';c.textAlign='center';
+      const dTw=c.measureText(dTxt).width+12;
+      c.fillStyle='rgba(255,255,255,0.92)';c.fillRect(fx+fw/2-dTw/2,fy+fh-33,dTw,17);
+      c.fillStyle='#e94560';c.fillText(dTxt,fx+fw/2,fy+fh-21);
     } else {
       // FIKSNO ostakljenje
       c.fillStyle='rgba(59,130,246,0.06)';c.fillRect(fx+4,fy+9,fw-8,fh-18);
@@ -850,7 +853,7 @@ function generateSliding(){
     fxO+=fw;
   }
   if(slS.count>1){c.strokeStyle='#e94560';c.lineWidth=1.5;c.setLineDash([6,4]);let jx=0;for(let fi=0;fi<slS.count-1;fi++){jx+=slS.fields[fi].w*fSc;c.beginPath();c.moveTo(fSx+jx,fTy-30);c.lineTo(fSx+jx,fGy+5);c.stroke();}c.setLineDash([]);}
-  dimH(c,fSx,fTy-38,fSx+fW,tw);dimV(c,fSx+fW+20,fTy,fGy,mH);
+  dimH(c,fSx,fTy-54,fSx+fW,tw);dimV(c,fSx+fW+20,fTy,fGy,mH);
   let fbx=0;for(let fi=0;fi<slS.count;fi++){const fw=slS.fields[fi].w*fSc;dimH(c,fSx+fbx,fGy+28,fSx+fbx+fw,`F${fi+1}: ${us(slS.fields[fi].w)}×${us(slS.fields[fi].h)}`);fbx+=fw;}
 
   // TLOCRT
