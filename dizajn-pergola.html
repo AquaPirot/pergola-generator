@@ -602,35 +602,95 @@ let slS={type:'bezprag',count:1};
 function slSelectType(el){document.querySelectorAll('#panel-sliding .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');slS.type=el.dataset.type;}
 function slSelectCount(el){document.querySelectorAll('#panel-sliding .num-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');slS.count=parseInt(el.dataset.count);slBuildDims();}
 
+/* Tipovi polja: klizno (paneli), krilna vrata, fiksno ostakljenje */
+const SL_KINDS={klizno:'Klizno',vrata:'Krilna vrata',fiksno:'Fiksno'};
+
+/* Procitaj trenutno stanje iz DOM-a da se ne izgubi pri ponovnom crtanju forme */
+function slReadCards(){
+  const out=[];
+  for(let i=0;i<6;i++){
+    const w=document.getElementById('sw_'+i);
+    if(!w){out.push(null);continue;}
+    const g=id=>document.getElementById(id+'_'+i);
+    out.push({
+      w:parseInt(w.value)||200,
+      h:parseInt(g('sh')?g('sh').value:250)||250,
+      kind:g('sk')?g('sk').value:'klizno',
+      panels:parseInt(g('sp')?g('sp').value:3)||3,
+      dir:g('sd')?g('sd').value:'right',
+      leaves:parseInt(g('sl')?g('sl').value:1)||1,
+      hinge:g('shg')?g('shg').value:'left',
+      swing:g('ssw')?g('ssw').value:'out'
+    });
+  }
+  return out;
+}
+
+function slFieldDefaults(){return {w:200,h:250,kind:'klizno',panels:3,dir:'right',leaves:1,hinge:'left',swing:'out'};}
+
+/* Promena tipa polja - samo precrtaj formu, vrednosti se cuvaju */
+function slKindChange(){slBuildDims();}
+
 function slBuildDims(){
-  const c=document.getElementById('slidingDims');const ex=[];
-  for(let i=0;i<3;i++){const w=document.getElementById('sw_'+i),h=document.getElementById('sh_'+i),p=document.getElementById('sp_'+i),d=document.getElementById('sd_'+i);
-    ex.push({w:w?parseInt(w.value)||200:200,h:h?parseInt(h.value)||250:250,p:p?parseInt(p.value)||3:3,d:d?d.value||'right':'right'});}
+  const c=document.getElementById('slidingDims');
+  const ex=slReadCards();
+  const sel=(v,o)=>v==o?' selected':'';
   let html='';
-  for(let i=0;i<slS.count;i++){const e=ex[i]||{w:200,h:250,p:3,d:'right'};
+  for(let i=0;i<slS.count;i++){
+    const e=Object.assign(slFieldDefaults(),ex[i]||{});
+    let extra='';
+    if(e.kind==='klizno'){
+      extra=`<div class="form-row">
+        <div class="form-group"><label>Broj panela</label><select id="sp_${i}">${[2,3,4,5,6].map(n=>`<option value="${n}"${sel(e.panels,n)}>${n}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Smer otvaranja</label><select id="sd_${i}"><option value="left"${sel(e.dir,'left')}>Levo</option><option value="right"${sel(e.dir,'right')}>Desno</option><option value="center"${sel(e.dir,'center')}>Centar</option></select></div>
+      </div>`;
+    } else if(e.kind==='vrata'){
+      extra=`<div class="form-row">
+        <div class="form-group"><label>Broj krila</label><select id="sl_${i}"><option value="1"${sel(e.leaves,1)}>Jednokrilna</option><option value="2"${sel(e.leaves,2)}>Dvokrilna</option></select></div>
+        <div class="form-group"><label>Strana šarki</label><select id="shg_${i}"><option value="left"${sel(e.hinge,'left')}>Levo</option><option value="right"${sel(e.hinge,'right')}>Desno</option></select></div>
+      </div>
+      <div class="form-row single"><div class="form-group"><label>Smer otvaranja</label><select id="ssw_${i}"><option value="out"${sel(e.swing,'out')}>Napolje</option><option value="in"${sel(e.swing,'in')}>Unutra</option></select></div></div>`;
+    }
     html+=`<div class="pergola-dim-card"><div class="pergola-label">Polje ${i+1} (F${i+1})</div>
     <div class="form-row"><div class="form-group"><label>Širina <span class="unit">(cm)</span></label><input type="number" id="sw_${i}" value="${e.w}" min="50" max="800" step="10"></div><div class="form-group"><label>Visina <span class="unit">(cm)</span></label><input type="number" id="sh_${i}" value="${e.h}" min="100" max="400" step="10"></div></div>
-    <div class="form-row"><div class="form-group"><label>Broj panela</label><select id="sp_${i}"><option value="2" ${e.p==2?'selected':''}>2</option><option value="3" ${e.p==3?'selected':''}>3</option><option value="4" ${e.p==4?'selected':''}>4</option><option value="5" ${e.p==5?'selected':''}>5</option><option value="6" ${e.p==6?'selected':''}>6</option></select></div><div class="form-group"><label>Smer otvaranja</label><select id="sd_${i}"><option value="left" ${e.d==='left'?'selected':''}>Levo</option><option value="right" ${e.d==='right'?'selected':''}>Desno</option><option value="center" ${e.d==='center'?'selected':''}>Centar</option></select></div></div></div>`;
-  }c.innerHTML=html;
+    <div class="form-row single"><div class="form-group"><label>Tip polja</label><select id="sk_${i}" onchange="slKindChange()">${Object.keys(SL_KINDS).map(k=>`<option value="${k}"${sel(e.kind,k)}>${SL_KINDS[k]}</option>`).join('')}</select></div></div>
+    ${extra}</div>`;
+  }
+  c.innerHTML=html;
 }
 slBuildDims();
 
-function slGather(){slS.fields=[];for(let i=0;i<slS.count;i++)slS.fields.push({w:parseInt(document.getElementById('sw_'+i).value)||200,h:parseInt(document.getElementById('sh_'+i).value)||250,panels:parseInt(document.getElementById('sp_'+i).value)||3,dir:document.getElementById('sd_'+i).value||'right'});}
+function slFieldDesc(f){
+  if(f.kind==='klizno')return f.panels+' panela | '+(f.dir==='left'?'Levo':f.dir==='right'?'Desno':'Centar');
+  if(f.kind==='vrata')return (f.leaves==2?'Dvokrilna':'Jednokrilna')+' vrata | šarke '+(f.hinge==='left'?'levo':'desno');
+  return 'Fiksno ostakljenje';
+}
+function slFieldShort(f){
+  if(f.kind==='klizno')return f.panels+'p,'+(f.dir==='left'?'L':f.dir==='right'?'D':'C');
+  if(f.kind==='vrata')return 'vrata '+f.leaves+'kr,'+(f.hinge==='left'?'L':'D');
+  return 'fiksno';
+}
+
+function slGather(){
+  const ex=slReadCards();
+  slS.fields=[];
+  for(let i=0;i<slS.count;i++) slS.fields.push(Object.assign(slFieldDefaults(),ex[i]||{}));
+}
 
 function generateSliding(){
   slGather();
   if(slS.fields.some(f=>f.w<30||f.h<50||isNaN(f.w)||isNaN(f.h))){alert('Unesite validne dimenzije polja (min Š:30, V:50 cm).');return;}
   lastGenerator=generateSliding;
-  const tw=slS.fields.reduce((s,f)=>s+f.w,0),mH=Math.max(...slS.fields.map(f=>f.h)),tA=slS.fields.reduce((s,f)=>s+(f.w*f.h)/10000,0),tP=slS.fields.reduce((s,f)=>s+f.panels,0);
+  const tw=slS.fields.reduce((s,f)=>s+f.w,0),mH=Math.max(...slS.fields.map(f=>f.h)),tA=slS.fields.reduce((s,f)=>s+(f.w*f.h)/10000,0),tP=slS.fields.reduce((s,f)=>s+(f.kind==='klizno'?f.panels:f.kind==='vrata'?f.leaves:1),0);
   const id=genId('SL'),d=ds(),pn=document.getElementById('sl_projectName').value.trim(),notes=document.getElementById('sl_notes').value.trim();
   document.getElementById('statsGrid').style.display='grid';
-  setStat(1,us(tw),'Ukupna Širina ('+UNITS+')');setStat(2,tA.toFixed(1),'Površina (m²)');setStat(3,tP,'Ukupno Panela');setStat(4,'4+14+4','Staklo (mm)');
+  setStat(1,us(tw),'Ukupna Širina ('+UNITS+')');setStat(2,tA.toFixed(1),'Površina (m²)');setStat(3,tP,'Panela / Krila');setStat(4,'4+14+4','Staklo (mm)');
   showOutput('sl');
   const CW=1600,CH=1400,c=initCanvas(CW,CH);
   const sysL=slS.type==='bezprag'?'KLIZNI SISTEM BEZ PRAGA':'KLIZNI SISTEM SA PRAGOM';
   docHeader(c,CW,'TEHNIČKI CRTEŽ - KLIZNO STAKLO',sysL,id,d);
   let y=projInfo(c,CW,105,pn);if(!pn)y=105;
-  const fStr=slS.fields.map((f,i)=>`F${i+1}: ${f.w}×${f.h} (${f.panels}p, ${f.dir==='left'?'L':f.dir==='right'?'D':'C'})`).join('  |  ');
+  const fStr=slS.fields.map((f,i)=>`F${i+1}: ${us(f.w)}×${us(f.h)} (${slFieldShort(f)})`).join('  |  ');
   y=infoBlock(c,CW,y,'DIMENZIJE',[`Ukupna širina: ${usu(tw)}`,`Max visina: ${usu(mH)}`,fStr,`Površina: ${tA.toFixed(2)} m²`],'KONSTRUKCIJA',[`Polja: ${slS.count}`,`Ukupno panela: ${tP}`,`Staklo: duplo 4+14+4 mm`,`Boja: RAL 7016`]);
   if(notes){c.fillStyle='#6b7280';c.font='italic 14px Segoe UI, sans-serif';c.fillText('Napomena: '+notes,30,y+18);y+=30;}
   y=matBar(c,CW,y,['Materijal: Aluminijum','Staklo: Duplo 4+14+4 mm','Boja: RAL 7016']);
@@ -646,19 +706,50 @@ function generateSliding(){
     const f=slS.fields[fi],fw=f.w*fSc,fh=f.h*fSc,fx=fSx+fxO,fy=fGy-fh;
     c.strokeStyle='#1a1a2e';c.lineWidth=3;c.strokeRect(fx,fy,fw,fh);
     c.fillStyle='#374151';c.fillRect(fx,fy,fw,6);
-    if(slS.type==='sapragom'){c.fillStyle='#374151';c.fillRect(fx,fGy-6,fw,6);}
-    const pW=fw/f.panels;
-    for(let p=0;p<f.panels;p++){const ppx=fx+p*pW;c.fillStyle='rgba(59,130,246,0.08)';c.fillRect(ppx+2,fy+8,pW-4,fh-14);c.strokeStyle='rgba(59,130,246,0.4)';c.lineWidth=1.5;c.strokeRect(ppx+2,fy+8,pW-4,fh-14);c.fillStyle='#6b7280';c.fillRect(ppx+pW/2-2,fy+fh*0.4,4,fh*0.2);}
-    // Direction arrows
-    c.fillStyle='#e94560';c.font='bold 15px Segoe UI, sans-serif';c.textAlign='center';
-    const aY=fy+fh/2;
-    if(f.dir==='right')c.fillText('→ → →',fx+fw/2,aY);
-    else if(f.dir==='left')c.fillText('← ← ←',fx+fw/2,aY);
-    else c.fillText('← →  ← →',fx+fw/2,aY);
-    c.fillStyle='#e94560';c.font='bold 14px Segoe UI, sans-serif';c.fillText(`F${fi+1}`,fx+fw/2,fy-10);
-    // Per-field info
+    if(slS.type==='sapragom'||f.kind==='vrata'){c.fillStyle='#374151';c.fillRect(fx,fGy-6,fw,6);}
+
+    if(f.kind==='klizno'){
+      const pW=fw/f.panels;
+      for(let p=0;p<f.panels;p++){const ppx=fx+p*pW;c.fillStyle='rgba(59,130,246,0.08)';c.fillRect(ppx+2,fy+8,pW-4,fh-14);c.strokeStyle='rgba(59,130,246,0.4)';c.lineWidth=1.5;c.strokeRect(ppx+2,fy+8,pW-4,fh-14);c.fillStyle='#6b7280';c.fillRect(ppx+pW/2-2,fy+fh*0.4,4,fh*0.2);}
+      c.fillStyle='#e94560';c.font='bold 15px Segoe UI, sans-serif';c.textAlign='center';
+      const aY=fy+fh/2;
+      if(f.dir==='right')c.fillText('→ → →',fx+fw/2,aY);
+      else if(f.dir==='left')c.fillText('← ← ←',fx+fw/2,aY);
+      else c.fillText('← →  ← →',fx+fw/2,aY);
+    } else if(f.kind==='vrata'){
+      // KRILNA VRATA - standardni simbol u pogledu: trougao ka strani sarki
+      const nL=f.leaves,lW=fw/nL;
+      for(let L=0;L<nL;L++){
+        const lx=fx+L*lW;
+        c.fillStyle='rgba(59,130,246,0.10)';c.fillRect(lx+3,fy+8,lW-6,fh-16);
+        c.strokeStyle='#1a1a2e';c.lineWidth=2;c.strokeRect(lx+3,fy+8,lW-6,fh-16);
+        // Kod dvokrilnih sarke su na spoljnim ivicama
+        const hingeLeft = nL===2 ? (L===0) : (f.hinge==='left');
+        const hx = hingeLeft ? lx+3 : lx+lW-3;
+        const ox = hingeLeft ? lx+lW-3 : lx+3;
+        c.strokeStyle='#e94560';c.lineWidth=1.6;
+        if(f.swing==='in')c.setLineDash([7,4]);
+        c.beginPath();c.moveTo(ox,fy+8);c.lineTo(hx,fy+fh/2);c.lineTo(ox,fy+fh-8);c.stroke();
+        c.setLineDash([]);
+        // Kvaka na strani suprotnoj od sarki
+        c.fillStyle='#374151';
+        c.fillRect(hingeLeft?lx+lW-14:lx+7,fy+fh*0.52,7,26);
+      }
+      c.fillStyle='#e94560';c.font='bold 12px Segoe UI, sans-serif';c.textAlign='center';
+      c.fillText((f.leaves==2?'DVOKRILNA':'JEDNOKRILNA')+' • '+(f.swing==='out'?'napolje':'unutra'),fx+fw/2,fy+fh-22);
+    } else {
+      // FIKSNO ostakljenje
+      c.fillStyle='rgba(59,130,246,0.06)';c.fillRect(fx+4,fy+9,fw-8,fh-18);
+      c.strokeStyle='rgba(59,130,246,0.45)';c.lineWidth=1.5;c.strokeRect(fx+4,fy+9,fw-8,fh-18);
+      c.strokeStyle='rgba(59,130,246,0.30)';c.lineWidth=1;
+      c.beginPath();c.moveTo(fx+8,fy+fh-14);c.lineTo(fx+fw-8,fy+13);c.stroke();
+      c.fillStyle='#6b7280';c.font='bold 13px Segoe UI, sans-serif';c.textAlign='center';
+      c.fillText('FIKSNO',fx+fw/2,fy+fh/2);
+    }
+
+    c.fillStyle='#e94560';c.font='bold 14px Segoe UI, sans-serif';c.textAlign='center';c.fillText(`F${fi+1}`,fx+fw/2,fy-10);
     c.fillStyle='#6b7280';c.font='12px Segoe UI, sans-serif';
-    c.fillText(`${f.panels} panela | ${f.dir==='left'?'Levo':f.dir==='right'?'Desno':'Centar'}`,fx+fw/2,fy-24);
+    c.fillText(slFieldDesc(f),fx+fw/2,fy-24);
     fxO+=fw;
   }
   if(slS.count>1){c.strokeStyle='#e94560';c.lineWidth=1.5;c.setLineDash([6,4]);let jx=0;for(let fi=0;fi<slS.count-1;fi++){jx+=slS.fields[fi].w*fSc;c.beginPath();c.moveTo(fSx+jx,fTy-30);c.lineTo(fSx+jx,fGy+5);c.stroke();}c.setLineDash([]);}
@@ -672,7 +763,36 @@ function generateSliding(){
   let tlxO=0;
   for(let fi=0;fi<slS.count;fi++){const f=slS.fields[fi],fw=f.w*tlSc,tfx=tlSx+tlxO;
     c.fillStyle='#e5e7eb';c.fillRect(tfx,tlSy,fw,tlD);c.strokeStyle='#1a1a2e';c.lineWidth=2;c.strokeRect(tfx,tlSy,fw,tlD);
-    const pW=fw/f.panels;for(let p=0;p<f.panels;p++){const ppx=tfx+p*pW;c.strokeStyle='rgba(59,130,246,0.5)';c.lineWidth=2;c.beginPath();c.moveTo(ppx+4,tlSy+tlD*0.3+p*3);c.lineTo(ppx+pW-4,tlSy+tlD*0.3+p*3);c.stroke();}
+    if(f.kind==='klizno'){
+      const pW=fw/f.panels;for(let p=0;p<f.panels;p++){const ppx=tfx+p*pW;c.strokeStyle='rgba(59,130,246,0.5)';c.lineWidth=2;c.beginPath();c.moveTo(ppx+4,tlSy+tlD*0.3+p*3);c.lineTo(ppx+pW-4,tlSy+tlD*0.3+p*3);c.stroke();}
+    } else if(f.kind==='vrata'){
+      // Luk otvaranja krila - standardni simbol u tlocrtu
+      const nL=f.leaves,lW=fw/nL,yLine=tlSy+tlD/2;
+      for(let L=0;L<nL;L++){
+        const lx=tfx+L*lW;
+        const hingeLeft = nL===2 ? (L===0) : (f.hinge==='left');
+        const hx = hingeLeft ? lx : lx+lW;
+        const sgn = hingeLeft ? 1 : -1;
+        const r = Math.min(lW-6, tlD*1.5);   // ogranici luk da ne izleti iz crteza
+        const dirY = f.swing==='out' ? 1 : -1;   // napolje = ka posmatracu (dole u tlocrtu)
+        // Krilo otvoreno pod 90 stepeni
+        c.strokeStyle='#1a1a2e';c.lineWidth=2.5;
+        c.beginPath();c.moveTo(hx,yLine);c.lineTo(hx,yLine+dirY*r);c.stroke();
+        // Luk
+        c.strokeStyle='#e94560';c.lineWidth=1.3;c.setLineDash([5,3]);
+        c.beginPath();
+        const a0 = dirY>0 ? Math.PI/2 : -Math.PI/2;
+        const a1 = sgn>0 ? 0 : Math.PI;
+        c.arc(hx,yLine,r,Math.min(a0,a1),Math.max(a0,a1),false);
+        c.stroke();c.setLineDash([]);
+        // Zatvoreno krilo
+        c.strokeStyle='rgba(26,26,46,0.35)';c.lineWidth=2;
+        c.beginPath();c.moveTo(lx+3,yLine);c.lineTo(lx+lW-3,yLine);c.stroke();
+      }
+    } else {
+      c.strokeStyle='rgba(59,130,246,0.55)';c.lineWidth=2.5;
+      c.beginPath();c.moveTo(tfx+4,tlSy+tlD/2);c.lineTo(tfx+fw-4,tlSy+tlD/2);c.stroke();
+    }
     c.strokeStyle='#9ca3af';c.lineWidth=0.8;c.beginPath();c.moveTo(tfx,tlSy+6);c.lineTo(tfx+fw,tlSy+6);c.stroke();c.beginPath();c.moveTo(tfx,tlSy+tlD-6);c.lineTo(tfx+fw,tlSy+tlD-6);c.stroke();
     c.fillStyle='#e94560';c.font='bold 13px Segoe UI, sans-serif';c.textAlign='center';c.fillText(`F${fi+1}`,tfx+fw/2,tlSy+tlD/2+4);
     tlxO+=fw;}
@@ -842,6 +962,405 @@ async function download3DHTML(html, prefix) {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   SCENE KIT - zajednicki 3D alati koji se ubacuju u SVAKI
+   izvezeni 3D HTML. Ovde su: nebo, teksture, staklo, CAD kote
+   i traka za animaciju. Scene ih samo pozivaju.
+   VAZNO: ovo je template literal - bez backtick-a i bez ${ }
+   ═══════════════════════════════════════════════════════════ */
+const SCENE_KIT = `
+/* ---- jedinice ---- */
+function fmtU(cm){ return (U_UNIT==='mm'? Math.round(cm*10) : Math.round(cm*10)/10) + ' ' + U_UNIT; }
+function fmtN(cm){ return String(U_UNIT==='mm'? Math.round(cm*10) : Math.round(cm*10)/10); }
+
+/* ---- osnovni mesh helper ---- */
+function makeBox(w,h,d,x,y,z,mat){
+  var m=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(w)||0.001,Math.abs(h)||0.001,Math.abs(d)||0.001),mat);
+  m.position.set(x,y,z); m.castShadow=true; m.receiveShadow=true; return m;
+}
+
+/* ---- KRILO: ram od 4 letve + staklena ispuna ----
+   Ranije je krilo bilo pun blok pa se staklo nije videlo. ---- */
+function makeSash(w,h,th,bar,fMat,gMat,opts){
+  opts=opts||{};
+  var g=new THREE.Group();
+  bar=bar||0.055; th=th||0.032;
+  if(w<=bar*2.2||h<=bar*2.2){ g.add(makeBox(w,h,th,0,0,0,fMat)); return g; }
+  g.add(makeBox(w,bar,th,0,h/2-bar/2,0,fMat));
+  g.add(makeBox(w,bar,th,0,-h/2+bar/2,0,fMat));
+  g.add(makeBox(bar,h-bar*2,th,-w/2+bar/2,0,0,fMat));
+  g.add(makeBox(bar,h-bar*2,th,w/2-bar/2,0,0,fMat));
+  var innerH=h-bar*2, innerW=w-bar*2, cy=0;
+  if(opts.transom>0&&opts.transom<1){
+    // horizontalna precka + donje mutno staklo
+    var ty=-h/2+bar+innerH*opts.transom;
+    g.add(makeBox(innerW,bar*0.8,th,0,ty,0,fMat));
+    var loH=innerH*opts.transom-bar*0.4;
+    var lo=makeBox(innerW,loH,th*0.3,0,-h/2+bar+loH/2,0,opts.lowerMat||gMat);
+    lo.castShadow=false; g.add(lo);
+    var upH=innerH*(1-opts.transom)-bar*0.4;
+    var up=makeBox(innerW,upH,th*0.3,0,h/2-bar-upH/2,0,gMat);
+    up.castShadow=false; g.add(up);
+  } else {
+    var gl=makeBox(innerW,innerH,th*0.3,0,cy,0,gMat);
+    gl.castShadow=false; g.add(gl);
+  }
+  return g;
+}
+
+/* ---- tekst kao sprite, sa pilulom u pozadini da se cita i na nebu ---- */
+function makeLabel3D(scene,text,pos,size,color,opts){
+  opts=opts||{};
+  var fs=64, pad=22;
+  var cv=document.createElement('canvas'), ct=cv.getContext('2d');
+  ct.font='bold '+fs+'px Segoe UI, sans-serif';
+  var tw=Math.ceil(ct.measureText(text).width);
+  cv.width=tw+pad*2; cv.height=fs+pad;
+  ct=cv.getContext('2d');
+  if(opts.bg!==false){
+    var r=cv.height/2;
+    ct.fillStyle=opts.bg||'rgba(255,255,255,0.92)';
+    ct.beginPath();
+    ct.moveTo(r,0); ct.lineTo(cv.width-r,0); ct.quadraticCurveTo(cv.width,0,cv.width,r);
+    ct.lineTo(cv.width,cv.height-r); ct.quadraticCurveTo(cv.width,cv.height,cv.width-r,cv.height);
+    ct.lineTo(r,cv.height); ct.quadraticCurveTo(0,cv.height,0,cv.height-r);
+    ct.lineTo(0,r); ct.quadraticCurveTo(0,0,r,0); ct.closePath(); ct.fill();
+  }
+  ct.font='bold '+fs+'px Segoe UI, sans-serif';
+  ct.fillStyle=color||'#1a1a2e'; ct.textAlign='center'; ct.textBaseline='middle';
+  ct.fillText(text,cv.width/2,cv.height/2);
+  var tex=new THREE.CanvasTexture(cv); tex.minFilter=THREE.LinearFilter;
+  var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:opts.depthTest!==false}));
+  sp.position.copy(pos);
+  var asp=cv.width/cv.height;
+  sp.scale.set(size*asp,size,1);
+  scene.add(sp); return sp;
+}
+
+/* ---- NEBO: gradijent + silueta drvoreda na horizontu ---- */
+function buildSky(scene,radius){
+  radius=radius||80;
+  var cv=document.createElement('canvas'); cv.width=64; cv.height=512;
+  var ct=cv.getContext('2d');
+  var g=ct.createLinearGradient(0,0,0,512);
+  g.addColorStop(0.00,'#3f7fc4');
+  g.addColorStop(0.42,'#8fbfe4');
+  g.addColorStop(0.60,'#cfe3f0');
+  g.addColorStop(0.68,'#dbe7ea');
+  ct.fillStyle=g; ct.fillRect(0,0,64,512);
+  ct.fillStyle='#5c7f52'; ct.fillRect(0,352,64,160);
+  var tex=new THREE.CanvasTexture(cv); tex.minFilter=THREE.LinearFilter;
+  var sky=new THREE.Mesh(new THREE.SphereGeometry(radius,32,20),
+    new THREE.MeshBasicMaterial({map:tex,side:THREE.BackSide,depthWrite:false,fog:false}));
+  scene.add(sky);
+  buildTreeLine(scene,radius*0.82);
+  return sky;
+}
+
+/* Drvored na horizontu - jeftin billboard prsten oko scene */
+function buildTreeLine(scene,dist){
+  var cv=document.createElement('canvas'); cv.width=2048; cv.height=256;
+  var ct=cv.getContext('2d');
+  ct.clearRect(0,0,2048,256);
+  function tree(x,h,w,shade){
+    var base=256;
+    ct.fillStyle=shade;
+    ct.beginPath();
+    ct.moveTo(x,base);
+    ct.lineTo(x-w/2,base-h*0.45);
+    ct.lineTo(x-w*0.28,base-h*0.5);
+    ct.lineTo(x-w*0.4,base-h*0.78);
+    ct.lineTo(x-w*0.16,base-h*0.74);
+    ct.lineTo(x,base-h);
+    ct.lineTo(x+w*0.16,base-h*0.74);
+    ct.lineTo(x+w*0.4,base-h*0.78);
+    ct.lineTo(x+w*0.28,base-h*0.5);
+    ct.lineTo(x+w/2,base-h*0.45);
+    ct.closePath(); ct.fill();
+  }
+  var i,x;
+  for(i=0;i<150;i++){ x=Math.random()*2048; tree(x,90+Math.random()*70,40+Math.random()*40,'#2f4a2c'); }
+  for(i=0;i<110;i++){ x=Math.random()*2048; tree(x,110+Math.random()*90,46+Math.random()*46,'#3d5f36'); }
+  for(i=0;i<80;i++){ x=Math.random()*2048; tree(x,130+Math.random()*100,50+Math.random()*50,'#4a7040'); }
+  var tex=new THREE.CanvasTexture(cv); tex.minFilter=THREE.LinearFilter;
+  var h=dist*0.42;
+  var ring=new THREE.Mesh(new THREE.CylinderGeometry(dist,dist,h,48,1,true),
+    new THREE.MeshBasicMaterial({map:tex,side:THREE.BackSide,transparent:true,depthWrite:false,fog:false}));
+  ring.position.y=h/2-h*0.06;
+  scene.add(ring); return ring;
+}
+
+/* ---- PROCEDURALNE TEKSTURE ---- */
+function grassTexture(rep){
+  var cv=document.createElement('canvas'); cv.width=256; cv.height=256;
+  var ct=cv.getContext('2d');
+  ct.fillStyle='#436d2e'; ct.fillRect(0,0,256,256);
+  var i,x,y,l,a;
+  for(i=0;i<9000;i++){
+    x=Math.random()*256; y=Math.random()*256; l=1.5+Math.random()*3.5;
+    a=(Math.random()*0.5-0.25);
+    ct.strokeStyle='rgba('+(44+Math.random()*62|0)+','+(86+Math.random()*66|0)+','+(32+Math.random()*36|0)+',0.8)';
+    ct.lineWidth=0.9;
+    ct.beginPath(); ct.moveTo(x,y); ct.lineTo(x+a*l,y-l); ct.stroke();
+  }
+  for(i=0;i<45;i++){
+    x=Math.random()*256; y=Math.random()*256;
+    ct.fillStyle='rgba(30,60,25,'+(0.03+Math.random()*0.05)+')';
+    ct.beginPath(); ct.arc(x,y,12+Math.random()*30,0,6.283); ct.fill();
+  }
+  var t=new THREE.CanvasTexture(cv);
+  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rep||40,rep||40);
+  return t;
+}
+
+function paveTexture(cols,rows){
+  var cv=document.createElement('canvas'); cv.width=256; cv.height=256;
+  var ct=cv.getContext('2d');
+  ct.fillStyle='#a9a49b'; ct.fillRect(0,0,256,256);
+  var i,x,y;
+  for(i=0;i<7000;i++){
+    x=Math.random()*256; y=Math.random()*256;
+    ct.fillStyle='rgba('+(140+Math.random()*60|0)+','+(136+Math.random()*58|0)+','+(128+Math.random()*54|0)+',0.5)';
+    ct.fillRect(x,y,1.4,1.4);
+  }
+  ct.strokeStyle='rgba(90,86,80,0.45)'; ct.lineWidth=3;
+  ct.strokeRect(0,0,256,256);
+  var t=new THREE.CanvasTexture(cv);
+  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(cols||4,rows||4);
+  return t;
+}
+
+function plasterTexture(){
+  var cv=document.createElement('canvas'); cv.width=256; cv.height=256;
+  var ct=cv.getContext('2d');
+  ct.fillStyle='#efece3'; ct.fillRect(0,0,256,256);
+  for(var i=0;i<6000;i++){
+    ct.fillStyle='rgba('+(224+Math.random()*26|0)+','+(220+Math.random()*26|0)+','+(210+Math.random()*26|0)+',0.30)';
+    ct.fillRect(Math.random()*256,Math.random()*256,1.5,1.5);
+  }
+  var t=new THREE.CanvasTexture(cv);
+  t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(3,3);
+  return t;
+}
+
+/* ---- MATERIJALI ---- */
+function glassClear(){
+  return new THREE.MeshPhysicalMaterial({
+    color:0xcfe6f2, metalness:0.0, roughness:0.045,
+    clearcoat:1.0, clearcoatRoughness:0.03,
+    reflectivity:0.55, envMapIntensity:1.6,
+    transparent:true, opacity:0.30,
+    side:THREE.DoubleSide, depthWrite:false
+  });
+}
+function glassFrosted(){
+  return new THREE.MeshPhysicalMaterial({
+    color:0xe4eef2, metalness:0.0, roughness:0.55,
+    clearcoat:0.5, clearcoatRoughness:0.4,
+    envMapIntensity:0.7,
+    transparent:true, opacity:0.80,
+    side:THREE.DoubleSide, depthWrite:false
+  });
+}
+function fabricMat(col){
+  return new THREE.MeshStandardMaterial({color:col||0xece7d2,roughness:0.88,metalness:0.02,side:THREE.DoubleSide});
+}
+
+/* ═══ CAD KOTE U 3D ═══ */
+var DIM_COLOR=0x1f2937;
+var DIM_TEXT=0.17;   // scene je postavljaju srazmerno velicini modela
+
+function _line(scene,a,b,col,op){
+  var g=new THREE.BufferGeometry().setFromPoints([a,b]);
+  var m=new THREE.LineBasicMaterial({color:col==null?DIM_COLOR:col,transparent:true,opacity:op==null?0.9:op});
+  var l=new THREE.Line(g,m); l.renderOrder=2; scene.add(l); return l;
+}
+function _arrow(scene,tip,dir,col,size){
+  size=size||0.055;
+  var geo=new THREE.ConeGeometry(size*0.42,size,10);
+  var mat=new THREE.MeshBasicMaterial({color:col==null?DIM_COLOR:col});
+  var m=new THREE.Mesh(geo,mat);
+  var up=new THREE.Vector3(0,1,0);
+  m.quaternion.setFromUnitVectors(up,dir.clone().normalize());
+  m.position.copy(tip).addScaledVector(dir.clone().normalize(),-size/2);
+  m.renderOrder=2; scene.add(m); return m;
+}
+
+/* Jedna kota izmedju dve tacke.
+   opts: {dir} pravac izmicanja, {offset} rastojanje, {color}, {size} tekst,
+         {label} tekst umesto broja, {cm} vrednost u cm za automatski tekst */
+function dim3D(scene,p1,p2,opts){
+  opts=opts||{};
+  var off=opts.offset==null?0.28:opts.offset;
+  var od=(opts.dir?opts.dir.clone():new THREE.Vector3(0,0,1)).normalize();
+  var col=opts.color==null?DIM_COLOR:opts.color;
+  var a=p1.clone().addScaledVector(od,off);
+  var b=p2.clone().addScaledVector(od,off);
+  // pomocne linije od predmeta do kotne linije
+  _line(scene,p1.clone().addScaledVector(od,off*0.10),a.clone().addScaledVector(od,0.045),col,0.45);
+  _line(scene,p2.clone().addScaledVector(od,off*0.10),b.clone().addScaledVector(od,0.045),col,0.45);
+  // kotna linija
+  _line(scene,a,b,col,0.95);
+  var ax=new THREE.Vector3().subVectors(b,a).normalize();
+  var len=a.distanceTo(b);
+  var asz=Math.min(0.07,Math.max(0.03,len*0.10));
+  if(len>asz*2.4){
+    _arrow(scene,a,ax.clone().negate(),col,asz);
+    _arrow(scene,b,ax,col,asz);
+  }
+  var txt=opts.label!=null?opts.label:fmtN(opts.cm!=null?opts.cm:0);
+  var mid=a.clone().add(b).multiplyScalar(0.5).addScaledVector(od,0.075);
+  makeLabel3D(scene,txt,mid,opts.size||DIM_TEXT,opts.textColor||'#111827',{depthTest:false});
+}
+
+/* Lanac kota: pojedinacna polja + ukupna kota izmaknuta dalje.
+   segs: niz duzina u cm; start: pocetna tacka; axis: pravac niza;
+   S: razmera (m po cm) */
+function dimChain3D(scene,start,axis,segs,S,opts){
+  opts=opts||{};
+  var ax=axis.clone().normalize();
+  var off=opts.offset==null?0.28:opts.offset;
+  var step=opts.step==null?0.30:opts.step;
+  var cur=start.clone(), i, p1, p2;
+  if(segs.length>1||opts.always){
+    for(i=0;i<segs.length;i++){
+      p1=cur.clone();
+      p2=cur.clone().addScaledVector(ax,segs[i]*S);
+      dim3D(scene,p1,p2,{dir:opts.dir,offset:off,color:opts.color,cm:segs[i],size:opts.size||DIM_TEXT*0.85});
+      cur=p2;
+    }
+  }
+  var total=0; for(i=0;i<segs.length;i++) total+=segs[i];
+  var e=start.clone().addScaledVector(ax,total*S);
+  dim3D(scene,start.clone(),e,{
+    dir:opts.dir, offset:(segs.length>1||opts.always)?off+step:off,
+    color:opts.totalColor==null?0xe94560:opts.totalColor,
+    cm:total, size:opts.totalSize||DIM_TEXT*1.2, textColor:'#b3213c'
+  });
+}
+
+/* ═══ TRAKA ZA ANIMACIJU (slajder + play) ═══
+   onChange(t) gde je t 0..1. Vraca objekat sa set(t) i isPlaying. */
+function animUI(label,onChange,opts){
+  opts=opts||{};
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:absolute;top:78px;right:14px;z-index:20;display:flex;align-items:center;gap:10px;'+
+    'background:rgba(255,255,255,0.94);padding:9px 12px;border-radius:26px;box-shadow:0 6px 22px rgba(0,0,0,.22);'+
+    'backdrop-filter:blur(6px);font:600 11px Segoe UI,sans-serif;color:#1a1a2e';
+  var cap=document.createElement('span');
+  cap.textContent=label; cap.style.cssText='white-space:nowrap;opacity:.75;letter-spacing:.3px';
+  var rng=document.createElement('input');
+  rng.type='range'; rng.min='0'; rng.max='1000'; rng.value=String(Math.round((opts.start==null?0:opts.start)*1000));
+  rng.style.cssText='width:132px;accent-color:#3b82f6;cursor:pointer';
+  var btn=document.createElement('button');
+  btn.style.cssText='width:30px;height:30px;border:none;border-radius:50%;background:#e94560;color:#fff;'+
+    'cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;flex:0 0 auto';
+  btn.innerHTML='&#9654;';
+  wrap.appendChild(cap); wrap.appendChild(rng); wrap.appendChild(btn);
+  document.body.appendChild(wrap);
+
+  var playing=false, dirn=1, spd=opts.speed||0.010;
+  function emit(){ onChange(parseInt(rng.value,10)/1000); }
+  rng.addEventListener('input',function(){ playing=false; btn.innerHTML='&#9654;'; emit(); });
+  btn.addEventListener('click',function(){
+    playing=!playing;
+    btn.innerHTML=playing?'&#10073;&#10073;':'&#9654;';
+    if(playing){ var v=parseInt(rng.value,10); if(v>=1000) dirn=-1; else if(v<=0) dirn=1; }
+  });
+  var api={
+    tick:function(){
+      if(!playing) return;
+      var v=parseInt(rng.value,10)+dirn*spd*1000;
+      if(v>=1000){ v=1000; dirn=-1; }
+      if(v<=0){ v=0; dirn=1; }
+      rng.value=String(v); emit();
+    },
+    set:function(t){ rng.value=String(Math.round(t*1000)); emit(); }
+  };
+  emit();
+  return api;
+}
+
+/* Zajednicki renderer + kontrole + osvetljenje.
+   Vraca {scene,camera,renderer,controls} */
+function baseScene(opts){
+  opts=opts||{};
+  var scene=new THREE.Scene();
+  scene.fog=new THREE.Fog(0xdae8f2,70,220);
+  var hdr=document.getElementById('header');
+  var hH=hdr?hdr.offsetHeight:60;
+  var cW=window.innerWidth, cH=window.innerHeight-hH;
+  var camera=new THREE.PerspectiveCamera(45,cW/cH,0.1,220);
+  var renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+  renderer.setSize(cW,cH);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=0.94;
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  document.body.appendChild(renderer.domElement);
+  var controls=new THREE.OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true;
+  controls.maxDistance=opts.maxDistance||60;
+
+  buildSky(scene,opts.skyRadius||80);
+  // Environment mapa (iz istog gradijenta neba) - bez nje staklo i
+  // aluminijum nemaju nikakav odsjaj i izgledaju kao mat plastika.
+  try{
+    var eq=document.createElement('canvas'); eq.width=256; eq.height=128;
+    var ec=eq.getContext('2d');
+    var eg=ec.createLinearGradient(0,0,0,128);
+    eg.addColorStop(0.00,'#5f9fd4'); eg.addColorStop(0.45,'#bcd9ee');
+    eg.addColorStop(0.52,'#e6eef2'); eg.addColorStop(1.00,'#5d7a4e');
+    ec.fillStyle=eg; ec.fillRect(0,0,256,128);
+    var eqTex=new THREE.CanvasTexture(eq);
+    eqTex.mapping=THREE.EquirectangularReflectionMapping;
+    var pmrem=new THREE.PMREMGenerator(renderer);
+    pmrem.compileEquirectangularShader();
+    scene.environment=pmrem.fromEquirectangular(eqTex).texture;
+    pmrem.dispose(); eqTex.dispose();
+  }catch(e){ /* stariji three - radi i bez env mape */ }
+
+  scene.add(new THREE.AmbientLight(0xffffff,0.18));
+  scene.add(new THREE.HemisphereLight(0x9ec9e8,0x4a5a35,0.24));
+  var sun=new THREE.DirectionalLight(0xfff6e0,1.0);
+  sun.position.set(opts.sunX==null?7:opts.sunX,14,opts.sunZ==null?9:opts.sunZ);
+  sun.castShadow=true;
+  sun.shadow.mapSize.width=2048; sun.shadow.mapSize.height=2048;
+  sun.shadow.camera.near=0.5; sun.shadow.camera.far=70;
+  var sp=opts.shadowSpan||16;
+  sun.shadow.camera.left=-sp; sun.shadow.camera.right=sp;
+  sun.shadow.camera.top=sp; sun.shadow.camera.bottom=-sp;
+  sun.shadow.bias=-0.0006;
+  scene.add(sun);
+  var fill=new THREE.DirectionalLight(0xbcd8ee,0.28);
+  fill.position.set(-6,5,-4); scene.add(fill);
+
+  window.addEventListener('resize',function(){
+    var h2=document.getElementById('header');
+    var nh=h2?h2.offsetHeight:60;
+    camera.aspect=window.innerWidth/(window.innerHeight-nh);
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight-nh);
+  });
+  return {scene:scene,camera:camera,renderer:renderer,controls:controls,sun:sun};
+}
+
+/* Teren: trava + poplocana ploca ispod konstrukcije */
+function buildGround(scene,w,d,cx,cz){
+  var grass=new THREE.Mesh(new THREE.PlaneGeometry(160,160),
+    new THREE.MeshStandardMaterial({map:grassTexture(60),roughness:0.97,metalness:0}));
+  grass.rotation.x=-Math.PI/2; grass.position.y=-0.02; grass.receiveShadow=true;
+  scene.add(grass);
+  var pv=new THREE.Mesh(new THREE.BoxGeometry(w,0.07,d),
+    new THREE.MeshStandardMaterial({map:paveTexture(Math.max(2,Math.round(w*1.6)),Math.max(2,Math.round(d*1.6))),roughness:0.85,metalness:0.02}));
+  pv.position.set(cx,-0.035,cz); pv.receiveShadow=true; pv.castShadow=false;
+  scene.add(pv);
+  return pv;
+}
+`;
+
 function threejsBase(title, subtitle, dims, sceneCode) {
   const pn = document.getElementById(currentProduct==='pergola'?'pg_projectName':currentProduct==='sliding'?'sl_projectName':'gl_projectName').value.trim() || '';
   return `<!DOCTYPE html>
@@ -905,6 +1424,8 @@ d.addEventListener('touchmove',function(e){e.preventDefault();var el=s.domElemen
 d.addEventListener('touchend',function(e){if(e.touches.length===0){state=0}else if(e.touches.length===1){state=1;rS.set(e.touches[0].clientX,e.touches[0].clientY)}});
 this.update=function(){var p=o.position.clone().sub(s.target);p.applyQuaternion(quat);sph.setFromVector3(p);sph.theta+=sphD.theta;sph.phi+=sphD.phi;sph.phi=Math.max(s.minPolarAngle,Math.min(s.maxPolarAngle,sph.phi));sph.radius*=sc;sph.radius=Math.max(s.minDistance,Math.min(s.maxDistance,sph.radius));s.target.add(panOff);p.setFromSpherical(sph);p.applyQuaternion(quatI);o.position.copy(s.target).add(p);o.lookAt(s.target);sphD.theta*=1-s.dampingFactor;sphD.phi*=1-s.dampingFactor;sc+=(1-sc)*s.dampingFactor;panOff.multiplyScalar(1-s.dampingFactor)}};
 
+var U_UNIT='${UNITS}';
+${SCENE_KIT}
 ${sceneCode}
 <\/script></body></html>`;
 }
@@ -977,69 +1498,32 @@ var pergs=${pergs}, type='${type}';
 var hasWB=${hasWB}, wbH=${wbH}, postH=${postH};
 var ppp=${ppp}, postW=${postW}, postD=${postD}, ral='${ral}';
 
-var scene=new THREE.Scene();
-scene.background=new THREE.Color(0xe8ecf1);
-scene.fog=new THREE.Fog(0xe8ecf1,25,50);
+var totalW=tw*S, maxP=mp*S;
 
-var hdrEl=document.getElementById('header');
-var hH=hdrEl?hdrEl.offsetHeight:60;
-var cW=window.innerWidth,cH=window.innerHeight-hH;
-var camera=new THREE.PerspectiveCamera(45,cW/cH,0.1,100);
-var renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setSize(cW,cH);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.1;
-document.body.appendChild(renderer.domElement);
+var B=baseScene({shadowSpan:Math.max(10,totalW*1.4),skyRadius:Math.max(70,totalW*9)});
+var scene=B.scene, camera=B.camera, renderer=B.renderer, controls=B.controls;
+DIM_TEXT=Math.max(0.14,Math.min(0.42,Math.max(totalW,1.5)*0.042));
 
-var controls=new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;
-
-// Lights
-scene.add(new THREE.AmbientLight(0xffffff,0.4));
-var sun=new THREE.DirectionalLight(0xfffbe6,0.9);sun.position.set(6,12,8);sun.castShadow=true;
-sun.shadow.mapSize.width=2048;sun.shadow.mapSize.height=2048;
-sun.shadow.camera.near=0.5;sun.shadow.camera.far=50;
-sun.shadow.camera.left=-15;sun.shadow.camera.right=15;
-sun.shadow.camera.top=15;sun.shadow.camera.bottom=-15;
-scene.add(sun);
-scene.add(new THREE.DirectionalLight(0x8ecae6,0.25).translateX(-5).translateY(4).translateZ(-3));
-scene.add(new THREE.HemisphereLight(0x87ceeb,0x362312,0.3));
-
-// Materials
+// Materijali
 var RAL_COLORS={'7016':0x383E42,'9005':0x0A0A0A,'9016':0xF1F0EA,'7035':0xC5C7C4,'8017':0x44322D};
 var frameColor=RAL_COLORS[ral]||0x383E42;
-var frameMat=new THREE.MeshStandardMaterial({color:frameColor,roughness:0.3,metalness:0.7});
-var wallMat=new THREE.MeshStandardMaterial({color:0xd4d4d8,roughness:0.92});
-var groundMat=new THREE.MeshStandardMaterial({color:0x9a8a70,roughness:0.9});
-var wallBaseMat=new THREE.MeshStandardMaterial({color:0xb8a89a,roughness:0.8});
-// Canvas/fabric material (cerada)
-var canvasMat=new THREE.MeshStandardMaterial({color:0xdcdccc,roughness:0.85,metalness:0.02,side:THREE.DoubleSide});
-// LED glow material
+var frameMat=new THREE.MeshStandardMaterial({color:frameColor,roughness:0.42,metalness:0.45,envMapIntensity:0.40});
+var wallMat=new THREE.MeshStandardMaterial({map:plasterTexture(),roughness:0.95,metalness:0,envMapIntensity:0.5});
+var wallBaseMat=new THREE.MeshStandardMaterial({color:0xb8a89a,roughness:0.85});
+var canvasMat=fabricMat(0xece7d2);
 var ledMat=new THREE.MeshBasicMaterial({color:0xfff5e0});
 var ledGlowMat=new THREE.MeshBasicMaterial({color:0xfff0c8,transparent:true,opacity:0.4});
 
-function makeBox(w,h,d,x,y,z,mat){
-  var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
-  m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;return m;
-}
+// Teren: trava + poplocana terasa
+buildGround(scene,totalW+0.9,maxP+0.9,totalW/2,maxP/2);
 
-// Ground
-var gMesh=new THREE.Mesh(new THREE.PlaneGeometry(25,25),groundMat);
-gMesh.rotation.x=-Math.PI/2;gMesh.receiveShadow=true;scene.add(gMesh);
-
-// Terrace / paving under pergola
-var totalW=tw*S, maxP=mp*S;
-var paveMat=new THREE.MeshStandardMaterial({color:0xbcb1a0,roughness:0.8});
-var pave=makeBox(totalW+0.4,0.06,maxP+0.4,totalW/2,-0.03,maxP/2,paveMat);
-pave.receiveShadow=true;scene.add(pave);
-
-// Wall (building)
-var wallH=wH*S+0.6;
-var wMesh=makeBox(totalW+1,wallH,0.25,totalW/2,wallH/2-0.05,-0.12,wallMat);
+// Zid objekta
+var wallH=wH*S+0.42;
+var wMesh=makeBox(totalW+0.9,wallH,0.25,totalW/2,wallH/2-0.05,-0.13,wallMat);
 scene.add(wMesh);
+
+// Pokretni delovi za animaciju
+var lamellas=[], awnings=[];
 
 // Build pergolas
 var xOffset=0;
@@ -1070,6 +1554,7 @@ for(var pi=0;pi<count;pi++){
       lam.position.set(xOffset+pw/2,ly-profileH/2,lz);
       lam.rotation.x=0.35;
       lam.castShadow=true;scene.add(lam);
+      lamellas.push(lam);
     }
   } else {
     // RAVNA / KLASICNA: Rogovi + Ceradono platno + Poprečni profili sa LED
@@ -1129,6 +1614,7 @@ for(var pi=0;pi<count;pi++){
       }
       canvasPanel.castShadow=true;canvasPanel.receiveShadow=true;
       scene.add(canvasPanel);
+      awnings.push({m:canvasPanel,pp:pp,backY:roofBackY,frontY:roofFrontY,drop:canvasDropY,cx:canvasCx});
     }
 
     // ═══ POPREČNI PROFILI ISPOD sa LED svetlima ═══
@@ -1201,35 +1687,73 @@ if(type!=='bioklimatska'){
   }
 }
 
-// ═══ DIMENSION LABELS ═══
+// ═══ KASETA TENDE uz zid (tu se platno namotava) ═══
+for(var ai=0;ai<awnings.length;ai++){
+  var aw=awnings[ai];
+  var casW=Math.abs(aw.m.geometry.parameters.width)+0.09;
+  var cas=makeBox(casW,0.16,0.17,aw.cx,aw.backY-0.055,0.10,frameMat);
+  scene.add(cas);
+}
+
+// ═══ KOTE (CAD stil) ═══
 var mpp=0;
 for(var i=0;i<pergs.length;i++) if(pergs[i].p>mpp) mpp=pergs[i].p;
-mpp*=S;
-makeLabel3D(scene,tw+' cm',new THREE.Vector3(totalW/2,wH*S+0.35,mpp+0.35),0.7,'#e94560');
-makeLabel3D(scene,mp+' cm',new THREE.Vector3(-0.4,wH*S*0.5,mpp/2),0.5,'#e94560');
-makeLabel3D(scene,wH+' cm',new THREE.Vector3(-0.5,wH*S/2,0.15),0.5,'#3b82f6');
-makeLabel3D(scene,pH+' cm',new THREE.Vector3(totalW+0.5,pH*S/2,mpp+0.15),0.5,'#3b82f6');
-// Per-pergola width labels
-var lxO=0;
-for(var pi=0;pi<count;pi++){
-  var lpw=pergs[pi].w*S;
-  if(count>1) makeLabel3D(scene,'P'+(pi+1)+': '+pergs[pi].w+' cm',new THREE.Vector3(lxO+lpw/2,wH*S+0.2,mpp+0.2),0.4,'#374151');
-  lxO+=lpw;
+var mppM=mpp*S;
+
+var Zf=new THREE.Vector3(0,0,1);
+var Xn=new THREE.Vector3(-1,0,0);
+
+// Lanac sirina po pergoli + ukupna sirina, ispred konstrukcije
+var wSegs=[]; for(i=0;i<pergs.length;i++) wSegs.push(pergs[i].w);
+dimChain3D(scene,new THREE.Vector3(0,0.02,mppM),new THREE.Vector3(1,0,0),wSegs,S,
+  {dir:Zf,offset:0.34,step:0.34});
+
+// Projekcija (dubina) sa leve strane
+dim3D(scene,new THREE.Vector3(0,0.02,0),new THREE.Vector3(0,0.02,mppM),
+  {dir:Xn,offset:0.34,cm:mpp});
+
+// Visina na zidu
+dim3D(scene,new THREE.Vector3(0,0,0),new THREE.Vector3(0,wH*S,0),
+  {dir:Xn,offset:1.05,cm:wH,size:DIM_TEXT*0.85,color:0x2563eb,textColor:'#1d4ed8'});
+
+// Prolazna visina na prednjem uglu
+dim3D(scene,new THREE.Vector3(totalW,0,mppM),new THREE.Vector3(totalW,pH*S,mppM),
+  {dir:new THREE.Vector3(1,0,0),offset:0.34,cm:pH,size:DIM_TEXT*0.85,color:0x2563eb,textColor:'#1d4ed8'});
+
+// Zidic + stub, ako postoji
+if(hasWB){
+  dim3D(scene,new THREE.Vector3(totalW,0,mppM),new THREE.Vector3(totalW,wbH*S,mppM),
+    {dir:new THREE.Vector3(1,0,0),offset:0.70,cm:wbH,size:DIM_TEXT*0.85,color:0x10b981,textColor:'#047857'});
+  dim3D(scene,new THREE.Vector3(totalW,wbH*S,mppM),new THREE.Vector3(totalW,(wbH+postH)*S,mppM),
+    {dir:new THREE.Vector3(1,0,0),offset:0.70,cm:postH,size:DIM_TEXT*0.85,color:0x10b981,textColor:'#047857'});
 }
 
-// Camera
-camera.position.set(totalW/2+totalW*0.5,Math.max(wH*S*0.8,2.2),mpp+totalW*0.4+2);
-controls.target.set(totalW/2,wH*S*0.35,mpp*0.45);
+// Kamera
+camera.position.set(totalW/2+totalW*0.62,Math.max(wH*S*1.38,3.0),mppM+totalW*0.55+2.8);
+controls.target.set(totalW/2,wH*S*0.35,mppM*0.45);
 
-function makeLabel3D(sc,t,p,sz,col){
-  var cv=document.createElement('canvas'),ct=cv.getContext('2d');
-  cv.width=512;cv.height=128;ct.font='bold 48px Segoe UI,sans-serif';ct.fillStyle=col||'#1a1a2e';ct.textAlign='center';ct.textBaseline='middle';ct.fillText(t,256,64);
-  var tx=new THREE.CanvasTexture(cv);var mt=new THREE.SpriteMaterial({map:tx,transparent:true,depthTest:false});
-  var sp=new THREE.Sprite(mt);sp.position.copy(p);sp.scale.set(sz*2,sz*.5,1);sc.add(sp);
+// ═══ ANIMACIJA ═══
+var animLabel = type==='bioklimatska' ? 'Lamele' : 'Tenda';
+function applyAnim(t){
+  if(type==='bioklimatska'){
+    // t=0 zatvorene (ravno), t=1 otvorene (uspravno)
+    for(var k=0;k<lamellas.length;k++) lamellas[k].rotation.x=t*1.45;
+  } else {
+    // t=0 tenda uvucena u kasetu, t=1 potpuno izvucena
+    var f=Math.max(0.012,t);
+    for(var k=0;k<awnings.length;k++){
+      var a=awnings[k];
+      a.m.scale.y=f;
+      a.m.position.z=a.pp*f/2;
+      a.m.position.y=a.backY-(a.backY-a.frontY)*(f/2)-a.drop;
+      a.m.visible=t>0.02;
+    }
+  }
 }
+var anim=animUI(animLabel,applyAnim,{start:type==='bioklimatska'?0.35:1});
 
 window.addEventListener('resize',function(){var rH=document.getElementById('header');var nh=rH?rH.offsetHeight:60;var nw=window.innerWidth,nch=window.innerHeight-nh;camera.aspect=nw/nch;camera.updateProjectionMatrix();renderer.setSize(nw,nch)});
-function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}animate();`;
+function animate(){requestAnimationFrame(animate);anim.tick();controls.update();renderer.render(scene,camera)}animate();`;
 
   var html = threejsBase(PG_TL[type], 'Interaktivni 3D model pergole', dimsHTML, sceneCode);
   download3DHTML(html, 'PG-3D');
@@ -1243,91 +1767,136 @@ function export3DSliding() {
   var tw = slS.fields.reduce((s,f)=>s+f.w,0);
   var mH = Math.max(...slS.fields.map(f=>f.h));
   var tA = slS.fields.reduce((s,f)=>s+(f.w*f.h)/10000,0);
-  var tP = slS.fields.reduce((s,f)=>s+f.panels,0);
+  var tP = slS.fields.reduce((s,f)=>s+(f.kind==='klizno'?f.panels:f.kind==='vrata'?f.leaves:1),0);
   var sysType = slS.type;
   var fields = JSON.stringify(slS.fields);
   var fcount = slS.count;
+  var hasDoor = slS.fields.some(f=>f.kind==='vrata');
 
-  var dimsHTML = `<div class="dim">Ukupna \u0161irina: ${tw} cm</div>
-<div class="dim">Max visina: ${mH} cm</div>
-<div class="dim">Ukupno panela: ${tP}</div>
+  var dimsHTML = `<div class="dim">Ukupna širina: ${usu(tw)}</div>
+<div class="dim">Max visina: ${usu(mH)}</div>
+<div class="dim">Panela / krila: ${tP}</div>
 <div class="dim">Staklo: duplo 4+14+4 mm</div>
 <div class="dim">Boja: RAL 7016</div>
-<div class="dim">Povr\u0161ina: ${tA.toFixed(2)} m\u00B2</div>`;
+<div class="dim">Površina: ${tA.toFixed(2)} m²</div>`;
 
   var sceneCode = `
 var S=${S},tw=${tw},mH=${mH},fcount=${fcount};
-var fields=${fields},sysType='${sysType}';
+var fields=${fields},sysType='${sysType}',hasDoor=${hasDoor};
 
-var scene=new THREE.Scene();
-scene.background=new THREE.Color(0xe8ecf1);
-scene.fog=new THREE.Fog(0xe8ecf1,20,40);
-var hdrEl2=document.getElementById('header');var hH2=hdrEl2?hdrEl2.offsetHeight:60;
-var camera=new THREE.PerspectiveCamera(45,window.innerWidth/(window.innerHeight-hH2),0.1,100);
-var renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setSize(window.innerWidth,window.innerHeight-hH2);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
-var controls=new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;
+var totalW=tw*S, maxH=mH*S;
+var B=baseScene({shadowSpan:Math.max(9,totalW*1.3),skyRadius:Math.max(70,totalW*9)});
+var scene=B.scene, camera=B.camera, renderer=B.renderer, controls=B.controls;
+DIM_TEXT=Math.max(0.14,Math.min(0.42,Math.max(totalW,1.5)*0.042));
 
-scene.add(new THREE.AmbientLight(0xffffff,0.5));
-var dir=new THREE.DirectionalLight(0xffffff,0.8);dir.position.set(5,8,6);dir.castShadow=true;
-dir.shadow.mapSize.width=2048;dir.shadow.mapSize.height=2048;scene.add(dir);
-scene.add(new THREE.DirectionalLight(0x8ecae6,0.3).translateX(-5).translateY(3));
+var frameMat=new THREE.MeshStandardMaterial({color:0x383E42,roughness:0.42,metalness:0.45,envMapIntensity:0.40});
+var trackMat=new THREE.MeshStandardMaterial({color:0x555555,roughness:0.55,metalness:0.5,envMapIntensity:0.35});
+var handleMat=new THREE.MeshStandardMaterial({color:0x2b2f33,roughness:0.35,metalness:0.7,envMapIntensity:0.5});
+var gClear=glassClear(), gFrost=glassFrosted();
 
-var frameMat=new THREE.MeshStandardMaterial({color:0x383E42,roughness:0.35,metalness:0.65});
-var glassMat=new THREE.MeshPhysicalMaterial({color:0x88ccff,transparent:true,opacity:0.25,roughness:0.05,metalness:0.1,transmission:0.85,thickness:0.02});
-var groundMat=new THREE.MeshStandardMaterial({color:0xa88b6d,roughness:0.85});
-var trackMat=new THREE.MeshStandardMaterial({color:0x555555,roughness:0.5,metalness:0.7});
+buildGround(scene,totalW+1.1,1.9,totalW/2,0);
 
-var gGeo=new THREE.PlaneGeometry(20,20);var gMesh=new THREE.Mesh(gGeo,groundMat);
-gMesh.rotation.x=-Math.PI/2;gMesh.receiveShadow=true;scene.add(gMesh);
+var sliders=[], doors=[];
+var xOff=0;
 
-var totalW=tw*S;var xOff=0;
 for(var fi=0;fi<fcount;fi++){
-  var f=fields[fi],fw=f.w*S,fh=f.h*S,np=f.panels;
-  // Frame
+  var f=fields[fi], fw=f.w*S, fh=f.h*S;
   var fTk=0.05;
-  // Top rail
-  scene.add(makeBox(fw,fTk,fTk,xOff+fw/2,fh,0,frameMat));
-  // Bottom rail/threshold
-  if(sysType==='sapragom') scene.add(makeBox(fw,fTk,fTk,xOff+fw/2,fTk/2,0,frameMat));
-  // Top track
-  scene.add(makeBox(fw,0.02,0.08,xOff+fw/2,fh-0.01,0,trackMat));
-  // Left post
-  scene.add(makeBox(fTk,fh,fTk,xOff,fh/2,0,frameMat));
-  // Right post
-  scene.add(makeBox(fTk,fh,fTk,xOff+fw,fh/2,0,frameMat));
 
-  // Glass panels
-  var panW=fw/np;
-  for(var p=0;p<np;p++){
-    var px=xOff+p*panW+panW/2;
-    var zOff=p*0.015; // staggered depth for realism
-    // Panel frame
-    scene.add(makeBox(panW-0.02,fh-fTk*2,0.025,px,fh/2,zOff,frameMat));
-    // Glass
-    scene.add(makeBox(panW-0.06,fh-fTk*2-0.06,0.008,px,fh/2,zOff,glassMat));
-    // Handle
-    scene.add(makeBox(0.015,fh*0.12,0.02,px,fh*0.45,zOff+0.02,frameMat));
+  // Ram polja
+  scene.add(makeBox(fw,fTk,fTk,xOff+fw/2,fh,0,frameMat));                     // gornja greda
+  if(sysType==='sapragom'||f.kind==='vrata') scene.add(makeBox(fw,fTk,fTk,xOff+fw/2,fTk/2,0,frameMat)); // prag
+  scene.add(makeBox(fw,0.02,0.09,xOff+fw/2,fh-0.012,0,trackMat));             // sina
+  scene.add(makeBox(fTk,fh,fTk,xOff,fh/2,0,frameMat));                        // levi stub
+  scene.add(makeBox(fTk,fh,fTk,xOff+fw,fh/2,0,frameMat));                     // desni stub
+
+  if(f.kind==='klizno'){
+    var np=f.panels, panW=fw/np;
+    for(var p=0;p<np;p++){
+      var px=xOff+p*panW+panW/2;
+      var zOff=(p-(np-1)/2)*0.022;
+      var grp=makeSash(panW-0.02,fh-fTk*2,0.030,0.05,frameMat,gClear);
+      var hx=(p%2===0?1:-1)*(panW/2-0.06);
+      grp.add(makeBox(0.018,fh*0.13,0.024,hx,-fh*0.05,0.028,handleMat));
+      grp.position.set(px,fh/2,zOff);
+      scene.add(grp);
+      // Klizanje: paneli se slazu ka strani otvaranja
+      var travel;
+      if(f.dir==='right') travel=(np-1-p)*panW;
+      else if(f.dir==='left') travel=-p*panW;
+      else travel=(p<np/2? -p*panW : (np-1-p)*panW);
+      sliders.push({g:grp,x0:px,travel:travel});
+    }
+  } else if(f.kind==='vrata'){
+    var nL=f.leaves, lW=fw/nL;
+    for(var L=0;L<nL;L++){
+      var lx=xOff+L*lW;
+      var hingeLeft = nL===2 ? (L===0) : (f.hinge==='left');
+      var hingeX = hingeLeft ? lx+fTk/2 : lx+lW-fTk/2;
+      // Pivot u osi sarki - rotacija krila oko njega
+      var pivot=new THREE.Group();
+      pivot.position.set(hingeX,fh/2,0);
+      scene.add(pivot);
+      var half=(lW-fTk)/2;
+      var cx=hingeLeft? half : -half;
+      var leaf=new THREE.Group();
+      var sash=makeSash(lW-fTk,fh-fTk*1.6,0.036,0.058,frameMat,gClear);
+      sash.position.x=cx;
+      leaf.add(sash);
+      // Kvaka na suprotnoj strani od sarki
+      var khx=hingeLeft? (lW-fTk-0.055) : -(lW-fTk-0.055);
+      leaf.add(makeBox(0.022,0.13,0.028,khx,-0.03,0.032,handleMat));
+      leaf.add(makeBox(0.05,0.022,0.028,khx+(hingeLeft?-0.02:0.02),-0.09,0.032,handleMat));
+      pivot.add(leaf);
+      // Napolje = +Z, unutra = -Z. Znak rotacije zavisi i od strane sarki.
+      var maxAng=(f.swing==='out'?1:-1)*(hingeLeft?-1:1)*1.5;
+      doors.push({p:pivot,ang:maxAng});
+    }
+  } else {
+    // Fiksno ostakljenje - donja traka mutno, gornje providno
+    var fx1=makeSash(fw-fTk,fh-fTk*2,0.032,0.052,frameMat,gClear,{transom:0.34,lowerMat:gFrost});
+    fx1.position.set(xOff+fw/2,fTk+(fh-fTk*2)/2,0);
+    scene.add(fx1);
   }
   xOff+=fw;
 }
 
-function makeBox(w,h,d,x,y,z,mat){var g=new THREE.BoxGeometry(w,h,d);var m=new THREE.Mesh(g,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;return m}
+// ═══ KOTE ═══
+var Zf=new THREE.Vector3(0,0,1);
+var wSegs=[]; for(var q=0;q<fields.length;q++) wSegs.push(fields[q].w);
+dimChain3D(scene,new THREE.Vector3(0,0,0.10),new THREE.Vector3(1,0,0),wSegs,S,
+  {dir:Zf,offset:0.42,step:0.32});
 
-makeLabel3D(scene,tw+' cm',new THREE.Vector3(totalW/2,mH*S+0.25,0.3),0.6,'#e94560');
-makeLabel3D(scene,mH+' cm',new THREE.Vector3(-0.3,mH*S/2,0),0.5,'#3b82f6');
+// Visina svakog polja, sa prednje strane
+var hx2=0;
+if(fields.length>1){
+  for(var q=0;q<fields.length;q++){
+    var fwq=fields[q].w*S;
+    dim3D(scene,new THREE.Vector3(hx2+fwq,0,0.06),new THREE.Vector3(hx2+fwq,fields[q].h*S,0.06),
+      {dir:Zf,offset:0.30,cm:fields[q].h,size:DIM_TEXT*0.85,color:0x2563eb,textColor:'#1d4ed8'});
+    hx2+=fwq;
+  }
+}
+// Ukupna visina levo
+dim3D(scene,new THREE.Vector3(0,0,0),new THREE.Vector3(0,maxH,0),
+  {dir:new THREE.Vector3(-1,0,0),offset:0.34,cm:mH,size:DIM_TEXT*0.85,color:0x2563eb,textColor:'#1d4ed8'});
 
-function makeLabel3D(sc,t,p,sz,col){var cv=document.createElement('canvas'),ct=cv.getContext('2d');cv.width=512;cv.height=128;ct.font='bold 48px Segoe UI,sans-serif';ct.fillStyle=col;ct.textAlign='center';ct.textBaseline='middle';ct.fillText(t,256,64);var tx=new THREE.CanvasTexture(cv);var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthTest:false}));sp.position.copy(p);sp.scale.set(sz*2,sz*.5,1);sc.add(sp)}
+camera.position.set(totalW/2+totalW*0.55,maxH*1.25,maxH+totalW*0.40+2.1);
+controls.target.set(totalW/2,maxH*0.42,0);
 
-camera.position.set(totalW/2+totalW*0.4,mH*S*0.6,mH*S+1.5);
-controls.target.set(totalW/2,mH*S*0.4,0);
+// ═══ ANIMACIJA: klizanje panela i otvaranje vrata ═══
+function applyAnim(t){
+  for(var k=0;k<sliders.length;k++){
+    var sl=sliders[k];
+    sl.g.position.x=sl.x0+sl.travel*t;
+  }
+  for(var k2=0;k2<doors.length;k2++){
+    doors[k2].p.rotation.y=doors[k2].ang*t;
+  }
+}
+var anim=animUI(hasDoor&&sliders.length===0?'Vrata':'Otvaranje',applyAnim,{start:0});
 
-window.addEventListener('resize',function(){var rH=document.getElementById('header');var nh=rH?rH.offsetHeight:60;var nw=window.innerWidth,nch=window.innerHeight-nh;camera.aspect=nw/nch;camera.updateProjectionMatrix();renderer.setSize(nw,nch)});
-function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}animate();`;
+function animate(){requestAnimationFrame(animate);anim.tick();controls.update();renderer.render(scene,camera)}animate();`;
 
   var html = threejsBase(sysType==='bezprag'?'Klizni sistem bez praga':'Klizni sistem sa pragom', 'Interaktivni 3D model kliznog stakla', dimsHTML, sceneCode);
   download3DHTML(html, 'SL-3D');
@@ -1346,10 +1915,10 @@ function export3DGuillotine() {
   var fields = JSON.stringify(glS.fields);
   var fcount = glS.count;
 
-  var dimsHTML = `<div class="dim">Ukupna \u0161irina: ${tw} cm</div>
-<div class="dim">Max visina: ${mH} cm</div>
+  var dimsHTML = `<div class="dim">Ukupna širina: ${usu(tw)}</div>
+<div class="dim">Max visina: ${usu(mH)}</div>
 <div class="dim">Segmenata: ${seg}</div>
-<div class="dim">Visina ograde (otv.): ~${segH} cm</div>
+<div class="dim">Visina ograde (otv.): ~${usu(segH)}</div>
 <div class="dim">Staklo: duplo 4+14+4 mm</div>
 <div class="dim">Boja: RAL 7016</div>`;
 
@@ -1357,105 +1926,76 @@ function export3DGuillotine() {
 var S=${S},tw=${tw},mH=${mH},seg=${seg},segH=${segH},fcount=${fcount};
 var fields=${fields};
 
-var scene=new THREE.Scene();
-scene.background=new THREE.Color(0xe8ecf1);
-scene.fog=new THREE.Fog(0xe8ecf1,20,40);
-var hdrEl2=document.getElementById('header');var hH2=hdrEl2?hdrEl2.offsetHeight:60;
-var camera=new THREE.PerspectiveCamera(45,window.innerWidth/(window.innerHeight-hH2),0.1,100);
-var renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setSize(window.innerWidth,window.innerHeight-hH2);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
-var controls=new THREE.OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;
+var totalW=tw*S, maxH=mH*S;
+var B=baseScene({shadowSpan:Math.max(9,totalW*1.3),skyRadius:Math.max(70,totalW*9)});
+var scene=B.scene, camera=B.camera, renderer=B.renderer, controls=B.controls;
+DIM_TEXT=Math.max(0.14,Math.min(0.42,Math.max(totalW,1.5)*0.042));
 
-scene.add(new THREE.AmbientLight(0xffffff,0.5));
-var dir=new THREE.DirectionalLight(0xffffff,0.8);dir.position.set(5,8,6);dir.castShadow=true;
-dir.shadow.mapSize.width=2048;dir.shadow.mapSize.height=2048;scene.add(dir);
+var frameMat=new THREE.MeshStandardMaterial({color:0x383E42,roughness:0.42,metalness:0.45,envMapIntensity:0.40});
+var gClear=glassClear();
 
-var frameMat=new THREE.MeshStandardMaterial({color:0x383E42,roughness:0.35,metalness:0.65});
-var glassMat=new THREE.MeshPhysicalMaterial({color:0x88ccff,transparent:true,opacity:0.25,roughness:0.05,metalness:0.1,transmission:0.85,thickness:0.02});
-var groundMat=new THREE.MeshStandardMaterial({color:0xa88b6d,roughness:0.85});
+buildGround(scene,totalW+1.1,1.7,totalW/2,0);
 
-var gMesh=new THREE.Mesh(new THREE.PlaneGeometry(20,20),groundMat);
-gMesh.rotation.x=-Math.PI/2;gMesh.receiveShadow=true;scene.add(gMesh);
-
-var totalW=tw*S;var xOff=0;
-var isOpen=false;var segMeshes=[];
+var segMeshes=[];
+var xOff=0;
 
 for(var fi=0;fi<fcount;fi++){
-  var f=fields[fi],fw=f.w*S,fh=f.h*S;
-  var fTk=0.05,sH=fh/seg;
-  // Side posts
+  var f=fields[fi], fw=f.w*S, fh=f.h*S;
+  var fTk=0.05, sH=fh/seg;
+  // Bocni stubovi sa vodjicama
   scene.add(makeBox(fTk,fh,fTk,xOff,fh/2,0,frameMat));
   scene.add(makeBox(fTk,fh,fTk,xOff+fw,fh/2,0,frameMat));
-  // Top rail
-  scene.add(makeBox(fw,fTk,fTk,xOff+fw/2,fh,0,frameMat));
+  // Gornja greda / kaseta motora
+  scene.add(makeBox(fw+fTk,fTk*1.5,fTk*1.4,xOff+fw/2,fh+fTk*0.25,0,frameMat));
 
-  // Glass segments
-  for(var s=0;s<seg;s++){
-    var segY=fh-sH*(s+1)+sH/2+fTk/2;
-    // Frame
-    var sf=makeBox(fw-fTk,sH-0.01,0.025,xOff+fw/2,segY,0,frameMat);
-    scene.add(sf);
-    // Glass
-    var sg=makeBox(fw-fTk-0.04,sH-0.05,0.008,xOff+fw/2,segY,0,glassMat);
-    scene.add(sg);
-    segMeshes.push({frame:sf,glass:sg,closedY:segY,openY:sH/2+s*0.01,fi:fi,seg:s});
-    // Separator line
-    if(s>0){
-      var sepGeo=new THREE.BoxGeometry(fw-fTk,0.02,0.03);
-      var sep=new THREE.Mesh(sepGeo,frameMat);
-      sep.position.set(xOff+fw/2,fh-sH*s,0);
-      scene.add(sep);
-    }
+  for(var sg=0;sg<seg;sg++){
+    // sg=0 je najgornji segment
+    var closedY=fh-sH*(sg+1)+sH/2;
+    var grp=makeSash(fw-fTk,sH-0.012,0.032,0.05,frameMat,gClear);
+    grp.position.set(xOff+fw/2,closedY,sg*0.016);
+    scene.add(grp);
+    // Otvoreno: svi segmenti se spustaju iza donjeg -> ostaje ograda visine sH
+    var openY=sH/2+sg*0.004;
+    segMeshes.push({g:grp,closedY:closedY,openY:openY,isBottom:sg===seg-1});
   }
   xOff+=fw;
 }
 
-function makeBox(w,h,d,x,y,z,mat){var g=new THREE.BoxGeometry(w,h,d);var m=new THREE.Mesh(g,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;return m}
+// ═══ KOTE ═══
+var Zf=new THREE.Vector3(0,0,1);
+var wSegs=[]; for(var q=0;q<fields.length;q++) wSegs.push(fields[q].w);
+dimChain3D(scene,new THREE.Vector3(0,0,0.09),new THREE.Vector3(1,0,0),wSegs,S,
+  {dir:Zf,offset:0.40,step:0.32});
 
-// Toggle animation
-var animating=false,animProgress=0,animDir=1;
-document.addEventListener('keydown',function(e){
-  if(e.code==='Space'&&!animating){animating=true;animDir=isOpen?-1:1;isOpen=!isOpen;animProgress=0;}
-});
-
-// Add instruction
-var instr=document.createElement('div');
-instr.style.cssText='position:absolute;top:70px;left:50%;transform:translateX(-50%);background:rgba(59,130,246,0.9);color:white;padding:10px 24px;border-radius:20px;font:bold 13px Segoe UI,sans-serif;z-index:10';
-instr.textContent='Pritisnite SPACE da otvorite/zatvorite giljotinu';
-document.body.appendChild(instr);
-setTimeout(function(){instr.style.opacity='0';instr.style.transition='opacity 2s'},5000);
-
-makeLabel3D(scene,tw+' cm',new THREE.Vector3(totalW/2,mH*S+0.25,0.3),0.6,'#e94560');
-makeLabel3D(scene,mH+' cm',new THREE.Vector3(-0.3,mH*S/2,0),0.5,'#3b82f6');
-makeLabel3D(scene,'~'+segH+' cm ograda',new THREE.Vector3(totalW+0.5,segH*S/2,0),0.4,'#10b981');
-
-function makeLabel3D(sc,t,p,sz,col){var cv=document.createElement('canvas'),ct=cv.getContext('2d');cv.width=512;cv.height=128;ct.font='bold 48px Segoe UI,sans-serif';ct.fillStyle=col;ct.textAlign='center';ct.textBaseline='middle';ct.fillText(t,256,64);var tx=new THREE.CanvasTexture(cv);var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthTest:false}));sp.position.copy(p);sp.scale.set(sz*2,sz*.5,1);sc.add(sp)}
-
-camera.position.set(totalW/2+totalW*0.5,mH*S*0.6,mH*S+1.5);
-controls.target.set(totalW/2,mH*S*0.4,0);
-
-window.addEventListener('resize',function(){var rH=document.getElementById('header');var nh=rH?rH.offsetHeight:60;var nw=window.innerWidth,nch=window.innerHeight-nh;camera.aspect=nw/nch;camera.updateProjectionMatrix();renderer.setSize(nw,nch)});
-
-function animate(){
-  requestAnimationFrame(animate);
-  if(animating){
-    animProgress+=0.02;
-    var t=Math.min(animProgress,1);
-    t=t<0.5?2*t*t:(1-Math.pow(-2*t+2,2)/2); // easeInOut
-    segMeshes.forEach(function(sm){
-      var fromY=animDir>0?sm.closedY:sm.openY;
-      var toY=animDir>0?sm.openY:sm.closedY;
-      var y=fromY+(toY-fromY)*t;
-      sm.frame.position.y=y;sm.glass.position.y=y;
-    });
-    if(animProgress>=1)animating=false;
+var hx2=0;
+if(fields.length>1){
+  for(var q=0;q<fields.length;q++){
+    var fwq=fields[q].w*S;
+    dim3D(scene,new THREE.Vector3(hx2+fwq,0,0.06),new THREE.Vector3(hx2+fwq,fields[q].h*S,0.06),
+      {dir:Zf,offset:0.28,cm:fields[q].h,size:DIM_TEXT*0.85,color:0x2563eb,textColor:'#1d4ed8'});
+    hx2+=fwq;
   }
-  controls.update();renderer.render(scene,camera);
-}animate();`;
+}
+// Visina ograde kad je potpuno otvoreno
+dim3D(scene,new THREE.Vector3(0,0,0),new THREE.Vector3(0,segH*S,0),
+  {dir:new THREE.Vector3(-1,0,0),offset:0.32,label:'~'+fmtN(segH)+' ograda',size:DIM_TEXT*0.85,color:0x10b981,textColor:'#047857'});
+dim3D(scene,new THREE.Vector3(0,0,0),new THREE.Vector3(0,maxH,0),
+  {dir:new THREE.Vector3(-1,0,0),offset:0.68,cm:mH,size:DIM_TEXT*0.85,color:0x2563eb,textColor:'#1d4ed8'});
+
+camera.position.set(totalW/2+totalW*0.55,maxH*1.25,maxH+totalW*0.40+2.0);
+controls.target.set(totalW/2,maxH*0.42,0);
+
+// ═══ ANIMACIJA: spustanje segmenata ═══
+function applyAnim(t){
+  for(var k=0;k<segMeshes.length;k++){
+    var sm=segMeshes[k];
+    if(sm.isBottom) continue;               // donji segment je fiksna ograda
+    sm.g.position.y=sm.closedY+(sm.openY-sm.closedY)*t;
+  }
+}
+var anim=animUI('Giljotina',applyAnim,{start:0});
+
+function animate(){requestAnimationFrame(animate);anim.tick();controls.update();renderer.render(scene,camera)}animate();`;
 
   var html = threejsBase(seg===2?'Giljotina 2 segmenta':'Giljotina 3 segmenta', 'Interaktivni 3D model giljotine', dimsHTML, sceneCode);
   download3DHTML(html, 'GL-3D');
