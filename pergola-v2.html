@@ -1750,6 +1750,17 @@ function generateReal(){
     extP(P(tw,pgS.wallHeight,0),P(tw+ox2,pgS.wallHeight,0),'#94a3b8');
     dimP(P(tw+ox2,0,0),P(tw+ox2,pgS.wallHeight,0),`${pgS.wallHeight} cm`,'#2563eb','v');
   }
+  // pad krova — klasična
+  if(pgS.type==='klasicna'){
+    const a=P(0,(pgS.wallHeight+pgS.passHeight)/2+frH*.6,mp*.5),lx=a.x-96,ly=a.y-42;
+    c.strokeStyle='#e94560';c.lineWidth=1.5;c.beginPath();c.moveTo(a.x,a.y);c.lineTo(lx+34,ly+7);c.stroke();
+    const lbl=`pad krova ${pgSl()}%`;
+    c.font='bold 15px Segoe UI,sans-serif';c.textAlign='center';
+    const w6=c.measureText(lbl).width+20;
+    c.fillStyle='rgba(255,255,255,.94)';roundRect(c,lx+34-w6/2,ly-6,w6,26,6);c.fill();
+    c.strokeStyle='#e94560';c.lineWidth=1.3;roundRect(c,lx+34-w6/2,ly-6,w6,26,6);c.stroke();
+    c.fillStyle='#0f172a';c.fillText(lbl,lx+34,ly+12);
+  }
   // pojedinačne širine kod niza
   if(pgS.count>1){
     let bo=0;
