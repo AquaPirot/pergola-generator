@@ -191,6 +191,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <div class="form-section">
           <div class="form-section-title">&#9670; Projekat</div>
           <div class="form-row single"><div class="form-group"><label>Naziv / klijent</label><input type="text" id="pg_projectName" placeholder="npr. Vila Marković - terasa"></div></div>
+          <div class="form-row single"><div class="form-group"><label>Rok isporuke i montaže</label><input type="text" id="pg_rok" placeholder="npr. 25 radnih dana od uplate avansa"></div></div>
           <div class="form-row single"><div class="form-group"><label>Napomena</label><textarea id="pg_notes" placeholder="Dodatne informacije..."></textarea></div></div>
         </div>
 
@@ -524,15 +525,15 @@ pgBuildDims();
 
 /* ═══ KATALOG MODELA + FOTOGRAFIJE ═══ */
 const PG_MODELS=[
-  {id:'bio-2',tip:'bioklimatska',stubovi:2,naziv:'Bioklimatska — 2 stuba / 2 roga',opis:'Bioklimatska pergola sa pokretnim aluminijumskim lamelama. Nosiva konstrukcija na 2 stuba sa 2 roga. Lamele se zatvaraju u vodonepropusnu ravan, a otvaraju za provetravanje i senku po želji. Odvod vode kroz stubove.'},
-  {id:'bio-3',tip:'bioklimatska',stubovi:3,naziv:'Bioklimatska — 3 stuba / 3 roga',opis:'Bioklimatska pergola sa pokretnim aluminijumskim lamelama. Nosiva konstrukcija na 3 stuba sa 3 roga — preporučeno za veće raspone. Odvod vode kroz stubove, motorni pogon lamela.'},
-  {id:'bio-4',tip:'bioklimatska',stubovi:4,naziv:'Bioklimatska — 4 stuba / 4 roga',opis:'Bioklimatska pergola sa pokretnim lamelama, ojačana konstrukcija na 4 stuba sa 4 roga za najveće raspone. Odvod vode kroz stubove, motorni pogon lamela.'},
+  {id:'bio-2',tip:'bioklimatska',stubovi:2,naziv:'Bioklimatska — 2 stuba / 2 roga',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
+  {id:'bio-3',tip:'bioklimatska',stubovi:3,naziv:'Bioklimatska — 3 stuba / 3 roga',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
+  {id:'bio-4',tip:'bioklimatska',stubovi:4,naziv:'Bioklimatska — 4 stuba / 4 roga',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
   {id:'ravna-2',tip:'ravna',stubovi:2,naziv:'Ravna — 2 stuba / 2 roga',opis:'Ravna pergola sa 3D Blockout platnom na motorni pogon. Konstrukcija na 2 stuba sa 2 roga. Platno se uvlači u kasetu, potpuna zaštita od sunca i kiše.'},
   {id:'ravna-3',tip:'ravna',stubovi:3,naziv:'Ravna — 3 stuba / 3 roga',opis:'Ravna pergola sa 3D Blockout platnom na motorni pogon. Konstrukcija na 3 stuba sa 3 roga za veće raspone. Platno se uvlači u kasetu.'},
   {id:'ravna-4',tip:'ravna',stubovi:4,naziv:'Ravna — 4 stuba / 4 roga',opis:'Ravna pergola sa 3D Blockout platnom, ojačana konstrukcija na 4 stuba sa 4 roga. Platno se uvlači u kasetu.'},
-  {id:'klas-2',tip:'klasicna',stubovi:2,naziv:'Klasična sa padom — 2 stuba / 2 roga',opis:'Klasična pergola sa padom krova i 3D Blockout platnom. Konstrukcija na 2 stuba sa 2 roga. Pad krova obezbeđuje siguran odvod kišnice u oluk.'},
-  {id:'klas-3',tip:'klasicna',stubovi:3,naziv:'Klasična sa padom — 3 stuba / 3 roga',opis:'Klasična pergola sa padom krova i 3D Blockout platnom. Konstrukcija na 3 stuba sa 3 roga. Pad krova obezbeđuje siguran odvod kišnice u oluk.'},
-  {id:'klas-4',tip:'klasicna',stubovi:4,naziv:'Klasična sa padom — 4 stuba / 4 roga',opis:'Klasična pergola sa padom krova i 3D Blockout platnom, ojačana konstrukcija na 4 stuba sa 4 roga.'}
+  {id:'klas-2',tip:'klasicna',stubovi:2,naziv:'Klasična sa padom — 2 stuba / 2 roga',opis:'Klasična pergola je aluminijumska konstrukcija sa tehničkim platnom koje se pomoću vođica otvara i skuplja. Kada je platno razvučeno, pravi senku i štiti prostor od uobičajenih vremenskih uslova u granicama konkretnog sistema. Kada želite otvoreno nebo, krov se povlači. Zbog lakšeg izgleda i dobre prilagodljivosti često je racionalan izbor za natkrivanje većih terasa.'},
+  {id:'klas-3',tip:'klasicna',stubovi:3,naziv:'Klasična sa padom — 3 stuba / 3 roga',opis:'Klasična pergola je aluminijumska konstrukcija sa tehničkim platnom koje se pomoću vođica otvara i skuplja. Kada je platno razvučeno, pravi senku i štiti prostor od uobičajenih vremenskih uslova u granicama konkretnog sistema. Kada želite otvoreno nebo, krov se povlači. Zbog lakšeg izgleda i dobre prilagodljivosti često je racionalan izbor za natkrivanje većih terasa.'},
+  {id:'klas-4',tip:'klasicna',stubovi:4,naziv:'Klasična sa padom — 4 stuba / 4 roga',opis:'Klasična pergola je aluminijumska konstrukcija sa tehničkim platnom koje se pomoću vođica otvara i skuplja. Kada je platno razvučeno, pravi senku i štiti prostor od uobičajenih vremenskih uslova u granicama konkretnog sistema. Kada želite otvoreno nebo, krov se povlači. Zbog lakšeg izgleda i dobre prilagodljivosti često je racionalan izbor za natkrivanje većih terasa.'}
 ];
 let pgPhotos={};try{pgPhotos=JSON.parse(localStorage.getItem('pg_photos'))||{};}catch(e){pgPhotos={};}
 let pgOpisi={};try{pgOpisi=JSON.parse(localStorage.getItem('pg_model_opisi'))||{};}catch(e){pgOpisi={};}
@@ -594,7 +595,7 @@ function pgPhotoClear(){
 document.getElementById('pg_postsPerPergola').addEventListener('change',pgModelAuto);
 
 /* ═══ PERSIST ═══ */
-const PG_FIELDS=['pg_wallHeight','pg_passHeight','pg_postsPerPergola','pg_postW','pg_postD','pg_projectName','pg_notes','pg_customRal','pg_wallBaseH','pg_postHeight','pg_tubeW','pg_tubeH','pg_drain','pg_ceradaBoja','pg_steelProfile','pg_priceFix'];
+const PG_FIELDS=['pg_wallHeight','pg_passHeight','pg_postsPerPergola','pg_postW','pg_postD','pg_projectName','pg_notes','pg_customRal','pg_wallBaseH','pg_postHeight','pg_tubeW','pg_tubeH','pg_drain','pg_ceradaBoja','pg_steelProfile','pg_priceFix','pg_rok'];
 function pgSnapshot(){
   const fv={};
   PG_FIELDS.forEach(f=>{const e=document.getElementById(f);if(e)fv[f]=e.value;});
@@ -747,7 +748,7 @@ function pgRenderWarnings(){
 
 /* ═══ POČETNI EKRAN ═══ */
 const PG_DEF_S={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back',mount:'zid',steelPosts:2,steelProfile:100,model:'bio-3',priceMode:'fix'};
-const PG_DEF_F={pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',pg_postW:'12',pg_postD:'12',pg_projectName:'',pg_notes:'',pg_customRal:'',pg_wallBaseH:'40',pg_postHeight:'190',pg_tubeW:'40',pg_tubeH:'80',pg_drain:'none',pg_ceradaBoja:'',pg_steelProfile:'100',pg_priceFix:'',pw_0:'500',pp_0:'400',pm_0:'none',pw_1:'500',pp_1:'400',pm_1:'none',pw_2:'500',pp_2:'400',pm_2:'none',pg_gap_0:'0',pg_gap_1:'0'};
+const PG_DEF_F={pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',pg_postW:'12',pg_postD:'12',pg_projectName:'',pg_notes:'',pg_customRal:'',pg_wallBaseH:'40',pg_postHeight:'190',pg_tubeW:'40',pg_tubeH:'80',pg_drain:'none',pg_ceradaBoja:'',pg_steelProfile:'100',pg_priceFix:'',pg_rok:'',pw_0:'500',pp_0:'400',pm_0:'none',pw_1:'500',pp_1:'400',pm_1:'none',pw_2:'500',pp_2:'400',pm_2:'none',pg_gap_0:'0',pg_gap_1:'0'};
 function pgStartClose(){document.getElementById('pg_startOverlay').classList.remove('visible');}
 function pgStartNew(){pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F});pgSaveState();pgStartClose();}
 function pgStartContinue(){pgLoadState();pgStartClose();}
@@ -1630,10 +1631,10 @@ function generate3D(){
    ═══════════════════════════════════════════════════════════ */
 // Prednosti u dnu ponude — slobodno izmenite tekst prema svojim uslovima
 const PG_PREDNOSTI=[
-  ['KVALITETNI MATERIJALI','Aluminijum visoke čvrstoće'],
-  ['OTPORNOST NA VREMENSKE USLOVE','Kiša, vetar, sneg i UV zaštita'],
-  ['GARANCIJA','Prema uslovima iz ugovora'],
-  ['PROFESIONALNA MONTAŽA','Brzo i sigurno']
+  ['ALUMINIJUM VISOKE ČVRSTOĆE','Plastifikacija u RAL nijansi po izboru'],
+  ['OTPORNOST NA VREMENSKE USLOVE','Kiša, vetar i UV zaštita'],
+  ['GARANCIJA 2 GODINE','Na konstrukciju i mehanizam'],
+  ['PROFESIONALNA MONTAŽA','Montaža sopstvenom ekipom']
 ];
 function pgLoadImg(src){return new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src;});}
 async function pgLoadImgAny(list){for(const src of list){const im=await pgLoadImg(src);if(im)return im;}return null;}
@@ -1679,6 +1680,7 @@ async function generatePonuda(){
   const id=genId('PON'),d=ds(),pn=document.getElementById('pg_projectName').value.trim(),notes=document.getElementById('pg_notes').value.trim();
   const price=pgPrice(),showP=pgS.showPrice&&price>0;
   const opis=pgModelOpis();
+  const rok=(document.getElementById('pg_rok').value||'').trim();
   document.getElementById('placeholderPonuda').style.display='none';
   document.getElementById('canvasPonuda').style.display='block';
   document.getElementById('pg_btnPonudaExport').style.display='flex';
@@ -1818,7 +1820,7 @@ async function generatePonuda(){
   c.fillStyle='#374151';c.font='13px Segoe UI,sans-serif';
   ['Ponuda važi 7 dana od datuma izdavanja.',
    'Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',
-   'Rok isporuke i montaže po dogovoru.',
+   'Rok isporuke i montaže: '+(rok||'po dogovoru')+'.',
    'Kontakt: '+PG_TEL+'  •  '+PG_FIRMA
   ].forEach((t,i)=>c.fillText(t,uX,r3Y+24+i*21));
 
