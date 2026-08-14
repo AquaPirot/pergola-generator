@@ -347,20 +347,32 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         </div>
 
         <div class="form-section">
-          <div class="form-section-title">&#9670; Cenovnik (interno)</div>
-          <div class="form-row">
-            <div class="form-group"><label>Bioklimatska <span class="unit">(/m²)</span></label><input type="number" id="pg_priceBio" min="0" step="1" placeholder="0"></div>
-            <div class="form-group"><label>Ravna <span class="unit">(/m²)</span></label><input type="number" id="pg_priceRavna" min="0" step="1" placeholder="0"></div>
+          <div class="form-section-title">&#9670; Cena</div>
+          <div class="type-selector" id="pg_priceModeSel" style="grid-template-columns:1fr 1fr">
+            <div class="type-option active" data-pm="fix" onclick="pgSelectPriceMode(this)"><span class="type-icon">&#128181;</span><span class="type-name">Fiksna cena</span></div>
+            <div class="type-option" data-pm="m2" onclick="pgSelectPriceMode(this)"><span class="type-icon">&#128207;</span><span class="type-name">Po m² iz cenovnika</span></div>
           </div>
-          <div class="form-row">
-            <div class="form-group"><label>Klasična <span class="unit">(/m²)</span></label><input type="number" id="pg_priceKlas" min="0" step="1" placeholder="0"></div>
-            <div class="form-group"><label>Valuta</label><select id="pg_priceCur"><option value="EUR">EUR</option><option value="RSD">RSD</option></select></div>
+          <div id="pg_priceFixWrap">
+            <div class="form-row">
+              <div class="form-group"><label>Ukupna cena za ovaj projekat</label><input type="number" id="pg_priceFix" min="0" step="1" placeholder="npr. 4980"></div>
+              <div class="form-group"><label>Valuta</label><select id="pg_priceCur"><option value="EUR">EUR</option><option value="RSD">RSD</option></select></div>
+            </div>
+            <div class="info-note">Upišite cenu koju želite da stoji u ponudi. Čuva se uz projekat.</div>
           </div>
-          <div class="checkbox-row">
+          <div id="pg_priceM2Wrap" style="display:none">
+            <div class="form-row">
+              <div class="form-group"><label>Bioklimatska <span class="unit">(/m²)</span></label><input type="number" id="pg_priceBio" min="0" step="1" placeholder="0"></div>
+              <div class="form-group"><label>Ravna <span class="unit">(/m²)</span></label><input type="number" id="pg_priceRavna" min="0" step="1" placeholder="0"></div>
+            </div>
+            <div class="form-row single">
+              <div class="form-group"><label>Klasična <span class="unit">(/m²)</span></label><input type="number" id="pg_priceKlas" min="0" step="1" placeholder="0"></div>
+            </div>
+            <div class="info-note">Cene po m² se čuvaju samo na ovom uređaju i množe se sa površinom projekta.</div>
+          </div>
+          <div class="checkbox-row" style="margin-top:10px">
             <input type="checkbox" id="pg_showPrice">
-            <label for="pg_showPrice">Prikaži okvirnu cenu na crtežu</label>
+            <label for="pg_showPrice">Prikaži cenu na ponudi i crtežu</label>
           </div>
-          <div class="info-note">Cene se čuvaju samo na ovom uređaju. Na crtežu se prikazuju isključivo ako uključite opciju iznad.</div>
         </div>
 
         <button class="btn-generate" onclick="generatePergola()">&#9998; Generiši 2D Tehnički Crtež</button>
@@ -445,7 +457,7 @@ function pgLogoMark(c,x,y,sz){
   c.restore();
 }
 /* ═══ STATE ═══ */
-let pgS={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back',mount:'zid',steelPosts:2,steelProfile:100,model:'bio-3'};
+let pgS={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back',mount:'zid',steelPosts:2,steelProfile:100,model:'bio-3',priceMode:'fix'};
 const PG_TL={bioklimatska:'Bioklimatska pergola (pokretne lamele)',ravna:'Ravna pergola (3D Blockout platno)',klasicna:'Klasična pergola sa padom'};
 const PG_ML={bioklimatska:'Pokretne lamele',ravna:'3D Blockout platno',klasicna:'3D Blockout platno'};
 const RAL_HEX={'7016':'#383E42','9005':'#0A0A0A','9016':'#F1F0EA','7035':'#C5C7C4','8017':'#44322D','custom':'#383E42'};
@@ -582,7 +594,7 @@ function pgPhotoClear(){
 document.getElementById('pg_postsPerPergola').addEventListener('change',pgModelAuto);
 
 /* ═══ PERSIST ═══ */
-const PG_FIELDS=['pg_wallHeight','pg_passHeight','pg_postsPerPergola','pg_postW','pg_postD','pg_projectName','pg_notes','pg_customRal','pg_wallBaseH','pg_postHeight','pg_tubeW','pg_tubeH','pg_drain','pg_ceradaBoja','pg_steelProfile'];
+const PG_FIELDS=['pg_wallHeight','pg_passHeight','pg_postsPerPergola','pg_postW','pg_postD','pg_projectName','pg_notes','pg_customRal','pg_wallBaseH','pg_postHeight','pg_tubeW','pg_tubeH','pg_drain','pg_ceradaBoja','pg_steelProfile','pg_priceFix'];
 function pgSnapshot(){
   const fv={};
   PG_FIELDS.forEach(f=>{const e=document.getElementById(f);if(e)fv[f]=e.value;});
@@ -605,6 +617,7 @@ function pgApply(d){
   if(s.wallTubeProfile){pgS.wallTubeProfile=s.wallTubeProfile;pgS.wallTubeW=s.wallTubeW||4;pgS.wallTubeH=s.wallTubeH||8;document.querySelectorAll('#pg_tubeOptions .tube-option').forEach(o=>o.classList.toggle('active',o.dataset.profile===pgS.wallTubeProfile));document.getElementById('pg_tubeCustomFields').style.display=pgS.wallTubeProfile==='custom'?'block':'none';}
   pgS.drain=s.drain||'none';
   pgS.showPrice=!!s.showPrice;document.getElementById('pg_showPrice').checked=pgS.showPrice;
+  pgS.priceMode=s.priceMode||'fix';document.querySelectorAll('#pg_priceModeSel .type-option').forEach(o=>o.classList.toggle('active',o.dataset.pm===pgS.priceMode));pgPriceModeUI();
   pgS.ceradaBoja=s.ceradaBoja||'';
   // motorSides: nova verzija niz, stara verzija jedan string
   if(s.motorSides){pgS.motorSides=s.motorSides;}
@@ -710,7 +723,9 @@ function pgPricesSave(){
   try{localStorage.setItem('pg_prices',JSON.stringify(pgPrices));}catch(e){}
 }
 ['pg_priceBio','pg_priceRavna','pg_priceKlas','pg_priceCur'].forEach(f=>document.getElementById(f).addEventListener('input',pgPricesSave));
-function pgPrice(){return pgTA()*(pgPrices[pgS.type]||0);}
+function pgSelectPriceMode(el){document.querySelectorAll('#pg_priceModeSel .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.priceMode=el.dataset.pm;pgPriceModeUI();}
+function pgPriceModeUI(){const fix=pgS.priceMode!=='m2';document.getElementById('pg_priceFixWrap').style.display=fix?'block':'none';document.getElementById('pg_priceM2Wrap').style.display=fix?'none':'block';}
+function pgPrice(){if(pgS.priceMode!=='m2')return parseFloat(pgS.priceFix)||0;return pgTA()*(pgPrices[pgS.type]||0);}
 
 /* ═══ TEHNIČKA UPOZORENJA ═══ */
 function pgWarnings(){
@@ -731,8 +746,8 @@ function pgRenderWarnings(){
 }
 
 /* ═══ POČETNI EKRAN ═══ */
-const PG_DEF_S={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back',mount:'zid',steelPosts:2,steelProfile:100,model:'bio-3'};
-const PG_DEF_F={pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',pg_postW:'12',pg_postD:'12',pg_projectName:'',pg_notes:'',pg_customRal:'',pg_wallBaseH:'40',pg_postHeight:'190',pg_tubeW:'40',pg_tubeH:'80',pg_drain:'none',pg_ceradaBoja:'',pg_steelProfile:'100',pw_0:'500',pp_0:'400',pm_0:'none',pw_1:'500',pp_1:'400',pm_1:'none',pw_2:'500',pp_2:'400',pm_2:'none',pg_gap_0:'0',pg_gap_1:'0'};
+const PG_DEF_S={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back',mount:'zid',steelPosts:2,steelProfile:100,model:'bio-3',priceMode:'fix'};
+const PG_DEF_F={pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',pg_postW:'12',pg_postD:'12',pg_projectName:'',pg_notes:'',pg_customRal:'',pg_wallBaseH:'40',pg_postHeight:'190',pg_tubeW:'40',pg_tubeH:'80',pg_drain:'none',pg_ceradaBoja:'',pg_steelProfile:'100',pg_priceFix:'',pw_0:'500',pp_0:'400',pm_0:'none',pw_1:'500',pp_1:'400',pm_1:'none',pw_2:'500',pp_2:'400',pm_2:'none',pg_gap_0:'0',pg_gap_1:'0'};
 function pgStartClose(){document.getElementById('pg_startOverlay').classList.remove('visible');}
 function pgStartNew(){pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F});pgSaveState();pgStartClose();}
 function pgStartContinue(){pgLoadState();pgStartClose();}
@@ -753,7 +768,7 @@ function pgStartInit(){
   ov.addEventListener('click',e=>{if(e.target===ov)pgStartContinue();});
 }
 
-pgProjRender();pgPricesLoad();pgModelRender();pgStartInit();pgCloudSync();
+pgProjRender();pgPricesLoad();pgPriceModeUI();pgModelRender();pgStartInit();pgCloudSync();
 
 /* ═══ DATA HELPERS ═══ */
 function pgGather(){
@@ -769,6 +784,7 @@ function pgGather(){
   pgS.align=document.getElementById('pg_align').value||'back';
   pgS.drain=document.getElementById('pg_drain').value;
   pgS.showPrice=document.getElementById('pg_showPrice').checked;
+  pgS.priceFix=parseFloat(document.getElementById('pg_priceFix').value)||0;
   pgS.hasWallTube=document.getElementById('pg_hasWallTube').checked;
   if(pgS.hasWallTube&&pgS.wallTubeProfile==='custom'){pgS.wallTubeH=parseInt(document.getElementById('pg_tubeH').value||100)/10;pgS.wallTubeW=parseInt(document.getElementById('pg_tubeW').value||40)/10;}
   pgS.steelProfile=parseInt(document.getElementById('pg_steelProfile').value)||100;
@@ -951,9 +967,9 @@ function generatePergola(){
   if(showP){
     c.fillStyle=PG_ACCENT;c.fillRect(0,yPrice,CW,46);
     c.fillStyle='#fff';c.font='bold 18px Segoe UI,sans-serif';c.textAlign='left';
-    c.fillText(`OKVIRNA CENA: ${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`,30,yPrice+30);
+    c.fillText(`CENA: ${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`,30,yPrice+30);
     c.font='13px Segoe UI,sans-serif';c.textAlign='right';
-    c.fillText('Cena je informativna i ne predstavlja konačnu ponudu.',CW-30,yPrice+30);
+    c.fillText('Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',CW-30,yPrice+30);
     c.textAlign='left';
   }
   if(warns.length){
@@ -1244,9 +1260,9 @@ function generate3D(){
   if(pgS.showPrice&&price3>0){
     c.fillStyle=PG_ACCENT;c.fillRect(0,y,CW,46);
     c.fillStyle='#fff';c.font='bold 18px Segoe UI,sans-serif';c.textAlign='left';
-    c.fillText(`OKVIRNA CENA: ${Math.round(price3).toLocaleString('sr-RS')} ${pgPrices.cur}`,30,y+30);
+    c.fillText(`CENA: ${Math.round(price3).toLocaleString('sr-RS')} ${pgPrices.cur}`,30,y+30);
     c.font='13px Segoe UI,sans-serif';c.textAlign='right';
-    c.fillText('Cena je informativna i ne predstavlja konačnu ponudu.',CW-30,y+30);
+    c.fillText('Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',CW-30,y+30);
     c.textAlign='left';y+=46;
   }
 
@@ -1767,7 +1783,7 @@ async function generatePonuda(){
     c.fillStyle='#fff';c.font='bold 34px Segoe UI,sans-serif';
     c.fillText(`${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`,pnlX+24,pcY+66);
     c.fillStyle='rgba(255,255,255,.5)';c.font='11px Segoe UI,sans-serif';
-    c.fillText('Informativno — konačna cena po izlasku na teren.',pnlX+24,pcY+86);
+    c.fillText('Plaćanje: 50% avans  •  50% dan pre isporuke i montaže',pnlX+24,pcY+86);
   }else{
     c.fillStyle='rgba(255,255,255,.75)';c.font='bold 16px Segoe UI,sans-serif';c.textAlign='left';
     c.fillText('CENA NA UPIT',pnlX+24,pcY+34);
@@ -1800,9 +1816,9 @@ async function generatePonuda(){
   const uX=CW-MG-430;
   c.fillStyle=PG_NAVY;c.font='bold 13px Segoe UI,sans-serif';c.fillText('USLOVI',uX,r3Y);
   c.fillStyle='#374151';c.font='13px Segoe UI,sans-serif';
-  ['Ponuda važi 15 dana od datuma izdavanja.',
+  ['Ponuda važi 7 dana od datuma izdavanja.',
+   'Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',
    'Rok isporuke i montaže po dogovoru.',
-   'Konačna cena se potvrđuje po uzimanju mera na terenu.',
    'Kontakt: '+PG_TEL+'  •  '+PG_FIRMA
   ].forEach((t,i)=>c.fillText(t,uX,r3Y+24+i*21));
 
