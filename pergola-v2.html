@@ -1647,6 +1647,23 @@ function generate3D(){
    PONUDA ZA KUPCA — FOTO + TEHNIČKI CRTEŽI + SPECIFIKACIJA
    ═══════════════════════════════════════════════════════════ */
 // Prednosti u dnu ponude — slobodno izmenite tekst prema svojim uslovima
+const PG_UKLJUCENO=[
+  'Model pergole sa slike',
+  'Samsung LED rasveta',
+  'Motor i daljinski upravljač — motor i rasveta na istom daljinskom',
+  'Konstrukcija od ekstrudiranog aluminijuma, farbana elektrostatskom farbom',
+  'Aluminijumske vodilice pergole',
+  'Nagib pergole od 10–15%',
+  'Oluci za vodu sakriveni u konstrukciji',
+  'Limena nadstrešnica za skupljenu pergolu',
+  '3D blockout — troslojno termostabilno platno',
+  'Transport i montaža'
+];
+const PG_NIJE=[
+  'Elektro priključak do mesta montaže',
+  'Građevinski radovi — temelj i sidrenje u beton ako podloga nije spremna',
+  'Limarski radovi koji nisu deo date ponude za pergolu'
+];
 const PG_PREDNOSTI=[
   ['ALUMINIJUM VISOKE ČVRSTOĆE','Plastifikacija u RAL nijansi po izboru'],
   ['OTPORNOST NA VREMENSKE USLOVE','Kiša, vetar i UV zaštita'],
@@ -1670,6 +1687,32 @@ function wrapText(c,txt,x,y,maxW,lh,maxLines){
   }
   if(line){c.fillText(line,x,y+n*lh);n++;}
   return n;
+}
+function wrapCount(c,txt,maxW,maxLines){
+  const w=String(txt||'').split(/\s+/);let line='',n=0;
+  for(let i=0;i<w.length;i++){
+    const t=line?line+' '+w[i]:w[i];
+    if(c.measureText(t).width>maxW&&line){n++;line=w[i];if(maxLines&&n>=maxLines)return maxLines;}
+    else line=t;
+  }
+  return Math.max(1,n+(line?1:0));
+}
+function drawList(c,x,y,w,items,bullet,bcol,lh){
+  let yy=y;
+  items.forEach(t=>{
+    c.font='bold 13px Segoe UI,sans-serif';c.fillStyle=bcol;c.textAlign='left';
+    c.fillText(bullet,x,yy);
+    c.font='12.5px Segoe UI,sans-serif';c.fillStyle='#374151';
+    const n=wrapText(c,t,x+19,yy,w-19,lh,2);
+    yy+=n*lh+7;
+  });
+  return yy-y;
+}
+function listH(items,w,lh){
+  const mc=document.createElement('canvas').getContext('2d');
+  mc.font='12.5px Segoe UI,sans-serif';
+  let h=0;items.forEach(t=>{h+=wrapCount(mc,t,w-19,2)*lh+7;});
+  return h;
 }
 function drawBox(c,x,y,w,h,title){
   c.save();
@@ -1716,7 +1759,13 @@ async function generatePonuda(){
   const r3Y=r2Y+r2H+46;
   const opisLines=Math.ceil((opis||'').length/95)+1;
   const r3H=Math.max(120,44+opisLines*20)+(notes?26:0);
-  const badY=r3Y+r3H+18,badH=76;
+  const r4Y=r3Y+r3H+22;
+  const incW=Math.round((CW-2*MG-18)*.62),excW=CW-2*MG-18-incW;
+  const incCol=Math.floor((incW-44)/2);
+  const incLeft=PG_UKLJUCENO.slice(0,Math.ceil(PG_UKLJUCENO.length/2));
+  const incRight=PG_UKLJUCENO.slice(Math.ceil(PG_UKLJUCENO.length/2));
+  const r4H=Math.max(listH(incLeft,incCol,17),listH(incRight,incCol,17),listH(PG_NIJE,excW-44,17))+58;
+  const badY=r4Y+r4H+20,badH=76;
   const CH=badY+badH+250;
 
   const c=initCanvas('canvasPonuda',CW,CH);
@@ -1841,6 +1890,20 @@ async function generatePonuda(){
    'Kontakt: '+PG_TEL+'  •  '+PG_FIRMA
   ].forEach((t,i)=>c.fillText(t,uX,r3Y+24+i*21));
 
+  /* ── U CENU JE UKLJUČENO / NIJE UKLJUČENO ── */
+  drawBox(c,MG,r4Y,incW,r4H);
+  c.fillStyle=PG_NAVY;c.fillRect(MG,r4Y,incW,4);
+  c.fillStyle=PG_NAVY;c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
+  c.fillText('U CENU JE UKLJUČENO',MG+22,r4Y+30);
+  drawList(c,MG+22,r4Y+56,incCol,incLeft,'✓',PG_ACCENT,17);
+  drawList(c,MG+22+incCol+10,r4Y+56,incCol,incRight,'✓',PG_ACCENT,17);
+  const exX=MG+incW+18;
+  drawBox(c,exX,r4Y,excW,r4H);
+  c.fillStyle='#9ca3af';c.fillRect(exX,r4Y,excW,4);
+  c.fillStyle='#6b7280';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
+  c.fillText('NIJE UKLJUČENO',exX+22,r4Y+30);
+  drawList(c,exX+22,r4Y+56,excW-44,PG_NIJE,'•','#9ca3af',17);
+
   /* ── PREDNOSTI ── */
   c.fillStyle='#f8fafc';c.fillRect(0,badY,CW,badH);
   c.strokeStyle='#e2e8f0';c.lineWidth=1;
@@ -1938,6 +2001,8 @@ figure img{width:100%;display:block;border-radius:8px;cursor:zoom-in}
 .usl li{list-style:none;display:flex;gap:10px;padding:9px 15px;border-bottom:1px solid var(--bd);font-size:13.5px}
 .usl li:last-child{border-bottom:0}
 .usl li::before{content:'✓';color:var(--gold);font-weight:800;flex:0 0 auto}
+.usl.nije li::before{content:'•';color:#9ca3af}
+.usl.nije li{color:var(--mut)}
 .pred{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 0 4px}
 .pred div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px}
 .pred b{display:block;font-size:11.5px;font-weight:800;letter-spacing:.3px}
@@ -1967,6 +2032,10 @@ ${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div clas
   <div class="card">${o.crtezi.map(d=>draw(d[0],d[1])).join('')}</div>
   <h3>Opis modela</h3>
   <div class="card txt"><p>${esc(o.opis)}</p>${o.napomena?`<p><i>Napomena: ${esc(o.napomena)}</i></p>`:''}</div>
+  <h3>U cenu je uključeno</h3>
+  <div class="card"><ul class="usl">${o.ukljuceno.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>
+  <h3>Nije uključeno</h3>
+  <div class="card"><ul class="usl nije">${o.nije.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>
   <h3>Uslovi</h3>
   <div class="card"><ul class="usl">${o.uslovi.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>
   <h3>Zašto AG GROUP</h3>
@@ -2030,6 +2099,7 @@ async function generateLink(){
       uslovi:['Ponuda važi 7 dana od datuma izdavanja.',
               'Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',
               'Rok isporuke i montaže: '+(rok||'po dogovoru')+'.'],
+      ukljuceno:PG_UKLJUCENO,nije:PG_NIJE,
       prednosti:PG_PREDNOSTI,
       broj:genId('PON'),datum:ds()
     };
