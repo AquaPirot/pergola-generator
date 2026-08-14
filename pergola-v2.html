@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PROHORECA AG GROUP - Pergole Pro</title>
+<title>AG GROUP — Pergole Pro</title>
 <style>
 :root {
-  --primary:#1a1a2e;--primary-light:#16213e;--accent:#e94560;
+  --primary:#14213d;--primary-light:#1c2d4f;--accent:#c8944e;
   --accent-blue:#3b82f6;--accent-green:#10b981;
   --bg:#f0f2f5;--card:#ffffff;--text:#1a1a2e;--text-muted:#6b7280;
   --border:#e5e7eb;--shadow:0 4px 24px rgba(0,0,0,.08);
@@ -19,14 +19,14 @@
 body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
 .app-header{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-lg)}
 .logo{display:flex;align-items:center;gap:14px}
-.logo-icon{width:44px;height:44px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:white}
+.logo-icon{width:44px;height:44px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:var(--primary);letter-spacing:.5px}
 .app-header h1{font-size:18px;font-weight:700;letter-spacing:1px}
 .app-header .subtitle{font-size:11px;opacity:.7;letter-spacing:.5px}
-.badge{background:rgba(233,69,96,.2);border:1px solid rgba(233,69,96,.4);color:#fca5a5;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px}
+.badge{background:rgba(200,148,78,.2);border:1px solid rgba(200,148,78,.5);color:#e2b877;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px}
 .view-bar{background:var(--primary);display:flex;border-bottom:3px solid var(--accent);overflow-x:auto}
 .view-btn{padding:12px 28px;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;border:none;background:none;font-family:var(--font);position:relative;transition:var(--transition)}
 .view-btn:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.05)}
-.view-btn.active{color:white;background:rgba(233,69,96,.15)}
+.view-btn.active{color:white;background:rgba(200,148,78,.15)}
 .view-btn.active::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:3px;background:var(--accent)}
 .app-container{max-width:1600px;margin:0 auto;padding:24px;display:grid;grid-template-columns:440px 1fr;gap:24px;align-items:start}
 .sidebar{position:sticky;top:130px;max-height:calc(100vh - 150px);overflow-y:auto}
@@ -46,7 +46,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .form-group label{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px}
 .form-group input,.form-group select,.form-group textarea{padding:9px 11px;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);font-weight:600;color:var(--text);background:#fafbfc;transition:var(--transition);width:100%}
 .form-group textarea{resize:vertical;min-height:50px;font-weight:400}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--accent);background:white;box-shadow:0 0 0 3px rgba(233,69,96,.1)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--accent);background:white;box-shadow:0 0 0 3px rgba(200,148,78,.1)}
 .form-group .unit{font-size:9px;color:var(--text-muted);font-weight:400}
 .checkbox-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer}
 .checkbox-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
@@ -57,7 +57,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .type-selector{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
 .type-option{padding:12px 8px;border:2px solid var(--border);border-radius:var(--radius-sm);text-align:center;cursor:pointer;transition:var(--transition);background:#fafbfc}
 .type-option:hover{border-color:var(--accent);background:white}
-.type-option.active{border-color:var(--accent);background:rgba(233,69,96,.05);box-shadow:0 0 0 3px rgba(233,69,96,.1)}
+.type-option.active{border-color:var(--accent);background:rgba(200,148,78,.05);box-shadow:0 0 0 3px rgba(200,148,78,.1)}
 .type-option .type-icon{font-size:24px;margin-bottom:4px;display:block}
 .type-option .type-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
 .num-selector{display:flex;gap:6px}
@@ -76,26 +76,26 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .color-options{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .color-option{display:flex;align-items:center;gap:6px;padding:7px 9px;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);background:#fafbfc}
 .color-option:hover{border-color:var(--accent)}
-.color-option.active{border-color:var(--accent);background:rgba(233,69,96,.05)}
+.color-option.active{border-color:var(--accent);background:rgba(200,148,78,.05)}
 .color-swatch{width:18px;height:18px;border-radius:50%;border:2px solid rgba(0,0,0,.1);flex-shrink:0}
 .color-option .color-name{font-size:9px;font-weight:600}
 .model-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .model-card{border:2px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;cursor:pointer;background:#fafbfc;transition:var(--transition)}
 .model-card:hover{border-color:var(--accent-blue)}
-.model-card.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(233,69,96,.12)}
+.model-card.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(200,148,78,.12)}
 .model-card .mc-thumb{width:100%;height:74px;background:#eef1f4;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
 .model-card .mc-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .model-card .mc-noimg{font-size:10px;color:#9ca3af;font-weight:600;text-align:center;padding:4px;line-height:1.4}
 .model-card .mc-name{padding:6px 8px;font-size:10px;font-weight:700;line-height:1.3}
 .model-card .mc-badge{position:absolute;top:4px;right:4px;background:var(--accent-green);color:#fff;font-size:8px;font-weight:700;padding:2px 5px;border-radius:4px}
-.btn-photo{width:100%;padding:10px;background:#0f766e;color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);letter-spacing:.3px;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-photo:hover{background:#115e59}
+.btn-photo{width:100%;padding:10px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);letter-spacing:.3px;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-photo:hover{background:var(--primary-light)}
 .btn-photo.ghost{background:#f1f5f9;color:#475569;border:1px solid var(--border)}
 .btn-photo.ghost:hover{background:#e2e8f0}
 .custom-ral-input{margin-top:8px;display:none}
 .custom-ral-input.visible{display:block}
 .btn-generate{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),#d63851);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:var(--transition);font-family:var(--font);text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px}
-.btn-generate:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(233,69,96,.35)}
+.btn-generate:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,148,78,.35)}
 .btn-3d{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent-blue),#2563eb);color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;transition:var(--transition);font-family:var(--font);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px}
 .btn-3d:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(59,130,246,.35)}
 .btn-export{width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;transition:var(--transition);font-family:var(--font);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px}
@@ -138,7 +138,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .sm-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:var(--radius-sm);background:#fafbfc;cursor:pointer;font-family:var(--font);font-size:14px;font-weight:700;color:var(--text);text-align:left;transition:var(--transition)}
 .sm-btn span{font-size:11px;font-weight:400;color:var(--text-muted)}
 .sm-btn:hover{border-color:var(--accent);background:#fff;transform:translateY(-1px)}
-.sm-btn.new{border-color:var(--accent);background:rgba(233,69,96,.04)}
+.sm-btn.new{border-color:var(--accent);background:rgba(200,148,78,.04)}
 .sm-sub{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-top:6px}
 .sm-proj{display:flex;justify-content:space-between;align-items:center;width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:#f8f9fa;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text);text-align:left}
 .sm-proj:hover{border-color:var(--accent-blue);background:#fff}
@@ -154,7 +154,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
 <div class="start-overlay" id="pg_startOverlay">
   <div class="start-modal">
-    <div class="sm-head"><h2>Dobrodošli &#128075;</h2><p>PROHORECA AG GROUP — Generator Tehničkih Crteža</p></div>
+    <div class="sm-head"><h2>Dobrodošli &#128075;</h2><p>AG GROUP — Generator Tehničkih Crteža</p></div>
     <div class="sm-body">
       <button class="sm-btn new" onclick="pgStartNew()">&#10133; Novi projekat<span>Prazan unos sa standardnim vrednostima</span></button>
       <button class="sm-btn" id="pg_startContBtn" onclick="pgStartContinue()">&#128194; Nastavi poslednji rad<span id="pg_startLast">Vraća poslednje uneto stanje</span></button>
@@ -165,8 +165,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
 <header class="app-header">
   <div class="logo">
-    <div class="logo-icon">P</div>
-    <div><h1>PROHORECA AG GROUP</h1><div class="subtitle">Generator Tehničkih Crteža — Pergole Pro</div></div>
+    <div class="logo-icon">AG</div>
+    <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
   <div class="badge">v2 PRO</div>
 </header>
@@ -365,7 +365,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
         <button class="btn-generate" onclick="generatePergola()">&#9998; Generiši 2D Tehnički Crtež</button>
         <button class="btn-3d" onclick="generate3D()">&#11041; Generiši 3D Tehnički Prikaz</button>
-        <button class="btn-3d" onclick="generatePonuda()" style="background:linear-gradient(135deg,#0f766e,#115e59)">&#128247; Generiši Ponudu za Kupca</button>
+        <button class="btn-3d" onclick="generatePonuda()" style="background:linear-gradient(135deg,#c8944e,#a97a37)">&#128247; Generiši Ponudu za Kupca</button>
         <button class="btn-3d" id="pg_btnNalog" onclick="generateNalog()" style="display:none;background:linear-gradient(135deg,#475569,#1e293b)">&#9874; Radni Nalog — Konstrukcija</button>
         <button class="btn-export" onclick="exportPNG('outputCanvas')" id="pg_btnExport" style="display:none">&#128190; Preuzmi 2D PNG</button>
         <button class="btn-export" onclick="exportPDF('outputCanvas')" id="pg_btnPDF" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d)">&#128196; Preuzmi 2D PDF</button>
@@ -421,6 +421,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 </div>
 
 <script>
+/* ═══ BREND — AG GROUP ═══ */
+const PG_NAVY='#14213d',PG_ACCENT='#c8944e',PG_INK='#0f172a';
+const PG_FIRMA='AG GROUP',PG_DOMENI='PERGOLA.RS  |  PROHORECA.RS',PG_TEL='064 89 79 242';
+let pgLogoImg=null;
+(function(){const im=new Image();im.onload=()=>{pgLogoImg=im;};im.onerror=()=>{pgLogoImg=null;};im.src='logo.png';})();
+function pgLogoMark(c,x,y,sz){
+  c.save();
+  c.fillStyle='#fff';roundRect(c,x,y,sz,sz,sz*0.2);c.fill();
+  if(pgLogoImg){
+    c.save();c.beginPath();roundRect(c,x,y,sz,sz,sz*0.2);c.clip();
+    const pad=sz*0.08,k=Math.min((sz-2*pad)/pgLogoImg.width,(sz-2*pad)/pgLogoImg.height);
+    const w=pgLogoImg.width*k,h=pgLogoImg.height*k;
+    c.drawImage(pgLogoImg,x+(sz-w)/2,y+(sz-h)/2,w,h);
+    c.restore();
+  }else{
+    c.fillStyle=PG_NAVY;c.font=`bold ${Math.round(sz*0.42)}px Segoe UI,sans-serif`;
+    c.textAlign='center';c.textBaseline='middle';
+    c.fillText('AG',x+sz/2,y+sz*0.42);
+    c.fillStyle=PG_ACCENT;c.fillRect(x+sz*0.24,y+sz*0.66,sz*0.52,sz*0.075);
+    c.textBaseline='alphabetic';
+  }
+  c.restore();
+}
 /* ═══ STATE ═══ */
 let pgS={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back',mount:'zid',steelPosts:2,steelProfile:100,model:'bio-3'};
 const PG_TL={bioklimatska:'Bioklimatska pergola (pokretne lamele)',ravna:'Ravna pergola (3D Blockout platno)',klasicna:'Klasična pergola sa padom'};
@@ -785,25 +808,25 @@ function exportPDF(id){
   const img=cv.toDataURL('image/png');
   const w=window.open('','_blank');
   if(!w){alert('Dozvoli pop-up prozore u pregledaču pa pokušaj ponovo.');return;}
-  const pn=(document.getElementById('pg_projectName').value.trim()||'PROHORECA AG GROUP').replace(/"/g,'');
+  const pn=(document.getElementById('pg_projectName').value.trim()||PG_FIRMA).replace(/"/g,'');
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${pn}</title><style>*{margin:0;padding:0}body{background:#fff}img{width:100%;display:block}@media print{@page{size:auto;margin:5mm}body{margin:0}}</style></head><body><img src="${img}" onload="setTimeout(()=>{window.print();},400)"></body></html>`);
   w.document.close();
 }
 function pgActiveCanvas(){const m={'panel-2d':'outputCanvas','panel-3d':'canvas3d','panel-ponuda':'canvasPonuda','panel-nalog':'canvasNalog'};for(const k in m)if(document.getElementById(k).classList.contains('active'))return m[k];return 'outputCanvas';}
-async function sharePNG(){const id=pgActiveCanvas();const c=document.getElementById(id);try{const b=await new Promise(r=>c.toBlob(r,'image/png'));const f=new File([b],'crtez.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'PROHORECA AG GROUP'});}else{exportPNG(id);}}catch(e){exportPNG(id);}}
+async function sharePNG(){const id=pgActiveCanvas();const c=document.getElementById(id);try{const b=await new Promise(r=>c.toBlob(r,'image/png'));const f=new File([b],'crtez.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:PG_FIRMA});}else{exportPNG(id);}}catch(e){exportPNG(id);}}
 function hexDarken(hex,f){if(!hex||hex[0]!=='#')return hex;const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`;}
 
 /* ═══ CANVAS HELPERS ═══ */
 function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();}
 function dimH(c,x1,y,x2,label){c.save();c.strokeStyle='#475569';c.lineWidth=1.1;c.beginPath();c.moveTo(x1,y);c.lineTo(x2,y);c.stroke();c.beginPath();c.moveTo(x1,y-6);c.lineTo(x1,y+6);c.moveTo(x2,y-6);c.lineTo(x2,y+6);c.stroke();[x1,x2].forEach((a,i)=>{c.beginPath();if(i===0){c.moveTo(a,y);c.lineTo(a+9,y-3.5);c.lineTo(a+9,y+3.5);}else{c.moveTo(a,y);c.lineTo(a-9,y-3.5);c.lineTo(a-9,y+3.5);}c.fillStyle='#475569';c.fill();});const mx=(x1+x2)/2;c.font='bold 13px Segoe UI,sans-serif';c.textAlign='center';const tw=c.measureText(label).width+10;c.fillStyle='#fff';c.fillRect(mx-tw/2,y-9,tw,17);c.fillStyle='#0f172a';c.fillText(label,mx,y+4);c.restore();}
 function dimV(c,x,y1,y2,label){c.save();c.strokeStyle='#475569';c.lineWidth=1.1;c.beginPath();c.moveTo(x,y1);c.lineTo(x,y2);c.stroke();c.beginPath();c.moveTo(x-6,y1);c.lineTo(x+6,y1);c.moveTo(x-6,y2);c.lineTo(x+6,y2);c.stroke();[y1,y2].forEach((a,i)=>{c.beginPath();if(i===0){c.moveTo(x,a);c.lineTo(x-3.5,a+9);c.lineTo(x+3.5,a+9);}else{c.moveTo(x,a);c.lineTo(x-3.5,a-9);c.lineTo(x+3.5,a-9);}c.fillStyle='#475569';c.fill();});const my=(y1+y2)/2;c.save();c.translate(x,my);c.rotate(-Math.PI/2);c.font='bold 13px Segoe UI,sans-serif';c.textAlign='center';const tw=c.measureText(label).width+10;c.fillStyle='#fff';c.fillRect(-tw/2,-9,tw,17);c.fillStyle='#0f172a';c.fillText(label,0,4);c.restore();c.restore();}
-function docHeader(c,CW,t1,t2,id,d){c.fillStyle='#1a1a2e';c.fillRect(0,0,CW,100);c.fillStyle='#e94560';c.fillRect(0,100,CW,5);c.fillStyle='#e94560';roundRect(c,24,18,58,58,12);c.fill();c.fillStyle='#fff';c.font='bold 32px Segoe UI,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('P',53,49);c.textAlign='left';c.fillStyle='#fff';c.font='bold 28px Segoe UI,sans-serif';c.fillText('PROHORECA AG GROUP',96,38);c.fillStyle='rgba(255,255,255,0.7)';c.font='15px Segoe UI,sans-serif';c.fillText(t1,96,64);c.textAlign='right';c.fillStyle='#fff';c.font='bold 17px Segoe UI,sans-serif';c.fillText(t2,CW-28,38);c.fillStyle='rgba(255,255,255,0.6)';c.font='14px Segoe UI,sans-serif';c.fillText(id+'  |  '+d,CW-28,62);c.textAlign='left';c.textBaseline='alphabetic';}
-function docFooter(c,CW,CH,id,d){const fy=CH-65;c.fillStyle='#e94560';c.fillRect(0,fy-4,CW,4);c.fillStyle='#1a1a2e';c.fillRect(0,fy,CW,65);c.fillStyle='rgba(255,255,255,0.7)';c.font='14px Segoe UI,sans-serif';c.textAlign='left';c.fillText('064 89 79 242  |  Proizvedeno u Srbiji',28,fy+34);c.textAlign='center';c.fillText(id+'  |  '+d,CW/2,fy+34);c.fillStyle='rgba(255,255,255,0.5)';c.font='13px Segoe UI,sans-serif';c.textAlign='right';c.fillText('PROHORECA AG GROUP',CW-28,fy+34);c.textAlign='left';}
-function projInfo(c,CW,y,name){if(!name)return y;c.fillStyle='#e94560';c.font='bold 16px Segoe UI,sans-serif';c.textAlign='left';c.fillText('PROJEKAT:',30,y+26);c.fillStyle='#1a1a2e';c.font='bold 22px Segoe UI,sans-serif';c.fillText(name,140,y+26);return y+42;}
-function infoBlock(c,CW,y,lt,ll,rt,rl){const hh=Math.max(ll.length,rl.length)*24+50;c.fillStyle='#f8f9fa';c.fillRect(0,y,CW,hh);c.strokeStyle='#e5e7eb';c.lineWidth=1;c.beginPath();c.moveTo(0,y+hh);c.lineTo(CW,y+hh);c.stroke();const cw=CW/2;c.fillStyle='#e94560';c.font='bold 14px Segoe UI,sans-serif';c.fillText(lt,30,y+26);c.fillStyle='#374151';c.font='15px Segoe UI,sans-serif';ll.forEach((l,i)=>c.fillText(l,30,y+52+i*24));c.fillStyle='#e94560';c.font='bold 14px Segoe UI,sans-serif';c.fillText(rt,cw+30,y+26);c.fillStyle='#374151';c.font='15px Segoe UI,sans-serif';rl.forEach((l,i)=>c.fillText(l,cw+30,y+52+i*24));return y+hh;}
-function matBar(c,CW,y,items){c.fillStyle='#1a1a2e';c.fillRect(0,y,CW,48);c.fillStyle='rgba(255,255,255,0.8)';c.font='bold 14px Segoe UI,sans-serif';c.textAlign='left';const sp=CW/items.length;items.forEach((it,i)=>c.fillText(it,30+i*sp,y+28));return y+48;}
+function docHeader(c,CW,t1,t2,id,d){c.fillStyle=PG_NAVY;c.fillRect(0,0,CW,100);c.fillStyle=PG_ACCENT;c.fillRect(0,100,CW,5);pgLogoMark(c,24,18,58);c.textAlign='left';c.textBaseline='alphabetic';c.fillStyle='#fff';c.font='bold 28px Segoe UI,sans-serif';c.fillText(PG_FIRMA,96,38);c.fillStyle=PG_ACCENT;c.font='bold 11px Segoe UI,sans-serif';c.fillText(PG_DOMENI,96,57);c.fillStyle='rgba(255,255,255,0.7)';c.font='14px Segoe UI,sans-serif';c.fillText(t1,96,79);c.textAlign='right';c.fillStyle='#fff';c.font='bold 17px Segoe UI,sans-serif';c.fillText(t2,CW-28,38);c.fillStyle='rgba(255,255,255,0.6)';c.font='14px Segoe UI,sans-serif';c.fillText(id+'  |  '+d,CW-28,62);c.textAlign='left';c.textBaseline='alphabetic';}
+function docFooter(c,CW,CH,id,d){const fy=CH-65;c.fillStyle=PG_ACCENT;c.fillRect(0,fy-4,CW,4);c.fillStyle=PG_NAVY;c.fillRect(0,fy,CW,65);c.fillStyle='rgba(255,255,255,0.7)';c.font='14px Segoe UI,sans-serif';c.textAlign='left';c.fillText(PG_TEL+'  |  Proizvedeno u Srbiji',28,fy+34);c.textAlign='center';c.fillText(id+'  |  '+d,CW/2,fy+34);c.fillStyle='rgba(255,255,255,0.5)';c.font='13px Segoe UI,sans-serif';c.textAlign='right';c.fillText(PG_FIRMA+'  •  '+PG_DOMENI,CW-28,fy+34);c.textAlign='left';}
+function projInfo(c,CW,y,name){if(!name)return y;c.fillStyle=PG_ACCENT;c.font='bold 16px Segoe UI,sans-serif';c.textAlign='left';c.fillText('PROJEKAT:',30,y+26);c.fillStyle=PG_NAVY;c.font='bold 22px Segoe UI,sans-serif';c.fillText(name,140,y+26);return y+42;}
+function infoBlock(c,CW,y,lt,ll,rt,rl){const hh=Math.max(ll.length,rl.length)*24+50;c.fillStyle='#f8f9fa';c.fillRect(0,y,CW,hh);c.strokeStyle='#e5e7eb';c.lineWidth=1;c.beginPath();c.moveTo(0,y+hh);c.lineTo(CW,y+hh);c.stroke();const cw=CW/2;c.fillStyle=PG_ACCENT;c.font='bold 14px Segoe UI,sans-serif';c.fillText(lt,30,y+26);c.fillStyle='#374151';c.font='15px Segoe UI,sans-serif';ll.forEach((l,i)=>c.fillText(l,30,y+52+i*24));c.fillStyle=PG_ACCENT;c.font='bold 14px Segoe UI,sans-serif';c.fillText(rt,cw+30,y+26);c.fillStyle='#374151';c.font='15px Segoe UI,sans-serif';rl.forEach((l,i)=>c.fillText(l,cw+30,y+52+i*24));return y+hh;}
+function matBar(c,CW,y,items){c.fillStyle=PG_NAVY;c.fillRect(0,y,CW,48);c.fillStyle='rgba(255,255,255,0.8)';c.font='bold 14px Segoe UI,sans-serif';c.textAlign='left';const sp=CW/items.length;items.forEach((it,i)=>c.fillText(it,30+i*sp,y+28));return y+48;}
 let pgHideSecTitle=false;
-function secTitle(c,x,y,t){if(pgHideSecTitle)return;c.fillStyle='#e94560';c.fillRect(x,y-14,5,18);c.fillStyle='#1a1a2e';c.font='bold 17px Segoe UI,sans-serif';c.textAlign='left';c.fillText(t,x+14,y);const tw2=c.measureText(t).width;c.strokeStyle='#d1d5db';c.lineWidth=1;c.beginPath();c.moveTo(x+14+tw2+14,y-5);c.lineTo(x+Math.max(360,tw2+120),y-5);c.stroke();}
+function secTitle(c,x,y,t){if(pgHideSecTitle)return;c.fillStyle=PG_ACCENT;c.fillRect(x,y-14,5,18);c.fillStyle=PG_NAVY;c.font='bold 17px Segoe UI,sans-serif';c.textAlign='left';c.fillText(t,x+14,y);const tw2=c.measureText(t).width;c.strokeStyle='#d1d5db';c.lineWidth=1;c.beginPath();c.moveTo(x+14+tw2+14,y-5);c.lineTo(x+Math.max(360,tw2+120),y-5);c.stroke();}
 function ground(c,x1,x2,y){c.strokeStyle='#9ca3af';c.lineWidth=2;c.beginPath();c.moveTo(x1,y);c.lineTo(x2,y);c.stroke();c.lineWidth=0.8;for(let g=x1;g<x2;g+=8){c.beginPath();c.moveTo(g,y);c.lineTo(g-6,y+8);c.stroke();}}
 function wallHatch(c,x,y,w,h){c.fillStyle='#d1d5db';c.fillRect(x,y,w,h);c.strokeStyle='#9ca3af';c.lineWidth=0.8;for(let wy=y;wy<y+h;wy+=6){c.beginPath();c.moveTo(x,wy);c.lineTo(x+w,wy+6);c.stroke();}}
 function initCanvas(id,CW,CH){const cv=document.getElementById(id);cv.style.display='block';const D=2;cv.width=CW*D;cv.height=CH*D;cv.style.width='100%';cv.style.height='auto';const c=cv.getContext('2d');c.scale(D,D);c.fillStyle='#fff';c.fillRect(0,0,CW,CH);return c;}
@@ -812,18 +835,18 @@ function titleBlock(c,CW,CH,rows){
   const w=430,rh=26,h=rows.length*rh+14,x=CW-30-w,y=CH-69-14-h;
   c.save();
   c.fillStyle='#fff';c.fillRect(x,y,w,h);
-  c.strokeStyle='#1a1a2e';c.lineWidth=2;c.strokeRect(x,y,w,h);
+  c.strokeStyle=PG_NAVY;c.lineWidth=2;c.strokeRect(x,y,w,h);
   c.lineWidth=.8;c.strokeStyle='#cbd5e1';
   rows.forEach((r,i)=>{
     const ry=y+7+i*rh;
     if(i>0){c.beginPath();c.moveTo(x+8,ry);c.lineTo(x+w-8,ry);c.stroke();}
     c.fillStyle='#6b7280';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='left';c.fillText(r[0].toUpperCase(),x+14,ry+17);
-    c.fillStyle='#1a1a2e';c.font='bold 13px Segoe UI,sans-serif';c.fillText(String(r[1]),x+130,ry+17);
+    c.fillStyle=PG_NAVY;c.font='bold 13px Segoe UI,sans-serif';c.fillText(String(r[1]),x+130,ry+17);
   });
   c.beginPath();c.moveTo(x+122,y+4);c.lineTo(x+122,y+h-4);c.stroke();
   c.restore();
 }
-function sheetFrame(c,x,y,w,h){c.save();c.strokeStyle='#1a1a2e';c.lineWidth=2.5;c.strokeRect(x,y,w,h);c.strokeStyle='#9ca3af';c.lineWidth=.8;c.strokeRect(x+5,y+5,w-10,h-10);c.restore();}
+function sheetFrame(c,x,y,w,h){c.save();c.strokeStyle=PG_NAVY;c.lineWidth=2.5;c.strokeRect(x,y,w,h);c.strokeStyle='#9ca3af';c.lineWidth=.8;c.strokeRect(x+5,y+5,w-10,h-10);c.restore();}
 
 /* ═══ SPECIFIKACIJA PROJEKTA ═══ */
 function pgSpecData(){
@@ -856,13 +879,13 @@ function pgDrawSpec(c,ox,oy,w){
   secTitle(c,ox,oy-14,'SPECIFIKACIJA PROJEKTA');
   c.save();
   c.fillStyle='rgba(255,255,255,.92)';c.fillRect(ox,oy,w,h);
-  c.strokeStyle='#1a1a2e';c.lineWidth=2;c.strokeRect(ox,oy,w,h);
-  c.fillStyle='#1a1a2e';c.fillRect(ox,oy,w,4);
+  c.strokeStyle=PG_NAVY;c.lineWidth=2;c.strokeRect(ox,oy,w,h);
+  c.fillStyle=PG_NAVY;c.fillRect(ox,oy,w,4);
   const colW=w/3;
   [['KONSTRUKCIJA',sp.kon],['MERE',sp.mere],['DETALJI',sp.det]].forEach((col,ci)=>{
     const cx=ox+ci*colW;
     if(ci>0){c.strokeStyle='#d1d5db';c.lineWidth=1;c.beginPath();c.moveTo(cx,oy+12);c.lineTo(cx,oy+h-12);c.stroke();}
-    c.fillStyle='#e94560';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';c.fillText(col[0],cx+20,oy+26);
+    c.fillStyle=PG_ACCENT;c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';c.fillText(col[0],cx+20,oy+26);
     col[1].forEach((r,ri)=>{
       const ry=oy+headH+ri*rh+17;
       c.fillStyle='#6b7280';c.font='600 12px Segoe UI,sans-serif';c.fillText(r[0],cx+20,ry);
@@ -923,7 +946,7 @@ function generatePergola(){
   docHeader(c,CW,'TEHNIČKI CRTEŽ PERGOLE',PG_TL[pgS.type].toUpperCase(),id,d);
   projInfo(c,CW,y0,pn);
   if(showP){
-    c.fillStyle='#e94560';c.fillRect(0,yPrice,CW,46);
+    c.fillStyle=PG_ACCENT;c.fillRect(0,yPrice,CW,46);
     c.fillStyle='#fff';c.font='bold 18px Segoe UI,sans-serif';c.textAlign='left';
     c.fillText(`OKVIRNA CENA: ${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`,30,yPrice+30);
     c.font='13px Segoe UI,sans-serif';c.textAlign='right';
@@ -997,7 +1020,7 @@ function pgDrawTlocrt(c,ox,oy,w,h,tW,mP){
     pgSteelXs().forEach((kx,i)=>{
       const kpi=pgPiAtX(kx),by=sy+offs[kpi]*sc,cy=pgS.mount==='samostojeca'?by-bt/2:by+bt/2,cx=sx+kx*sc;
       c.fillStyle='#1e293b';c.fillRect(cx-ks/2,cy-ks/2,ks,ks);
-      c.strokeStyle='#e94560';c.lineWidth=1.5;c.strokeRect(cx-ks/2,cy-ks/2,ks,ks);
+      c.strokeStyle=PG_ACCENT;c.lineWidth=1.5;c.strokeRect(cx-ks/2,cy-ks/2,ks,ks);
       c.fillStyle='#1e293b';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.fillText('K'+(i+1),cx,cy+ks/2+11);
     });
   }
@@ -1014,22 +1037,22 @@ function pgDrawTlocrt(c,ox,oy,w,h,tW,mP){
   let xO=0;
   for(let pi=0;pi<pgS.count;pi++){
     const pw=pgS.pergs[pi].w*sc,pp=pgS.pergs[pi].p*sc,px=sx+xO,py=sy+offs[pi]*sc;
-    c.fillStyle='rgba(233,69,96,.04)';c.fillRect(px,py,pw,pp);
+    c.fillStyle='rgba(200,148,78,.04)';c.fillRect(px,py,pw,pp);
     c.strokeStyle='rgba(26,26,46,.15)';c.lineWidth=0.8;
     c.save();c.beginPath();c.rect(px,py,pw,pp);c.clip();
     if(pgS.type==='bioklimatska'){for(let ly=py+10;ly<py+pp;ly+=12){c.beginPath();c.moveTo(px,ly);c.lineTo(px+pw,ly);c.stroke();}}
     else{for(let dd=-pp;dd<pw+pp;dd+=14){c.beginPath();c.moveTo(px+dd,py);c.lineTo(px+dd+pp,py+pp);c.stroke();}}
     c.restore();
-    c.strokeStyle='#1a1a2e';c.lineWidth=2;c.strokeRect(px,py,pw,pp);
+    c.strokeStyle=PG_NAVY;c.lineWidth=2;c.strokeRect(px,py,pw,pp);
     c.fillStyle='#6b7280';c.fillRect(px,py,pw,4);c.fillStyle='#374151';c.fillRect(px,py+pp-6,pw,6);
-    c.fillStyle='#e94560';c.font='bold 15px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`P${pi+1}`,px+pw/2,py+pp/2+5);
+    c.fillStyle=PG_ACCENT;c.font='bold 15px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`P${pi+1}`,px+pw/2,py+pp/2+5);
     xO+=pw;
     if(pi<pgS.count-1){const g=pgGap(pi)*sc;if(g>0){const gt=sy+Math.min(offs[pi],offs[pi+1])*sc,gb=sy+Math.max(offs[pi]+pgS.pergs[pi].p,offs[pi+1]+pgS.pergs[pi+1].p)*sc;c.save();c.fillStyle='rgba(67,56,202,.05)';c.fillRect(sx+xO,gt,g,gb-gt);c.strokeStyle='#818cf8';c.lineWidth=1;c.setLineDash([4,3]);c.strokeRect(sx+xO,gt,g,gb-gt);c.setLineDash([]);c.fillStyle='#4338ca';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.save();c.translate(sx+xO+g/2,(gt+gb)/2);c.rotate(-Math.PI/2);c.fillText('RAZMAK',0,3);c.restore();c.restore();}xO+=g;}
   }
-  if(pgS.count>1){c.strokeStyle='#e94560';c.lineWidth=1.5;c.setLineDash([6,4]);for(let pi=0;pi<pgS.count-1;pi++){const jStart=pgXOff(pi)+pgS.pergs[pi].w,jEnd=pgXOff(pi+1),jxc=(jStart+jEnd)/2*sc;c.beginPath();c.moveTo(sx+jxc,sy-14);c.lineTo(sx+jxc,sy+mP*sc+10);c.stroke();}c.setLineDash([]);c.fillStyle='#e94560';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText(pgGapSum()>0?'RAZMAKNUTE PERGOLE':(pgS.sharedPost?'ZAJEDNIČKI STUB':'ODVOJENI STUBOVI'),sx+dW/2,sy+mP*sc+52);}
+  if(pgS.count>1){c.strokeStyle=PG_ACCENT;c.lineWidth=1.5;c.setLineDash([6,4]);for(let pi=0;pi<pgS.count-1;pi++){const jStart=pgXOff(pi)+pgS.pergs[pi].w,jEnd=pgXOff(pi+1),jxc=(jStart+jEnd)/2*sc;c.beginPath();c.moveTo(sx+jxc,sy-14);c.lineTo(sx+jxc,sy+mP*sc+10);c.stroke();}c.setLineDash([]);c.fillStyle=PG_ACCENT;c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText(pgGapSum()>0?'RAZMAKNUTE PERGOLE':(pgS.sharedPost?'ZAJEDNIČKI STUB':'ODVOJENI STUBOVI'),sx+dW/2,sy+mP*sc+52);}
   if(anyOff){c.save();c.strokeStyle='#0284c7';c.lineWidth=1.4;c.setLineDash([8,5]);c.beginPath();c.moveTo(sx-14,sy+mP*sc);c.lineTo(sx+dW+14,sy+mP*sc);c.stroke();c.setLineDash([]);c.fillStyle='#0284c7';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='left';c.fillText('PREDNJA LINIJA — PORAVNATO',sx-10,sy+mP*sc-8);c.restore();}
   const posts=pgPP(),dpW=Math.max(pgS.postW*sc*.6,6),dpD=Math.max(pgS.postD*sc*.6,6);
-  posts.forEach((p,i)=>{const psx=sx+p.x*sc-dpW/2,ppr=pgS.pergs[p.pi].p*sc,psy=sy+offs[p.pi]*sc+ppr-dpD/2;if(p.sh){c.fillStyle='#e94560';c.fillRect(psx-2,psy-2,dpW+4,dpD+4);}else{c.fillStyle='#1a1a2e';c.fillRect(psx,psy,dpW,dpD);}c.fillStyle='#1a1a2e';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`S${i+1}`,psx+dpW/2,psy+dpD+14);});
+  posts.forEach((p,i)=>{const psx=sx+p.x*sc-dpW/2,ppr=pgS.pergs[p.pi].p*sc,psy=sy+offs[p.pi]*sc+ppr-dpD/2;if(p.sh){c.fillStyle=PG_ACCENT;c.fillRect(psx-2,psy-2,dpW+4,dpD+4);}else{c.fillStyle=PG_NAVY;c.fillRect(psx,psy,dpW,dpD);}c.fillStyle=PG_NAVY;c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`S${i+1}`,psx+dpW/2,psy+dpD+14);});
   if(pgS.drain!=='none'&&posts.length){
     const xs=posts.map(q=>q.x),minX=Math.min(...xs),maxX=Math.max(...xs);
     posts.forEach(pt=>{
@@ -1069,7 +1092,7 @@ function pgDrawBocni(c,ox,oy,w,h,mP){
     c.fillStyle='#475569';c.fillRect(kx-bs/2,wTY+bs,bs,gY-wTY-bs);
     c.strokeStyle='#1e293b';c.lineWidth=1.2;c.strokeRect(kx-bs/2,wTY+bs,bs,gY-wTY-bs);
     c.fillStyle='#1e293b';c.fillRect(kx-bs*.9,gY-5,bs*1.8,5);
-    c.strokeStyle='#e94560';c.lineWidth=2;c.beginPath();c.moveTo(kx-bs/2-4,wTY+bs);c.lineTo(kx+bs/2+4,wTY+bs);c.stroke();
+    c.strokeStyle=PG_ACCENT;c.lineWidth=2;c.beginPath();c.moveTo(kx-bs/2-4,wTY+bs);c.lineTo(kx+bs/2+4,wTY+bs);c.stroke();
     c.fillStyle='#1e293b';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='left';
     c.fillText(`GREDA ${pgS.steelProfile}×${pgS.steelProfile} mm — zavarena`,kx+bs/2+8,wTY+bs/2+4);
     const lxx=pgS.mount==='samostojeca'?kx-bs/2-10:kx+bs/2+12;
@@ -1102,14 +1125,14 @@ function pgDrawBocni(c,ox,oy,w,h,mP){
   // Krovna ravan — kod klasične se završava na vrhu oluka, ne na vrhu stuba
   const roofFY=pgS.type==='klasicna'?pTY-Math.max(10,12*sc):wTY;
   c.fillStyle='rgba(55,65,81,.85)';c.beginPath();c.moveTo(roofStartX,wTY);c.lineTo(sX,roofFY);c.lineTo(sX,roofFY-rT);c.lineTo(roofStartX,wTY-rT);c.closePath();c.fill();
-  c.strokeStyle='#1a1a2e';c.lineWidth=2.5;c.beginPath();c.moveTo(roofStartX,wTY);c.lineTo(sX,roofFY);c.stroke();
+  c.strokeStyle=PG_NAVY;c.lineWidth=2.5;c.beginPath();c.moveTo(roofStartX,wTY);c.lineTo(sX,roofFY);c.stroke();
   // OLUK
   const oTop=roofFY,oBot=Math.max(pTY,oTop+8);
   c.fillStyle='#374151';c.fillRect(sX-9,oTop,18,oBot-oTop);
-  c.strokeStyle='#1a1a2e';c.lineWidth=1.2;c.strokeRect(sX-9,oTop,18,oBot-oTop);
+  c.strokeStyle=PG_NAVY;c.lineWidth=1.2;c.strokeRect(sX-9,oTop,18,oBot-oTop);
   c.fillStyle='#374151';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='left';c.fillText('OLUK',sX+14,(oTop+oBot)/2+3);
   if(!pgS.hasWallTube&&!pgSteel()){c.fillStyle='#4b5563';c.fillRect(wX,wTY-4,14,8);}
-  if(pgS.type==='klasicna'){const mRX=(roofStartX+sX)/2,mRY=(wTY+roofFY)/2,a=Math.atan2(roofFY-wTY,sX-roofStartX);c.save();c.translate(mRX,mRY-16);c.rotate(a);c.fillStyle='#e94560';c.font='bold 14px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`pad: ${pgSl()}%`,0,0);c.restore();}
+  if(pgS.type==='klasicna'){const mRX=(roofStartX+sX)/2,mRY=(wTY+roofFY)/2,a=Math.atan2(roofFY-wTY,sX-roofStartX);c.save();c.translate(mRX,mRY-16);c.rotate(a);c.fillStyle=PG_ACCENT;c.font='bold 14px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`pad: ${pgSl()}%`,0,0);c.restore();}
   dimH(c,wX,wTY-rT-28,sX,`${mP}`);dimV(c,wX-34,wTY,gY,`${pgS.wallHeight}`);
   if(!pgS.hasWallBase)dimV(c,sX+20,pTY,gY,`${pgS.passHeight}`);
   if(pgS.drain!=='none'){
@@ -1147,16 +1170,16 @@ function pgDrawFront(c,ox,oy,w,h,tW){
   {let fo=0;for(let pi=0;pi<pgS.count;pi++){
     const piW=pgS.pergs[pi].w*sc,piX=sx+fo;
     if(pgS.hasWallBase){const wbH=pgS.wallBaseH*sc;c.fillStyle='#b8a89a';c.fillRect(piX,gY-wbH,piW,wbH);c.strokeStyle='#8b7d6b';c.lineWidth=1;c.strokeRect(piX,gY-wbH,piW,wbH);}
-    c.fillStyle='#374151';c.fillRect(piX,tY-oH2,piW,oH2);c.strokeStyle='#1a1a2e';c.lineWidth=1;c.strokeRect(piX,tY-oH2,piW,oH2);
+    c.fillStyle='#374151';c.fillRect(piX,tY-oH2,piW,oH2);c.strokeStyle=PG_NAVY;c.lineWidth=1;c.strokeRect(piX,tY-oH2,piW,oH2);
     c.fillStyle='rgba(255,255,255,.85)';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.fillText('OLUK',piX+piW/2,tY-oH2/2+4);
     fo+=piW+pgGap(pi)*sc;
   }}
   if(pgS.hasWallBase){c.fillStyle='#8b7d6b';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='center';c.fillText('ZIDIĆ '+pgS.wallBaseH+' cm',sx+pgS.pergs[0].w*sc/2,gY-pgS.wallBaseH*sc/2+4);}
   const posts=pgPP(),sW=Math.max(pgS.postW*sc*.4,6);
   const stubTopY=pgS.hasWallBase?gY-pgS.wallBaseH*sc:gY;
-  posts.forEach((p,i)=>{const px=sx+p.x*sc-sW/2;const sw2=p.sh?sW*1.4:sW;const sx2=p.sh?px-sW*.2:px;c.fillStyle=p.sh?'#e94560':'#374151';c.fillRect(sx2,tY,sw2,stubTopY-tY);c.fillStyle=p.sh?'#e94560':'#1a1a2e';c.font=`bold ${p.sh?12:11}px Segoe UI,sans-serif`;c.textAlign='center';c.fillText(`S${i+1}${p.sh?'*':''}`,sx2+sw2/2,gY+18);});
-  if(pgS.count>1&&pgS.sharedPost){c.fillStyle='#e94560';c.font='11px Segoe UI,sans-serif';c.textAlign='left';c.fillText('* Zajednički stub na spoju',sx,gY+38);}
-  if(pgS.count>1){c.strokeStyle='#e94560';c.lineWidth=1.5;c.setLineDash([6,4]);for(let pi=0;pi<pgS.count-1;pi++){const jxc=(pgXOff(pi)+pgS.pergs[pi].w+pgXOff(pi+1))/2*sc;c.beginPath();c.moveTo(sx+jxc,tY-20);c.lineTo(sx+jxc,gY+5);c.stroke();}c.setLineDash([]);}
+  posts.forEach((p,i)=>{const px=sx+p.x*sc-sW/2;const sw2=p.sh?sW*1.4:sW;const sx2=p.sh?px-sW*.2:px;c.fillStyle=p.sh?PG_ACCENT:'#374151';c.fillRect(sx2,tY,sw2,stubTopY-tY);c.fillStyle=p.sh?PG_ACCENT:PG_NAVY;c.font=`bold ${p.sh?12:11}px Segoe UI,sans-serif`;c.textAlign='center';c.fillText(`S${i+1}${p.sh?'*':''}`,sx2+sw2/2,gY+18);});
+  if(pgS.count>1&&pgS.sharedPost){c.fillStyle=PG_ACCENT;c.font='11px Segoe UI,sans-serif';c.textAlign='left';c.fillText('* Zajednički stub na spoju',sx,gY+38);}
+  if(pgS.count>1){c.strokeStyle=PG_ACCENT;c.lineWidth=1.5;c.setLineDash([6,4]);for(let pi=0;pi<pgS.count-1;pi++){const jxc=(pgXOff(pi)+pgS.pergs[pi].w+pgXOff(pi+1))/2*sc;c.beginPath();c.moveTo(sx+jxc,tY-20);c.lineTo(sx+jxc,gY+5);c.stroke();}c.setLineDash([]);}
   dimH(c,sx,tY-oH2-26,sx+dW,`${tW}`);dimV(c,sx+dW+24,tY,gY,`${pgS.passHeight}`);
   let bx=0;for(let pi=0;pi<pgS.count;pi++){const pw=pgS.pergs[pi].w*sc;dimH(c,sx+bx,gY+56,sx+bx+pw,`P${pi+1}: ${pgS.pergs[pi].w}×${pgS.pergs[pi].p}`);bx+=pw;if(pi<pgS.count-1){const g=pgGap(pi)*sc;if(g>0)dimH(c,sx+bx,gY+56,sx+bx+g,`razmak ${pgGap(pi)}`);bx+=g;}}
   c.fillStyle='#6b7280';c.font='italic 11px Segoe UI,sans-serif';c.textAlign='left';c.fillText('Prolazna visina merena do donje ivice oluka.',sx,gY+78);
@@ -1170,9 +1193,9 @@ function pgDrawFront(c,ox,oy,w,h,tW){
         const mLeft=ms==='levo';
         const mx=mLeft?piX-10:piX+piW+10,myM=(tY+gY)/2;
         c.save();
-        c.strokeStyle='#e94560';c.lineWidth=1.5;
+        c.strokeStyle=PG_ACCENT;c.lineWidth=1.5;
         c.beginPath();c.moveTo(mx,myM-30);c.lineTo(mx,myM+30);c.stroke();
-        c.fillStyle='#e94560';c.font='bold 12px Segoe UI,sans-serif';c.textAlign=mLeft?'right':'left';
+        c.fillStyle=PG_ACCENT;c.font='bold 12px Segoe UI,sans-serif';c.textAlign=mLeft?'right':'left';
         c.fillText('MOTOR P'+(pi+1),mx+(mLeft?-4:4),myM-10);
         c.fillStyle='#9ca3af';c.font='10px Segoe UI,sans-serif';
         c.fillText(ms==='levo'?'← leva strana':'desna strana →',mx+(mLeft?-4:4),myM+6);
@@ -1216,7 +1239,7 @@ function generate3D(){
   y=matBar(c,CW,y,['Materijal: Aluminijum'+(pgSteel()?' + čelik':''),'Boja: RAL '+pgS.ralDisplay,'Tip: '+PG_ML[pgS.type]]);
   const price3=pgPrice();
   if(pgS.showPrice&&price3>0){
-    c.fillStyle='#e94560';c.fillRect(0,y,CW,46);
+    c.fillStyle=PG_ACCENT;c.fillRect(0,y,CW,46);
     c.fillStyle='#fff';c.font='bold 18px Segoe UI,sans-serif';c.textAlign='left';
     c.fillText(`OKVIRNA CENA: ${Math.round(price3).toLocaleString('sr-RS')} ${pgPrices.cur}`,30,y+30);
     c.font='13px Segoe UI,sans-serif';c.textAlign='right';
@@ -1270,18 +1293,18 @@ function generate3D(){
     const tl0=p(wx,wy+dy,wz),tlz=p(wx,wy+dy,wz+dz);
     const brc=p(wx+dx,wy,wz+dz);
     // Gornja ploha
-    poly([tl,tr2,tr0,tl0],cTop,cLine||'#1a1a2e',1.2);
+    poly([tl,tr2,tr0,tl0],cTop,cLine||PG_NAVY,1.2);
     // Prednja ploha
-    poly([bl,br,tr2,tl],cFront,cLine||'#1a1a2e',1.2);
+    poly([bl,br,tr2,tl],cFront,cLine||PG_NAVY,1.2);
     // Desna ploha
-    poly([brc,br0,tr0,tr2],cSide,cLine||'#1a1a2e',1.2);
+    poly([brc,br0,tr0,tr2],cSide,cLine||PG_NAVY,1.2);
   }
 
   // Linija u 3D
   function line3(ax,ay,az,bx,by,bz,col,lw){
     const A=p(ax,ay,az),B=p(bx,by,bz);
     c.beginPath();c.moveTo(A.x,A.y);c.lineTo(B.x,B.y);
-    c.strokeStyle=col||'#1a1a2e';c.lineWidth=lw||1.5;c.stroke();
+    c.strokeStyle=col||PG_NAVY;c.lineWidth=lw||1.5;c.stroke();
   }
 
   // Tlo
@@ -1450,9 +1473,9 @@ function generate3D(){
     const pp3=pgZOff(pt.pi)+pgS.pergs[pt.pi].p;
     const frontY=pgS.type==='klasicna'?pgS.passHeight:pgS.wallHeight;
     const pW2=pgS.postW,pD2=pgS.postD;
-    const pCol=pt.sh?'#e94560':fHex;
-    const pColD=pt.sh?hexDarken('#e94560',.65):fDark;
-    const pColS=pt.sh?hexDarken('#e94560',.5):hexDarken(fHex,.5);
+    const pCol=pt.sh?PG_ACCENT:fHex;
+    const pColD=pt.sh?hexDarken(PG_ACCENT,.65):fDark;
+    const pColS=pt.sh?hexDarken(PG_ACCENT,.5):hexDarken(fHex,.5);
     if(pgS.hasWallBase){
       box(pt.x-pW2/2,0,pp3-pD2/2,pW2*2,pgS.wallBaseH,pD2*2,'#c0b0a0','#a89888',hexDarken('#a89888',.75),'#666');
       box(pt.x-pW2/2,pgS.wallBaseH,pp3-pD2/2,pW2,pgS.postHeight,pD2,pCol,pColD,pColS,'#111');
@@ -1461,7 +1484,7 @@ function generate3D(){
     }
     const stubTop=pgS.hasWallBase?pgS.wallBaseH+pgS.postHeight:frontY;
     const lp=p(pt.x,stubTop+6,pp3);
-    c.fillStyle=pt.sh?'#e94560':'#374151';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`S${i+1}`,lp.x,lp.y);
+    c.fillStyle=pt.sh?PG_ACCENT:'#374151';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`S${i+1}`,lp.x,lp.y);
     if(pgS.drain!=='none'){
       const xs3=posts.map(q=>q.x),minX3=Math.min(...xs3),maxX3=Math.max(...xs3);
       const isL=pt.x===minX3,isR=pt.x===maxX3;
@@ -1497,7 +1520,7 @@ function generate3D(){
     c.beginPath();c.moveTo(rB.x,rB.y);c.lineTo(zB.x,zB.y);c.stroke();
     c.setLineDash([]);
     // Kotna linija
-    c.strokeStyle='#e94560';c.lineWidth=1.8;
+    c.strokeStyle=PG_ACCENT;c.lineWidth=1.8;
     c.beginPath();c.moveTo(zA.x,zA.y);c.lineTo(zB.x,zB.y);c.stroke();
     // Tick-ovi
     const ang4=Math.atan2(zB.y-zA.y,zB.x-zA.x);
@@ -1507,7 +1530,7 @@ function generate3D(){
     [[zA,zB],[zB,zA]].forEach(([from,to])=>{
       const dx4=to.x-from.x,dy4=to.y-from.y,ln=Math.sqrt(dx4*dx4+dy4*dy4);
       const nx=dx4/ln,ny=dy4/ln;
-      c.fillStyle='#e94560';c.beginPath();c.moveTo(from.x,from.y);c.lineTo(from.x+nx*12+ny*5,from.y+ny*12-nx*5);c.lineTo(from.x+nx*12-ny*5,from.y+ny*12+nx*5);c.closePath();c.fill();
+      c.fillStyle=PG_ACCENT;c.beginPath();c.moveTo(from.x,from.y);c.lineTo(from.x+nx*12+ny*5,from.y+ny*12-nx*5);c.lineTo(from.x+nx*12-ny*5,from.y+ny*12+nx*5);c.closePath();c.fill();
     });
     // Label
     const mxZ=(zA.x+zB.x)/2,myZ=(zA.y+zB.y)/2;
@@ -1515,7 +1538,7 @@ function generate3D(){
     const lbl=`${mp} cm`;
     const lw3=c.measureText(lbl).width+14;
     c.fillStyle='#fff';c.fillRect(mxZ-lw3/2,myZ-12,lw3,22);
-    c.fillStyle='#1a1a2e';c.fillText(lbl,mxZ,myZ+5);
+    c.fillStyle=PG_NAVY;c.fillText(lbl,mxZ,myZ+5);
     c.restore();
   }
 
@@ -1545,7 +1568,7 @@ function generate3D(){
     const lblY2=(pvA.y+pvB.y)/2;
     c.font='bold 14px Segoe UI,sans-serif';c.textAlign='center';
     c.fillStyle='#fff';c.fillRect(pvA.x-lw4/2,lblY2-12,lw4,22);
-    c.fillStyle='#1a1a2e';c.fillText(lbl2,pvA.x,lblY2+5);
+    c.fillStyle=PG_NAVY;c.fillText(lbl2,pvA.x,lblY2+5);
     c.fillStyle='#3b82f6';c.font='10px Segoe UI,sans-serif';c.fillText('prolazna — do oluka',pvA.x,lblY2+24);
     c.restore();
   }
@@ -1559,16 +1582,16 @@ function generate3D(){
     const sl2=`pad: ${pgSl()}%`;c.font='bold 13px Segoe UI,sans-serif';c.textAlign='center';
     const sw2=c.measureText(sl2).width+12;
     c.fillStyle='rgba(255,255,255,.88)';c.fillRect(-sw2/2,-11,sw2,18);
-    c.fillStyle='#e94560';c.fillText(sl2,0,4);
+    c.fillStyle=PG_ACCENT;c.fillText(sl2,0,4);
     c.restore();
   }
 
   // Legende
-  c.fillStyle='#1a1a2e';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
-  if(pgS.count>1&&pgS.sharedPost){c.fillStyle='#e94560';c.fillText('■ Zajednički stub (crveni)',30,CH-108);}
+  c.fillStyle=PG_NAVY;c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
+  if(pgS.count>1&&pgS.sharedPost){c.fillStyle=PG_ACCENT;c.fillText('■ Zajednički stub (crveni)',30,CH-108);}
   if(pgS.drain!=='none'){c.fillStyle='#0ea5e9';c.fillText('▼ Odvod vode kroz stub',30,CH-90);}
   {const anyM=pgS.motorSides&&pgS.motorSides.some(m=>m!=='none');
-  if(anyM){const mtxt=pgS.motorSides.map((m,i)=>m!=='none'?`P${i+1}:${m==='levo'?'leva':'desna'}`:'').filter(Boolean).join(', ');c.fillStyle='#e94560';c.fillText('◀▶ Motor: '+mtxt,30,CH-72);c.fillStyle='#374151';c.fillText('Aksonometrijski prikaz — kabinet projekcija 30°',30,CH-54);}
+  if(anyM){const mtxt=pgS.motorSides.map((m,i)=>m!=='none'?`P${i+1}:${m==='levo'?'leva':'desna'}`:'').filter(Boolean).join(', ');c.fillStyle=PG_ACCENT;c.fillText('◀▶ Motor: '+mtxt,30,CH-72);c.fillStyle='#374151';c.fillText('Aksonometrijski prikaz — kabinet projekcija 30°',30,CH-54);}
   else{c.fillStyle='#374151';c.fillText('Aksonometrijski prikaz — kabinet projekcija 30°',30,CH-72);}}
 
   titleBlock(c,CW,CH,[
@@ -1623,7 +1646,7 @@ function drawBox(c,x,y,w,h,title){
 }
 function checkIcon(c,x,y,r){
   c.save();
-  c.fillStyle='#0f766e';c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
+  c.fillStyle=PG_NAVY;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
   c.strokeStyle='#fff';c.lineWidth=r*.34;c.lineCap='round';c.lineJoin='round';
   c.beginPath();c.moveTo(x-r*.42,y);c.lineTo(x-r*.1,y+r*.34);c.lineTo(x+r*.44,y-r*.34);c.stroke();
   c.restore();
@@ -1688,12 +1711,12 @@ async function generatePonuda(){
     c.textAlign='left';
   }
   c.restore();
-  c.strokeStyle='#1a1a2e';c.lineWidth=2;roundRect(c,MG,r1Y,phW,r1H,10);c.stroke();
+  c.strokeStyle=PG_NAVY;c.lineWidth=2;roundRect(c,MG,r1Y,phW,r1H,10);c.stroke();
 
   /* ── PANEL SA SPECIFIKACIJOM I CENOM ── */
   c.save();
   c.fillStyle='#141a2e';roundRect(c,pnlX,r1Y,pnlW,r1H,10);c.fill();
-  c.fillStyle='#e94560';roundRect(c,pnlX,r1Y,pnlW,5,10);c.fill();c.fillRect(pnlX,r1Y+3,pnlW,3);
+  c.fillStyle=PG_ACCENT;roundRect(c,pnlX,r1Y,pnlW,5,10);c.fill();c.fillRect(pnlX,r1Y+3,pnlW,3);
   c.fillStyle='#fff';c.font='bold 21px Segoe UI,sans-serif';c.textAlign='left';
   const nmLines=wrapText(c,M.naziv,pnlX+24,r1Y+42,pnlW-48,25,2);
   let sy2=r1Y+42+nmLines*25+12;
@@ -1745,7 +1768,7 @@ async function generatePonuda(){
     c.fillStyle='rgba(255,255,255,.75)';c.font='bold 16px Segoe UI,sans-serif';c.textAlign='left';
     c.fillText('CENA NA UPIT',pnlX+24,pcY+34);
     c.fillStyle='rgba(255,255,255,.5)';c.font='11px Segoe UI,sans-serif';
-    c.fillText('Kontakt: 064 89 79 242',pnlX+24,pcY+52);
+    c.fillText('Kontakt: '+PG_TEL,pnlX+24,pcY+52);
   }
   c.restore();
 
@@ -1766,17 +1789,17 @@ async function generatePonuda(){
 
   /* ── OPIS I USLOVI ── */
   const oW=CW-2*MG-460;
-  c.fillStyle='#0f766e';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';c.fillText('OPIS MODELA',MG,r3Y);
+  c.fillStyle=PG_NAVY;c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';c.fillText('OPIS MODELA',MG,r3Y);
   c.fillStyle='#374151';c.font='13px Segoe UI,sans-serif';
   const nl=wrapText(c,opis,MG,r3Y+24,oW,20,6);
   if(notes){c.fillStyle='#6b7280';c.font='italic 13px Segoe UI,sans-serif';c.fillText('Napomena: '+notes,MG,r3Y+24+nl*20+8);}
   const uX=CW-MG-430;
-  c.fillStyle='#0f766e';c.font='bold 13px Segoe UI,sans-serif';c.fillText('USLOVI',uX,r3Y);
+  c.fillStyle=PG_NAVY;c.font='bold 13px Segoe UI,sans-serif';c.fillText('USLOVI',uX,r3Y);
   c.fillStyle='#374151';c.font='13px Segoe UI,sans-serif';
   ['Ponuda važi 15 dana od datuma izdavanja.',
    'Rok isporuke i montaže po dogovoru.',
    'Konačna cena se potvrđuje po uzimanju mera na terenu.',
-   'Kontakt: 064 89 79 242  •  PROHORECA AG GROUP'
+   'Kontakt: '+PG_TEL+'  •  '+PG_FIRMA
   ].forEach((t,i)=>c.fillText(t,uX,r3Y+24+i*21));
 
   /* ── PREDNOSTI ── */
@@ -1787,7 +1810,7 @@ async function generatePonuda(){
   PG_PREDNOSTI.forEach((b,i)=>{
     const bx3=i*bw2+34;
     checkIcon(c,bx3+14,badY+badH/2,15);
-    c.fillStyle='#1a1a2e';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
+    c.fillStyle=PG_NAVY;c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
     c.fillText(b[0],bx3+40,badY+badH/2-3);
     c.fillStyle='#6b7280';c.font='12px Segoe UI,sans-serif';
     c.fillText(b[1],bx3+40,badY+badH/2+16);
@@ -1857,7 +1880,7 @@ function generateNalog(){
     c.fillStyle='#1e293b';c.fillRect(cx-colW/2-8,gY-6,colW+16,6);
     [-1,1].forEach(dir=>{
       const wx2=cx+dir*colW/2,wy2=bY+bH;
-      c.fillStyle='#e94560';c.beginPath();c.moveTo(wx2,wy2);c.lineTo(wx2+dir*7,wy2);c.lineTo(wx2,wy2+7);c.closePath();c.fill();
+      c.fillStyle=PG_ACCENT;c.beginPath();c.moveTo(wx2,wy2);c.lineTo(wx2+dir*7,wy2);c.lineTo(wx2,wy2+7);c.closePath();c.fill();
     });
     c.fillStyle='#1e293b';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='center';c.fillText('K'+(i+1),cx,gY+20);
   });
@@ -1866,8 +1889,8 @@ function generateNalog(){
    c.fillStyle='#1e293b';c.font='italic 11px Segoe UI,sans-serif';c.textAlign='right';c.fillText('stopa',cx-colW/2-12,gY-8);}
   // leader: var
   {const cx=sx+xs[0]*sc;
-   c.strokeStyle='#e94560';c.lineWidth=1.4;c.beginPath();c.moveTo(cx+colW/2+4,bY+bH+5);c.lineTo(cx+colW/2+46,bY+bH+44);c.stroke();
-   c.fillStyle='#e94560';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='left';c.fillText('VAR — ugaoni šav po obimu',cx+colW/2+50,bY+bH+49);}
+   c.strokeStyle=PG_ACCENT;c.lineWidth=1.4;c.beginPath();c.moveTo(cx+colW/2+4,bY+bH+5);c.lineTo(cx+colW/2+46,bY+bH+44);c.stroke();
+   c.fillStyle=PG_ACCENT;c.font='bold 12px Segoe UI,sans-serif';c.textAlign='left';c.fillText('VAR — ugaoni šav po obimu',cx+colW/2+50,bY+bH+49);}
   // leader: stub
   {const cx=sx+xs[n-1]*sc;
    c.strokeStyle='#334155';c.lineWidth=1.2;c.beginPath();c.moveTo(cx-colW/2-4,(bY+gY)/2);c.lineTo(cx-colW/2-40,(bY+gY)/2-16);c.stroke();
@@ -1891,10 +1914,10 @@ function generateNalog(){
   c.save();c.translate(dcx,dtY+dbH+dcH/2);c.rotate(-Math.PI/2);c.fillStyle='#fff';c.font='bold 15px Segoe UI,sans-serif';c.textAlign='center';c.fillText(`STUB ${pmm}×${pmm}`,0,5);c.restore();
   [-1,1].forEach(dir=>{
     const wx2=dcx+dir*dcW/2,wy2=dtY+dbH;
-    c.fillStyle='#e94560';c.beginPath();c.moveTo(wx2,wy2);c.lineTo(wx2+dir*22,wy2);c.lineTo(wx2,wy2+22);c.closePath();c.fill();
+    c.fillStyle=PG_ACCENT;c.beginPath();c.moveTo(wx2,wy2);c.lineTo(wx2+dir*22,wy2);c.lineTo(wx2,wy2+22);c.closePath();c.fill();
   });
-  c.strokeStyle='#e94560';c.lineWidth=1.6;c.beginPath();c.moveTo(dcx+dcW/2+16,dtY+dbH+16);c.lineTo(dcx+dcW/2+78,dtY+dbH+58);c.stroke();
-  c.fillStyle='#e94560';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
+  c.strokeStyle=PG_ACCENT;c.lineWidth=1.6;c.beginPath();c.moveTo(dcx+dcW/2+16,dtY+dbH+16);c.lineTo(dcx+dcW/2+78,dtY+dbH+58);c.stroke();
+  c.fillStyle=PG_ACCENT;c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
   c.fillText('ugaoni šav',dcx+dcW/2+82,dtY+dbH+56);c.fillText('po celom obimu',dcx+dcW/2+82,dtY+dbH+74);
   c.fillStyle='#334155';c.font='13px Segoe UI,sans-serif';c.textAlign='left';
   ['• Greda naleže ODOZGO na stubove — variti po celom','   obimu naleganja (ugaoni šav).','• Varove obrusiti/očistiti pre farbanja.','• Dno stuba: stopa sa 4 ankera — vidi detalj stope.'].forEach((t,i)=>c.fillText(t,1000,dtY+dbH+dcH+38+i*22));
@@ -1908,14 +1931,14 @@ function generateNalog(){
     c.fillStyle='#e2e8f0';c.fillRect(px0-ps/2,pcy-ps/2,ps,ps);
     c.strokeStyle='#1e293b';c.lineWidth=2;c.strokeRect(px0-ps/2,pcy-ps/2,ps,ps);
     c.fillStyle='#64748b';c.fillRect(px0-ts/2,pcy-ts/2,ts,ts);
-    c.strokeStyle='#e94560';c.lineWidth=2.5;c.strokeRect(px0-ts/2,pcy-ts/2,ts,ts);
+    c.strokeStyle=PG_ACCENT;c.lineWidth=2.5;c.strokeRect(px0-ts/2,pcy-ts/2,ts,ts);
     const off2=(plMM/2-35)*sc2,hr=(holeD/2)*sc2;
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([qx,qy])=>{
       c.beginPath();c.arc(px0+qx*off2,pcy+qy*off2,hr,0,Math.PI*2);
       c.fillStyle='#fff';c.fill();c.strokeStyle='#1e293b';c.lineWidth=1.5;c.stroke();
     });
-    c.strokeStyle='#e94560';c.lineWidth=1.3;c.beginPath();c.moveTo(px0+ts/2+2,pcy-ts/2-2);c.lineTo(px0+ts/2+38,pcy-ts/2-30);c.stroke();
-    c.fillStyle='#e94560';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='left';c.fillText('var po obimu cevi',px0+ts/2+42,pcy-ts/2-28);
+    c.strokeStyle=PG_ACCENT;c.lineWidth=1.3;c.beginPath();c.moveTo(px0+ts/2+2,pcy-ts/2-2);c.lineTo(px0+ts/2+38,pcy-ts/2-30);c.stroke();
+    c.fillStyle=PG_ACCENT;c.font='bold 11px Segoe UI,sans-serif';c.textAlign='left';c.fillText('var po obimu cevi',px0+ts/2+42,pcy-ts/2-28);
     dimH(c,px0-ps/2,pcy+ps/2+28,px0+ps/2,`${plMM} mm`);
     dimV(c,px0-ps/2-28,pcy-ps/2,pcy+ps/2,`${plMM} mm`);
     dimH(c,px0-off2,pcy-ps/2-24,px0+off2,`${rast}`);
@@ -1933,7 +1956,7 @@ function generateNalog(){
     c.fillStyle='#334155';c.fillRect(bx0-pw2/2,bgY-pth,pw2,pth);
     c.strokeStyle='#0f172a';c.lineWidth=1.5;c.strokeRect(bx0-pw2/2,bgY-pth,pw2,pth);
     [-1,1].forEach(dir=>{const wx2=bx0+dir*cw2/2,wy2=bgY-pth;
-      c.fillStyle='#e94560';c.beginPath();c.moveTo(wx2,wy2);c.lineTo(wx2+dir*10,wy2);c.lineTo(wx2,wy2-10);c.closePath();c.fill();});
+      c.fillStyle=PG_ACCENT;c.beginPath();c.moveTo(wx2,wy2);c.lineTo(wx2+dir*10,wy2);c.lineTo(wx2,wy2-10);c.closePath();c.fill();});
     ground(c,bx0-120,bx0+120,bgY);
     c.fillStyle='#6b7280';c.font='bold 11px Segoe UI,sans-serif';c.textAlign='center';c.fillText('PRESEK',bx0,syD+26);
     c.fillStyle='#334155';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='left';
@@ -1961,19 +1984,19 @@ function generateNalog(){
     ['4','Anker M12',`Ø${holeD} — mehanički / hemijski`,'—',`${4*n}`]
   ];
   let ry2=ty+8;
-  c.fillStyle='#1a1a2e';c.fillRect(tx,ry2,tblW,rh2);
+  c.fillStyle=PG_NAVY;c.fillRect(tx,ry2,tblW,rh2);
   c.fillStyle='#fff';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='left';
   {let cxx=tx;heads.forEach((h2,i)=>{c.fillText(h2,cxx+12,ry2+22);cxx+=colsW[i];});}
   ry2+=rh2;
   rows2.forEach((r,i)=>{
     c.fillStyle=i%2?'#f8f9fa':'#fff';c.fillRect(tx,ry2,tblW,rh2);
     c.strokeStyle='#e5e7eb';c.lineWidth=1;c.strokeRect(tx,ry2,tblW,rh2);
-    c.fillStyle='#1a1a2e';c.font=(i<2?'bold ':'')+'13px Segoe UI,sans-serif';
+    c.fillStyle=PG_NAVY;c.font=(i<2?'bold ':'')+'13px Segoe UI,sans-serif';
     let cxx=tx;r.forEach((v,j)=>{c.fillText(v,cxx+12,ry2+22);cxx+=colsW[j];});
     ry2+=rh2;
   });
   const totM=((n*colH+tw)/100).toFixed(1);
-  c.fillStyle='#e94560';c.fillRect(tx,ry2,tblW,rh2);
+  c.fillStyle=PG_ACCENT;c.fillRect(tx,ry2,tblW,rh2);
   c.fillStyle='#fff';c.font='bold 13px Segoe UI,sans-serif';
   c.fillText(`UKUPNO CEVI ${pmm}×${pmm}: ≈ ${totM} m  (+ rezerva za sečenje)`,tx+12,ry2+22);
 
@@ -1991,12 +2014,12 @@ function generateNalog(){
   ];
   c.textAlign='left';
   let syY=ty+30;
-  steps.forEach(s=>{c.fillStyle='#1a1a2e';c.font='13px Segoe UI,sans-serif';c.fillText(s,860,syY);syY+=30;});
+  steps.forEach(s=>{c.fillStyle=PG_NAVY;c.font='13px Segoe UI,sans-serif';c.fillText(s,860,syY);syY+=30;});
   c.fillStyle=ralHex;c.fillRect(860,syY-2,18,18);c.strokeStyle='#9ca3af';c.lineWidth=1;c.strokeRect(860,syY-2,18,18);
-  c.fillStyle='#1a1a2e';c.font='bold 13px Segoe UI,sans-serif';c.fillText(`Boja konstrukcije: ${ralTxt}`,886,syY+12);
+  c.fillStyle=PG_NAVY;c.font='bold 13px Segoe UI,sans-serif';c.fillText(`Boja konstrukcije: ${ralTxt}`,886,syY+12);
 
   /* ── TRAKA SA KLJUČNIM PODACIMA ── */
-  c.fillStyle='#1a1a2e';c.fillRect(17,byBar,CW-34,44);
+  c.fillStyle=PG_NAVY;c.fillRect(17,byBar,CW-34,44);
   c.fillStyle='rgba(255,255,255,.85)';c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
   const bits=[`Profil: cev ${pmm}×${pmm} mm`,`Stubova: ${n} (visina ${colH} cm)`,`Greda: ${tw} cm — zavarena odozgo`,`Boja: ${ralTxt}`];
   const spn=(CW-80)/bits.length;
