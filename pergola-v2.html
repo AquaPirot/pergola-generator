@@ -790,8 +790,11 @@ pgProjRender();pgPricesLoad();pgPriceModeUI();pgModelRender();pgStartInit();pgCl
 
 /* ═══ DATA HELPERS ═══ */
 function pgGather(){
-  pgS.wallHeight=parseInt(document.getElementById('pg_wallHeight').value)||262;
-  pgS.passHeight=parseInt(document.getElementById('pg_passHeight').value)||230;
+  const _wh=(document.getElementById('pg_wallHeight').value||'').trim();
+  const _ph=(document.getElementById('pg_passHeight').value||'').trim();
+  pgS.visineOK=_wh!==''&&_ph!==''&&parseInt(_wh)>0&&parseInt(_ph)>0;
+  pgS.wallHeight=parseInt(_wh)||262;
+  pgS.passHeight=parseInt(_ph)||230;
   pgS.ppp=parseInt(document.getElementById('pg_postsPerPergola').value)||3;
   pgS.postW=parseInt(document.getElementById('pg_postW').value)||12;
   pgS.postD=parseInt(document.getElementById('pg_postD').value)||12;
@@ -837,6 +840,7 @@ function pgPiAtX(x){for(let i=0;i<pgS.count;i++){if(x<=pgXOff(i)+pgS.pergs[i].w+
 
 /* ═══ UTILS ═══ */
 function genId(pre){const n=new Date();return `${pre}-${String(n.getFullYear()).slice(-2)}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}${String(Math.floor(Math.random()*100)).padStart(2,'0')}`;}
+function dsPlus(n){const d=new Date();d.setDate(d.getDate()+n);return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}.`;}
 function ds(){const n=new Date();return `${String(n.getDate()).padStart(2,'0')}.${String(n.getMonth()+1).padStart(2,'0')}.${n.getFullYear()}.`;}
 function setStat(i,v,l){document.getElementById('stat'+i).textContent=v;document.getElementById('stat'+i+'L').textContent=l;}
 function exportPNG(id){const c=document.getElementById(id),a=document.createElement('a');a.download=genId('PG')+'.png';a.href=c.toDataURL('image/png');a.click();}
@@ -862,7 +866,7 @@ function docFooter(c,CW,CH,id,d){const fy=CH-65;c.fillStyle=PG_ACCENT;c.fillRect
 function projInfo(c,CW,y,name){if(!name)return y;c.fillStyle=PG_ACCENT;c.font='bold 16px Segoe UI,sans-serif';c.textAlign='left';c.fillText('PROJEKAT:',30,y+26);c.fillStyle=PG_NAVY;c.font='bold 22px Segoe UI,sans-serif';c.fillText(name,140,y+26);return y+42;}
 function infoBlock(c,CW,y,lt,ll,rt,rl){const hh=Math.max(ll.length,rl.length)*24+50;c.fillStyle='#f8f9fa';c.fillRect(0,y,CW,hh);c.strokeStyle='#e5e7eb';c.lineWidth=1;c.beginPath();c.moveTo(0,y+hh);c.lineTo(CW,y+hh);c.stroke();const cw=CW/2;c.fillStyle=PG_ACCENT;c.font='bold 14px Segoe UI,sans-serif';c.fillText(lt,30,y+26);c.fillStyle='#374151';c.font='15px Segoe UI,sans-serif';ll.forEach((l,i)=>c.fillText(l,30,y+52+i*24));c.fillStyle=PG_ACCENT;c.font='bold 14px Segoe UI,sans-serif';c.fillText(rt,cw+30,y+26);c.fillStyle='#374151';c.font='15px Segoe UI,sans-serif';rl.forEach((l,i)=>c.fillText(l,cw+30,y+52+i*24));return y+hh;}
 function matBar(c,CW,y,items){c.fillStyle=PG_NAVY;c.fillRect(0,y,CW,48);c.fillStyle='rgba(255,255,255,0.8)';c.font='bold 14px Segoe UI,sans-serif';c.textAlign='left';const sp=CW/items.length;items.forEach((it,i)=>c.fillText(it,30+i*sp,y+28));return y+48;}
-let pgHideSecTitle=false;
+let pgHideSecTitle=false,pgHideSlope=false;
 function secTitle(c,x,y,t){if(pgHideSecTitle)return;c.fillStyle=PG_ACCENT;c.fillRect(x,y-14,5,18);c.fillStyle=PG_NAVY;c.font='bold 17px Segoe UI,sans-serif';c.textAlign='left';c.fillText(t,x+14,y);const tw2=c.measureText(t).width;c.strokeStyle='#d1d5db';c.lineWidth=1;c.beginPath();c.moveTo(x+14+tw2+14,y-5);c.lineTo(x+Math.max(360,tw2+120),y-5);c.stroke();}
 function ground(c,x1,x2,y){c.strokeStyle='#9ca3af';c.lineWidth=2;c.beginPath();c.moveTo(x1,y);c.lineTo(x2,y);c.stroke();c.lineWidth=0.8;for(let g=x1;g<x2;g+=8){c.beginPath();c.moveTo(g,y);c.lineTo(g-6,y+8);c.stroke();}}
 function wallHatch(c,x,y,w,h){c.fillStyle='#d1d5db';c.fillRect(x,y,w,h);c.strokeStyle='#9ca3af';c.lineWidth=0.8;for(let wy=y;wy<y+h;wy+=6){c.beginPath();c.moveTo(x,wy);c.lineTo(x+w,wy+6);c.stroke();}}
@@ -1100,7 +1104,7 @@ function pgDrawTlocrt(c,ox,oy,w,h,tW,mP){
       c.fillStyle='#0ea5e9';c.font='bold 10px Segoe UI,sans-serif';c.textAlign='center';c.fillText('ODVOD',cx,cy-19);
     });
   }
-  if(pgS.type==='klasicna'){
+  if(pgS.type==='klasicna'&&!pgHideSlope){
     const ax2=sx+dW-46,a1=sy+18,a2=sy+mP*sc-18;
     c.strokeStyle='#0284c7';c.lineWidth=1.6;c.beginPath();c.moveTo(ax2,a1);c.lineTo(ax2,a2);c.stroke();
     c.fillStyle='#0284c7';c.beginPath();c.moveTo(ax2,a2+7);c.lineTo(ax2-5,a2-5);c.lineTo(ax2+5,a2-5);c.closePath();c.fill();
@@ -1753,6 +1757,7 @@ async function generatePonuda(){
   if(pgS.pergs.some(p=>p.w<50||p.p<50||isNaN(p.w)||isNaN(p.p))){alert('Unesite validne dimenzije (min 50 cm).');return;}
   if(pgS.wallHeight<100||pgS.passHeight<100){alert('Unesite validne visine (min 100 cm).');return;}
   const M=pgModel(),tw=pgTW(),mp=pgMP(),ta=pgTA(),tp=pgTP(),sl=pgSl();
+  const V=pgS.visineOK;
   const id=genId('PON'),d=ds(),pn=document.getElementById('pg_projectName').value.trim(),notes=document.getElementById('pg_notes').value.trim();
   const price=pgPrice(),showP=pgS.showPrice&&price>0;
   const opis=pgModelOpis();
@@ -1805,7 +1810,7 @@ async function generatePonuda(){
     c.fillStyle='#fff';c.font='bold 26px Segoe UI,sans-serif';c.textAlign='left';
     c.fillText(M.naziv,MG+24,r1Y+r1H-42);
     c.font='15px Segoe UI,sans-serif';c.fillStyle='rgba(255,255,255,.85)';
-    c.fillText(`${tw} × ${mp} cm  •  prolazna visina ${pgS.passHeight} cm  •  RAL ${pgS.ralDisplay}`,MG+24,r1Y+r1H-18);
+    c.fillText(`${tw} × ${mp} cm`+(V?`  •  prolazna visina ${pgS.passHeight} cm`:'')+`  •  RAL ${pgS.ralDisplay}`,MG+24,r1Y+r1H-18);
   }else{
     c.fillStyle='#f1f5f9';c.fillRect(MG,r1Y,phW,r1H);
     c.strokeStyle='#cbd5e1';c.lineWidth=2;c.setLineDash([10,7]);c.strokeRect(MG+12,r1Y+12,phW-24,r1H-24);c.setLineDash([]);
@@ -1826,17 +1831,19 @@ async function generatePonuda(){
   const nmLines=wrapText(c,M.naziv,pnlX+24,r1Y+42,pnlW-48,25,2);
   let sy2=r1Y+42+nmLines*25+12;
   const rows=[
-    ['Dimenzije (Š × D)',`${tw} × ${mp} cm`],
-    ['Visina napred (prolazna)',`${pgS.passHeight} cm`],
-    [pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina kod zida',`${pgS.wallHeight} cm`],
+    ['Dimenzije (Š × D)',`${tw} × ${mp} cm`]
+  ];
+  if(V)rows.push(['Visina napred (prolazna)',`${pgS.passHeight} cm`],
+                 [pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina kod zida',`${pgS.wallHeight} cm`]);
+  rows.push(
     ['Površina',`${ta.toFixed(2)} m²`],
     ['Pokrivač',PG_ML[pgS.type]],
     ['Boja konstrukcije','RAL '+pgS.ralDisplay],
     ['Boja platna / cerade',pgS.ceradaBoja||'—'],
     ['Stubovi',`${tp} kom — ${pgS.postW}×${pgS.postD} cm`],
     ['Montaža',{zid:'uz objekat (zid)',uzobjekat:'čelična konstr. uz objekat',samostojeca:'samostojeća konstrukcija'}[pgS.mount||'zid']]
-  ];
-  if(pgS.type==='klasicna')rows.splice(4,0,['Pad krova',`${sl} %`]);
+  );
+  if(pgS.type==='klasicna'&&V)rows.splice(4,0,['Pad krova',`${sl} %`]);
   if(pgSteel())rows.push(['Čelična konstrukcija',`${pgS.steelPosts}× cev ${pgS.steelProfile}×${pgS.steelProfile} mm`]);
   if(pgS.motorSides&&pgS.motorSides.some(m=>m!=='none'))rows.push(['Motor',pgS.motorSides.map((m,i)=>m!=='none'?`P${i+1}: ${m==='levo'?'leva':'desna'}`:'').filter(Boolean).join(', ')]);
   const priceH2=showP?96:56;
@@ -1880,16 +1887,27 @@ async function generatePonuda(){
   /* ── TEHNIČKI CRTEŽI ── */
   secTitle(c,MG,r2Y-12,'TEHNIČKI PRIKAZI');
   const gw=(CW-2*MG-2*18)/3;
-  const boxes=[['PREDNJI POGLED',0],['BOČNI PRESEK',1],['TLOCRT (odozgo)',2]];
-  boxes.forEach(([t,i])=>drawBox(c,MG+i*(gw+18),r2Y,gw,r2H,t));
   pgHideSecTitle=true;
   try{
-    c.save();c.beginPath();c.rect(MG,r2Y+32,gw,r2H-32);c.clip();
-    pgDrawFront(c,MG+4,r2Y+44,gw-8,r2H-48,tw);c.restore();
-    c.save();c.beginPath();c.rect(MG+gw+18,r2Y+32,gw,r2H-32);c.clip();
-    pgDrawBocni(c,MG+gw+22,r2Y+44,gw-8,r2H-48,mp);c.restore();
-    c.save();c.beginPath();c.rect(MG+2*(gw+18),r2Y+32,gw,r2H-32);c.clip();
-    pgDrawTlocrt(c,MG+2*(gw+18)+4,r2Y+44,gw-8,r2H-48,tw,mp);c.restore();
+    if(V){
+      [['PREDNJI POGLED',0],['BOČNI PRESEK',1],['TLOCRT (odozgo)',2]].forEach(([t,i])=>drawBox(c,MG+i*(gw+18),r2Y,gw,r2H,t));
+      c.save();c.beginPath();c.rect(MG,r2Y+32,gw,r2H-32);c.clip();
+      pgDrawFront(c,MG+4,r2Y+44,gw-8,r2H-48,tw);c.restore();
+      c.save();c.beginPath();c.rect(MG+gw+18,r2Y+32,gw,r2H-32);c.clip();
+      pgDrawBocni(c,MG+gw+22,r2Y+44,gw-8,r2H-48,mp);c.restore();
+      c.save();c.beginPath();c.rect(MG+2*(gw+18),r2Y+32,gw,r2H-32);c.clip();
+      pgDrawTlocrt(c,MG+2*(gw+18)+4,r2Y+44,gw-8,r2H-48,tw,mp);c.restore();
+    }else{
+      const bw3=gw*1.5,bx4=MG+(CW-2*MG-bw3)/2;
+      drawBox(c,bx4,r2Y,bw3,r2H,'TLOCRT (pogled odozgo)');
+      pgHideSlope=true;
+      c.save();c.beginPath();c.rect(bx4,r2Y+32,bw3,r2H-32);c.clip();
+      pgDrawTlocrt(c,bx4+4,r2Y+44,bw3-8,r2H-48,tw,mp);c.restore();
+      pgHideSlope=false;
+      c.fillStyle='#6b7280';c.font='italic 12.5px Segoe UI,sans-serif';c.textAlign='center';
+      c.fillText('Visine i pad krova se utvrđuju prilikom uzimanja mera na terenu.',CW/2,r2Y+r2H+24);
+      c.textAlign='left';
+    }
   }finally{pgHideSecTitle=false;}
 
   /* ── OPIS I USLOVI ── */
@@ -1901,11 +1919,12 @@ async function generatePonuda(){
   const uX=CW-MG-430;
   c.fillStyle=PG_NAVY;c.font='bold 13px Segoe UI,sans-serif';c.fillText('USLOVI',uX,r3Y);
   c.fillStyle='#374151';c.font='13px Segoe UI,sans-serif';
-  ['Ponuda važi 7 dana od datuma izdavanja.',
+  const uslovi=['Ponuda važi 7 dana — do '+dsPlus(7),
    'Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',
-   'Rok isporuke i montaže: '+(rok||'po dogovoru')+'.',
-   'Kontakt: '+PG_TEL+'  •  '+PG_FIRMA
-  ].forEach((t,i)=>c.fillText(t,uX,r3Y+24+i*21));
+   'Rok isporuke i montaže: '+(rok||'po dogovoru')+'.'];
+  if(!V)uslovi.push('Visine se utvrđuju prilikom uzimanja mera.');
+  uslovi.push('Kontakt: '+PG_TEL+'  •  '+PG_FIRMA);
+  uslovi.forEach((t,i)=>c.fillText(t,uX,r3Y+24+i*21));
 
   /* ── U CENU JE UKLJUČENO / NIJE UKLJUČENO ── */
   drawBox(c,MG,r4Y,incW,r4H);
@@ -1950,17 +1969,17 @@ async function generatePonuda(){
 /* ═══════════════════════════════════════════════════════════
    LINK ZA KUPCA — ponuda kao veb stranica prilagođena telefonu
    ═══════════════════════════════════════════════════════════ */
-function pgViewPNG(kind,W,H){
+function pgViewPNG(kind,W,H,hideSlope){
   const cv=document.createElement('canvas'),D=2;
   cv.width=W*D;cv.height=H*D;
   const c=cv.getContext('2d');c.scale(D,D);
   c.fillStyle='#fff';c.fillRect(0,0,W,H);
-  pgHideSecTitle=true;
+  pgHideSecTitle=true;pgHideSlope=!!hideSlope;
   try{
     if(kind==='front')pgDrawFront(c,8,24,W-16,H-32,pgTW());
     else if(kind==='side')pgDrawBocni(c,8,24,W-16,H-32,pgMP());
     else pgDrawTlocrt(c,8,24,W-16,H-32,pgTW(),pgMP());
-  }finally{pgHideSecTitle=false;}
+  }finally{pgHideSecTitle=false;pgHideSlope=false;}
   return cv.toDataURL('image/png');
 }
 function pgPonudaHTML(o){
@@ -2037,7 +2056,7 @@ footer b{display:block;color:var(--navy);font-size:13px;letter-spacing:.5px}
   <div class="mark">${o.logo?`<img src="${o.logo}" alt="">`:'<span>AG</span>'}</div>
   <div><h1>${esc(o.firma)}</h1><div class="dom">${esc(o.domeni)}</div></div>
 </header>
-${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div class="cap"><h2>${esc(o.model)}</h2><p>${esc(o.gabarit)} &nbsp;•&nbsp; prolazna visina ${esc(o.prolazna)}</p></div></div>`
+${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div class="cap"><h2>${esc(o.model)}</h2><p>${esc(o.gabarit)}${o.prolazna?' &nbsp;•&nbsp; prolazna visina '+esc(o.prolazna):''}</p></div></div>`
         :`<div class="nofoto">${esc(o.model)}<br><small>${esc(o.gabarit)}</small></div>`}
 <div class="sec">
   ${o.klijent?`<h3>Ponuda za: ${esc(o.klijent)}</h3>`:''}
@@ -2088,13 +2107,12 @@ async function generateLink(){
     }
     let logo='';
     if(pgLogoImg){const ls=pgLogoImg.src;logo=ls.startsWith('data:')?ls:'../'+ls.substring(ls.lastIndexOf('logo.'));}
-    const spec=[
-      ['Dimenzije (Š × D)',`${tw} × ${mp} cm`],
-      ['Visina napred (prolazna)',`${pgS.passHeight} cm`],
-      [pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina kod zida',`${pgS.wallHeight} cm`],
-      ['Površina',`${ta.toFixed(2)} m²`]
-    ];
-    if(pgS.type==='klasicna')spec.push(['Pad krova',`${sl} %`]);
+    const V=pgS.visineOK;
+    const spec=[['Dimenzije (Š × D)',`${tw} × ${mp} cm`]];
+    if(V)spec.push(['Visina napred (prolazna)',`${pgS.passHeight} cm`],
+                   [pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina kod zida',`${pgS.wallHeight} cm`]);
+    spec.push(['Površina',`${ta.toFixed(2)} m²`]);
+    if(pgS.type==='klasicna'&&V)spec.push(['Pad krova',`${sl} %`]);
     spec.push(['Pokrivač',PG_ML[pgS.type]],['Boja konstrukcije','RAL '+pgS.ralDisplay],
       ['Boja platna / cerade',pgS.ceradaBoja||'—'],
       ['Stubovi',`${tp} kom — ${pgS.postW}×${pgS.postD} cm`],
@@ -2106,16 +2124,18 @@ async function generateLink(){
       firma:PG_FIRMA,domeni:PG_DOMENI,tel:PG_TEL,telRaw:PG_TEL.replace(/\s/g,''),
       logo,foto,fotoAbs,
       model:M.naziv,klijent:pn,
-      gabarit:`${tw} × ${mp} cm`,prolazna:`${pgS.passHeight} cm`,
+      gabarit:`${tw} × ${mp} cm`,prolazna:V?`${pgS.passHeight} cm`:'',
       cena:showP?`${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`:'',
       spec,
-      crtezi:[['Prednji pogled',pgViewPNG('front',900,560)],
-              ['Bočni presek',pgViewPNG('side',900,560)],
-              ['Tlocrt (pogled odozgo)',pgViewPNG('plan',900,560)]],
+      crtezi:V?[['Prednji pogled',pgViewPNG('front',900,560)],
+                ['Bočni presek',pgViewPNG('side',900,560)],
+                ['Tlocrt (pogled odozgo)',pgViewPNG('plan',900,560)]]
+             :[['Tlocrt (pogled odozgo)',pgViewPNG('plan',900,560,true)]],
       opis:pgModelOpis(),napomena:notes,
-      uslovi:['Ponuda važi 7 dana od datuma izdavanja.',
+      uslovi:['Ponuda važi 7 dana — do '+dsPlus(7),
               'Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',
-              'Rok isporuke i montaže: '+(rok||'po dogovoru')+'.'],
+              'Rok isporuke i montaže: '+(rok||'po dogovoru')+'.'
+             ].concat(V?[]:['Visine se utvrđuju prilikom uzimanja mera.']),
       ukljuceno:pgUkljuceno(),nije:PG_NIJE,
       prednosti:PG_PREDNOSTI,
       broj:genId('PON'),datum:ds()
