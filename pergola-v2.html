@@ -163,6 +163,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   </div>
 </div>
 
+<div class="start-overlay" id="pg_linkOverlay">
+  <div class="start-modal" style="max-width:520px">
+    <div class="sm-head"><h2>&#128279; Link za kupca</h2><p>Ponuda je objavljena kao stranica prilagođena telefonu</p></div>
+    <div class="sm-body">
+      <input type="text" id="pg_linkUrl" readonly onclick="this.select()" style="width:100%;padding:11px;border:2px solid var(--border);border-radius:10px;font-size:13px;font-family:var(--font);font-weight:600;background:#f8f9fa">
+      <div style="display:flex;gap:8px">
+        <button class="sm-btn" id="pg_linkCopyBtn" onclick="pgLinkCopy()" style="flex:1;align-items:center;text-align:center">Kopiraj link</button>
+        <button class="sm-btn" onclick="pgLinkShare()" style="flex:1;align-items:center;text-align:center">Pošalji</button>
+      </div>
+      <a class="sm-btn" id="pg_linkOpen" href="#" target="_blank" rel="noopener" style="align-items:center;text-align:center;text-decoration:none">Otvori i proveri</a>
+      <div class="info-note">Link možete poslati Viberom, WhatsApp-om ili SMS-om. Otvara se u pregledaču, bez zumiranja, sa svim merama, cenom i crtežima.</div>
+      <button class="sm-btn" onclick="pgLinkClose()" style="align-items:center;text-align:center;border-color:var(--border)">Zatvori</button>
+    </div>
+  </div>
+</div>
+
 <header class="app-header">
   <div class="logo">
     <div class="logo-icon">AG</div>
@@ -379,6 +395,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <button class="btn-generate" onclick="generatePergola()">&#9998; Generiši 2D Tehnički Crtež</button>
         <button class="btn-3d" onclick="generate3D()">&#11041; Generiši 3D Tehnički Prikaz</button>
         <button class="btn-3d" onclick="generatePonuda()" style="background:linear-gradient(135deg,#c8944e,#a97a37)">&#128247; Generiši Ponudu za Kupca</button>
+        <button class="btn-3d" id="pg_btnLink" onclick="generateLink()" style="background:linear-gradient(135deg,#0f766e,#0b5e57)">&#128279; Link za Kupca (telefon)</button>
         <button class="btn-3d" id="pg_btnNalog" onclick="generateNalog()" style="display:none;background:linear-gradient(135deg,#475569,#1e293b)">&#9874; Radni Nalog — Konstrukcija</button>
         <button class="btn-export" onclick="exportPNG('outputCanvas')" id="pg_btnExport" style="display:none">&#128190; Preuzmi 2D PNG</button>
         <button class="btn-export" onclick="exportPDF('outputCanvas')" id="pg_btnPDF" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d)">&#128196; Preuzmi 2D PDF</button>
@@ -1848,6 +1865,201 @@ async function generatePonuda(){
   ]);
   docFooter(c,CW,CH,id,d);
   pgSaveState();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LINK ZA KUPCA — ponuda kao veb stranica prilagođena telefonu
+   ═══════════════════════════════════════════════════════════ */
+function pgViewPNG(kind,W,H){
+  const cv=document.createElement('canvas'),D=2;
+  cv.width=W*D;cv.height=H*D;
+  const c=cv.getContext('2d');c.scale(D,D);
+  c.fillStyle='#fff';c.fillRect(0,0,W,H);
+  pgHideSecTitle=true;
+  try{
+    if(kind==='front')pgDrawFront(c,8,24,W-16,H-32,pgTW());
+    else if(kind==='side')pgDrawBocni(c,8,24,W-16,H-32,pgMP());
+    else pgDrawTlocrt(c,8,24,W-16,H-32,pgTW(),pgMP());
+  }finally{pgHideSecTitle=false;}
+  return cv.toDataURL('image/png');
+}
+function pgPonudaHTML(o){
+  const row=(l,v)=>`<div class="r"><span>${esc(l)}</span><b>${esc(v)}</b></div>`;
+  const draw=(t,src)=>`<figure><figcaption>${esc(t)}</figcaption><img src="${src}" alt="${esc(t)}" onclick="zoom(this.src)"><span class="zh">dodirnite za uvećanje</span></figure>`;
+  return `<!DOCTYPE html><html lang="sr"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(o.firma)} — ponuda ${esc(o.model)}</title>
+<meta name="description" content="${esc(o.model)} ${esc(o.gabarit)} — ponuda ${esc(o.firma)}">
+<meta property="og:title" content="${esc(o.firma)} — ${esc(o.model)}">
+<meta property="og:description" content="${esc(o.gabarit)}${o.cena?' — '+esc(o.cena):''}">
+${o.foto?`<meta property="og:image" content="${o.fotoAbs}">`:''}
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#14213d;--navy2:#1c2d4f;--gold:#c8944e;--bg:#f4f5f7;--card:#fff;--tx:#16213a;--mut:#6b7280;--bd:#e4e7ec}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--tx);line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;background:var(--bg)}
+header{background:var(--navy);color:#fff;padding:16px 18px;display:flex;align-items:center;gap:12px}
+header .mark{width:44px;height:44px;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;overflow:hidden}
+header .mark img{width:100%;height:100%;object-fit:contain}
+header .mark span{font-weight:800;color:var(--navy);font-size:15px}
+header h1{font-size:18px;font-weight:800;letter-spacing:.5px;line-height:1.2}
+header .dom{font-size:10.5px;color:var(--gold);font-weight:700;letter-spacing:.4px;margin-top:1px}
+.hero{position:relative;background:#dfe3e8}
+.hero img{width:100%;display:block}
+.hero .cap{position:absolute;left:0;right:0;bottom:0;padding:46px 18px 14px;color:#fff;background:linear-gradient(to bottom,rgba(15,23,42,0),rgba(15,23,42,.86))}
+.hero .cap h2{font-size:19px;font-weight:800;line-height:1.25}
+.hero .cap p{font-size:12.5px;opacity:.9;margin-top:2px}
+.nofoto{padding:52px 18px;text-align:center;color:#94a3b8;font-weight:600;background:#eef1f4}
+.sec{padding:16px 14px 0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;overflow:hidden}
+.price{background:var(--navy);color:#fff;padding:16px 18px;border-radius:14px}
+.price .lbl{font-size:11px;letter-spacing:1px;color:rgba(255,255,255,.6);font-weight:700}
+.price .val{font-size:31px;font-weight:800;margin-top:2px;letter-spacing:-.5px}
+.price .sub{font-size:11.5px;color:rgba(255,255,255,.65);margin-top:4px}
+h3{font-size:12px;letter-spacing:1.1px;text-transform:uppercase;color:var(--navy);font-weight:800;margin:20px 4px 9px;display:flex;align-items:center;gap:8px}
+h3::before{content:'';width:4px;height:15px;background:var(--gold);border-radius:2px}
+.r{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:11px 15px;border-bottom:1px solid var(--bd);font-size:14px}
+.r:last-child{border-bottom:0}
+.r span{color:var(--mut);flex:0 0 auto}
+.r b{text-align:right;font-weight:700}
+figure{border-bottom:1px solid var(--bd);padding:10px 10px 14px}
+figure:last-child{border-bottom:0}
+figcaption{font-size:11px;font-weight:800;letter-spacing:.7px;color:var(--mut);text-transform:uppercase;text-align:center;padding:4px 0 8px}
+figure img{width:100%;display:block;border-radius:8px;cursor:zoom-in}
+.zh{display:block;text-align:center;font-size:10.5px;color:var(--mut);padding-top:6px}
+#lb{position:fixed;inset:0;background:rgba(8,12,22,.94);display:none;align-items:center;justify-content:center;z-index:99;padding:8px}
+#lb.on{display:flex}
+#lb img{max-width:100%;max-height:100%;object-fit:contain}
+#lb .x{position:absolute;top:12px;right:16px;color:#fff;font-size:30px;font-weight:300;line-height:1}
+.txt{padding:14px 16px;font-size:14px;color:#374151}
+.txt p+p{margin-top:9px}
+.usl{padding:6px 0}
+.usl li{list-style:none;display:flex;gap:10px;padding:9px 15px;border-bottom:1px solid var(--bd);font-size:13.5px}
+.usl li:last-child{border-bottom:0}
+.usl li::before{content:'✓';color:var(--gold);font-weight:800;flex:0 0 auto}
+.pred{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 0 4px}
+.pred div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px}
+.pred b{display:block;font-size:11.5px;font-weight:800;letter-spacing:.3px}
+.pred span{font-size:11.5px;color:var(--mut)}
+.sec{padding-bottom:4px}
+.cta{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--bd);box-shadow:0 -6px 18px rgba(15,23,42,.10);padding:11px 14px;display:flex;gap:9px;margin-top:22px;z-index:50}
+.cta a{flex:1;text-align:center;padding:13px;border-radius:11px;text-decoration:none;font-weight:800;font-size:14px}
+.cta .call{background:var(--navy);color:#fff}
+.cta .vib{background:var(--gold);color:#fff}
+footer{padding:18px 16px 26px;text-align:center;color:var(--mut);font-size:11.5px}
+footer b{display:block;color:var(--navy);font-size:13px;letter-spacing:.5px}
+@media(min-width:620px){.pred{grid-template-columns:repeat(4,1fr)}header h1{font-size:21px}}
+</style></head><body><div class="wrap">
+<header>
+  <div class="mark">${o.logo?`<img src="${o.logo}" alt="">`:'<span>AG</span>'}</div>
+  <div><h1>${esc(o.firma)}</h1><div class="dom">${esc(o.domeni)}</div></div>
+</header>
+${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div class="cap"><h2>${esc(o.model)}</h2><p>${esc(o.gabarit)} &nbsp;•&nbsp; prolazna visina ${esc(o.prolazna)}</p></div></div>`
+        :`<div class="nofoto">${esc(o.model)}<br><small>${esc(o.gabarit)}</small></div>`}
+<div class="sec">
+  ${o.klijent?`<h3>Ponuda za: ${esc(o.klijent)}</h3>`:''}
+  ${o.cena?`<div class="price"><div class="lbl">UKUPNA CENA</div><div class="val">${esc(o.cena)}</div><div class="sub">Plaćanje: 50% avans &nbsp;•&nbsp; 50% dan pre isporuke i montaže</div></div>`
+          :`<div class="price"><div class="lbl">CENA</div><div class="val">Na upit</div><div class="sub">Pozovite nas za ponudu</div></div>`}
+  <h3>Specifikacija</h3>
+  <div class="card">${o.spec.map(r=>row(r[0],r[1])).join('')}</div>
+  <h3>Tehnički prikazi</h3>
+  <div class="card">${o.crtezi.map(d=>draw(d[0],d[1])).join('')}</div>
+  <h3>Opis modela</h3>
+  <div class="card txt"><p>${esc(o.opis)}</p>${o.napomena?`<p><i>Napomena: ${esc(o.napomena)}</i></p>`:''}</div>
+  <h3>Uslovi</h3>
+  <div class="card"><ul class="usl">${o.uslovi.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>
+  <h3>Zašto AG GROUP</h3>
+  <div class="pred">${o.prednosti.map(p=>`<div><b>${esc(p[0])}</b><span>${esc(p[1])}</span></div>`).join('')}</div>
+</div>
+<div class="cta">
+  <a class="call" href="tel:${o.telRaw}">&#128222; Pozovi</a>
+  <a class="vib" href="viber://chat?number=%2B381${o.telRaw.replace(/^0/,'')}">Viber poruka</a>
+</div>
+<footer><b>${esc(o.firma)}</b>${esc(o.domeni)}<br>${esc(o.tel)} &nbsp;•&nbsp; Proizvedeno u Srbiji<br><span style="opacity:.7">Ponuda ${esc(o.broj)} &nbsp;•&nbsp; ${esc(o.datum)}</span></footer>
+<div id="lb" onclick="this.classList.remove('on')"><span class="x">&times;</span><img id="lbi" alt=""></div><script>function zoom(s){document.getElementById('lbi').src=s;document.getElementById('lb').classList.add('on');}<\/script></div></body></html>`;
+}
+async function generateLink(){
+  pgGather();
+  if(pgS.pergs.some(p=>p.w<50||p.p<50||isNaN(p.w)||isNaN(p.p))){alert('Unesite validne dimenzije (min 50 cm).');return;}
+  if(!pgSyncKey){alert('Za pravljenje linka potrebna je šifra za sinhronizaciju.\n\nKliknite na ikonicu ☁ pored „Projekti" i unesite je.');return;}
+  const M=pgModel(),tw=pgTW(),mp=pgMP(),ta=pgTA(),tp=pgTP(),sl=pgSl();
+  const price=pgPrice(),showP=pgS.showPrice&&price>0;
+  const pn=document.getElementById('pg_projectName').value.trim();
+  const rok=(document.getElementById('pg_rok').value||'').trim();
+  const notes=document.getElementById('pg_notes').value.trim();
+  const btn=document.getElementById('pg_btnLink');
+  const old=btn?btn.innerHTML:'';
+  if(btn){btn.innerHTML='&#8987; Pravim link...';btn.disabled=true;}
+  try{
+    // fotografija: lokalna (data URL) ide ugrađena, serverska kao putanja iz foldera ponude/
+    let foto='',fotoAbs='';
+    const im=await pgLoadImgAny(pgModelFotoList());
+    if(im){
+      const src=im.src;
+      if(src.startsWith('data:')){foto=src;fotoAbs='';}
+      else{const rel=src.substring(src.lastIndexOf('foto/'));foto='../'+rel;fotoAbs=src;}
+    }
+    let logo='';
+    if(pgLogoImg){const ls=pgLogoImg.src;logo=ls.startsWith('data:')?ls:'../'+ls.substring(ls.lastIndexOf('logo.'));}
+    const spec=[
+      ['Dimenzije (Š × D)',`${tw} × ${mp} cm`],
+      ['Visina napred (prolazna)',`${pgS.passHeight} cm`],
+      [pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina kod zida',`${pgS.wallHeight} cm`],
+      ['Površina',`${ta.toFixed(2)} m²`]
+    ];
+    if(pgS.type==='klasicna')spec.push(['Pad krova',`${sl} %`]);
+    spec.push(['Pokrivač',PG_ML[pgS.type]],['Boja konstrukcije','RAL '+pgS.ralDisplay],
+      ['Boja platna / cerade',pgS.ceradaBoja||'—'],
+      ['Stubovi',`${tp} kom — ${pgS.postW}×${pgS.postD} cm`],
+      ['Montaža',{zid:'uz objekat (zid)',uzobjekat:'čelična konstrukcija uz objekat',samostojeca:'samostojeća konstrukcija'}[pgS.mount||'zid']]);
+    if(pgSteel())spec.push(['Čelična konstrukcija',`${pgS.steelPosts}× cev ${pgS.steelProfile}×${pgS.steelProfile} mm`]);
+    if(pgS.motorSides&&pgS.motorSides.some(m=>m!=='none'))spec.push(['Motor',pgS.motorSides.map((m,i)=>m!=='none'?`P${i+1}: ${m==='levo'?'leva':'desna'}`:'').filter(Boolean).join(', ')]);
+    if(pgS.count>1)spec.push(['Broj pergola',`${pgS.count} — `+pgS.pergs.map((p,i)=>`P${i+1}: ${p.w}×${p.p}`).join(', ')]);
+    const o={
+      firma:PG_FIRMA,domeni:PG_DOMENI,tel:PG_TEL,telRaw:PG_TEL.replace(/\s/g,''),
+      logo,foto,fotoAbs,
+      model:M.naziv,klijent:pn,
+      gabarit:`${tw} × ${mp} cm`,prolazna:`${pgS.passHeight} cm`,
+      cena:showP?`${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`:'',
+      spec,
+      crtezi:[['Prednji pogled',pgViewPNG('front',900,560)],
+              ['Bočni presek',pgViewPNG('side',900,560)],
+              ['Tlocrt (pogled odozgo)',pgViewPNG('plan',900,560)]],
+      opis:pgModelOpis(),napomena:notes,
+      uslovi:['Ponuda važi 7 dana od datuma izdavanja.',
+              'Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',
+              'Rok isporuke i montaže: '+(rok||'po dogovoru')+'.'],
+      prednosti:PG_PREDNOSTI,
+      broj:genId('PON'),datum:ds()
+    };
+    const html=pgPonudaHTML(o);
+    const res=await pgApi('publish',{html});
+    pgLinkShow(res.url);
+  }catch(e){
+    alert('Nije uspelo pravljenje linka: '+e.message);
+  }finally{
+    if(btn){btn.innerHTML=old;btn.disabled=false;}
+  }
+}
+function pgLinkShow(url){
+  document.getElementById('pg_linkUrl').value=url;
+  document.getElementById('pg_linkOpen').href=url;
+  document.getElementById('pg_linkOverlay').classList.add('visible');
+}
+function pgLinkClose(){document.getElementById('pg_linkOverlay').classList.remove('visible');}
+function pgLinkCopy(){
+  const el=document.getElementById('pg_linkUrl');
+  el.select();el.setSelectionRange(0,99999);
+  const ok=()=>{const b=document.getElementById('pg_linkCopyBtn');b.textContent='✓ Kopirano';setTimeout(()=>b.textContent='Kopiraj link',1800);};
+  if(navigator.clipboard)navigator.clipboard.writeText(el.value).then(ok).catch(()=>{document.execCommand('copy');ok();});
+  else{document.execCommand('copy');ok();}
+}
+async function pgLinkShare(){
+  const url=document.getElementById('pg_linkUrl').value;
+  const t=(document.getElementById('pg_projectName').value.trim()||PG_FIRMA)+' — ponuda';
+  if(navigator.share){try{await navigator.share({title:t,text:t,url});return;}catch(e){}}
+  pgLinkCopy();
 }
 
 /* ═══════════════════════════════════════════════════════════

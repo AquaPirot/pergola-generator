@@ -19,6 +19,23 @@ if (!hash_equals(API_KEY, $key)) {
   out(false, null, 'Pogrešna šifra za sinhronizaciju.');
 }
 
+/* Objavljivanje ponude kao veb stranice — ne zahteva bazu */
+if (($_GET['action'] ?? '') === 'publish') {
+  $body = json_decode(file_get_contents('php://input'), true) ?: [];
+  $html = $body['html'] ?? '';
+  if (!is_string($html) || strlen($html) < 100) out(false, null, 'Prazan sadržaj ponude.');
+  if (strlen($html) > 8 * 1024 * 1024) out(false, null, 'Ponuda je prevelika (preko 8 MB).');
+  $dir = __DIR__ . '/ponude';
+  if (!is_dir($dir) && !@mkdir($dir, 0755, true)) out(false, null, 'Ne mogu da napravim folder ponude/. Napravite ga ručno u File Manager-u.');
+  $token = bin2hex(random_bytes(6));
+  $file  = $dir . '/' . $token . '.html';
+  if (@file_put_contents($file, $html) === false) out(false, null, 'Upis nije uspeo — proverite dozvole foldera ponude/ (treba 0755).');
+  @chmod($file, 0644);
+  $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+  $base   = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? '') . rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+  out(true, ['url' => $base . '/ponude/' . $token . '.html']);
+}
+
 try {
   $pdo = new PDO(
     'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
