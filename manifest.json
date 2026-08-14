@@ -1,15 +1,18 @@
 {
-  "name": "PROHORECA AG GROUP - Generator Tehničkih Crteža",
+  "name": "AG GROUP — Generator crteža i ponuda",
   "short_name": "AG Pergola",
-  "description": "Generator tehničkih crteža za pergole i senila - PROHORECA AG GROUP",
-  "start_url": "dizajn-pergola.html",
+  "description": "Generator tehničkih crteža i ponuda za pergole — AG GROUP",
+  "start_url": "alat.html",
   "scope": ".",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#1a1a2e",
-  "theme_color": "#1a1a2e",
+  "background_color": "#14213d",
+  "theme_color": "#14213d",
   "lang": "sr",
-  "categories": ["business", "utilities"],
+  "categories": [
+    "business",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "icons/icon-192.svg",

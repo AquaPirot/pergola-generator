@@ -7,3 +7,9 @@ define('DB_USER', 'ime_korisnika');
 define('DB_PASS', 'lozinka_baze');
 define('API_KEY', 'sifra-za-sinhronizaciju');  // istu šifru uneti u aplikaciji (dugme ☁)
 define('NOTIFY_EMAIL', 'vas@email.com');       // na ovu adresu stižu mere koje kupci pošalju
+
+/* ── Opciono: ako alat premestite u zaštićen podfolder (npr. /alat/),
+   a ponude treba da ostanu javne, otkomentarišite i podesite: ──
+define('PONUDE_DIR', dirname(__DIR__) . '/ponude');
+define('PONUDE_URL', 'https://pergola.aggroup.rs/ponude');
+*/

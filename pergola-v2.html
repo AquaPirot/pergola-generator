@@ -2270,6 +2270,7 @@ function generateNalog(){
   docFooter(c,CW,CH,id,d);
   pgSaveState();
 }
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>

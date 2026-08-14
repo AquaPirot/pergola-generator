@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AG GROUP — Interni alati</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14213d">
+<meta name="robots" content="noindex,nofollow">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:linear-gradient(160deg,#14213d,#1c2d4f);display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif;padding:20px}
+  .menu{text-align:center;color:white;max-width:420px;width:100%}
+  .menu svg{width:88px;height:88px;margin-bottom:18px}
+  .menu h1{font-size:20px;letter-spacing:1px;margin-bottom:4px}
+  .menu .sub{color:#6b7280;font-size:13px;margin-bottom:32px}
+  .app-link{display:block;text-decoration:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px 24px;margin-bottom:14px;text-align:left;transition:all .25s}
+  .app-link:hover{background:rgba(200,148,78,.12);border-color:rgba(200,148,78,.5);transform:translateY(-2px)}
+  .app-link .name{color:white;font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
+  .app-link .desc{color:#9ca3af;font-size:12px;margin-top:4px}
+  .tag{background:#c8944e;color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.5px}
+</style>
+</head>
+<body>
+<div class="menu">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+    <rect width="192" height="192" rx="32" fill="#14213d"/>
+    <rect x="24" y="44" width="144" height="8" rx="4" fill="#c8944e"/>
+    <rect x="28" y="88" width="10" height="60" rx="3" fill="#3b82f6"/>
+    <rect x="154" y="88" width="10" height="60" rx="3" fill="#3b82f6"/>
+    <text x="96" y="134" font-family="Arial" font-size="28" font-weight="800" fill="white" text-anchor="middle">AG</text>
+    <rect x="60" y="140" width="72" height="3" rx="1.5" fill="#c8944e"/>
+  </svg>
+  <h1>AG GROUP</h1>
+  <div class="sub">Interni alati — Generator tehničkih crteža i ponuda</div>
+
+  <a class="app-link" href="pergola-v2.html">
+    <div class="name">&#11041; Pergole Pro <span class="tag">v2 NOVO</span></div>
+    <div class="desc">Pergole — projekti, 2D + 3D tehnički crtež, specifikacija materijala, cenovnik</div>
+  </a>
+
+  <a class="app-link" href="dizajn-pergola.html">
+    <div class="name">&#9998; Klasična verzija</div>
+    <div class="desc">Pergole + klizna stakla + giljotina stakla — originalna aplikacija</div>
+  </a>
+
+  <a class="app-link" href="uputstvo-mere.html">
+    <div class="name">&#128207; Uputstvo za mere <span class="tag">ZA KUPCE</span></div>
+    <div class="desc">Stranica koju šaljete klijentu — kako sam da izmeri prostor za pergolu</div>
+  </a>
+</div>
+<script>
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

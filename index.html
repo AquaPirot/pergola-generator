@@ -3,53 +3,124 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PROHORECA AG GROUP - Generator Tehničkih Crteža</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1a1a2e">
+<title>AG GROUP — Pergole i sistemi za natkrivanje terasa</title>
+<meta name="description" content="AG GROUP — bioklimatske, klasične i ravne pergole od aluminijuma. Izrada, isporuka i montaža. Kontakt: 064 89 79 242.">
+<meta name="theme-color" content="#14213d">
+<meta property="og:title" content="AG GROUP — Pergole i sistemi za natkrivanje">
+<meta property="og:description" content="Bioklimatske, klasične i ravne pergole od aluminijuma. Izrada, isporuka i montaža.">
+<meta property="og:image" content="logo.png">
+<link rel="icon" href="logo.png">
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:linear-gradient(160deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:'Segoe UI',system-ui,sans-serif;padding:20px}
-  .menu{text-align:center;color:white;max-width:420px;width:100%}
-  .menu svg{width:88px;height:88px;margin-bottom:18px}
-  .menu h1{font-size:20px;letter-spacing:1px;margin-bottom:4px}
-  .menu .sub{color:#6b7280;font-size:13px;margin-bottom:32px}
-  .app-link{display:block;text-decoration:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:20px 24px;margin-bottom:14px;text-align:left;transition:all .25s}
-  .app-link:hover{background:rgba(233,69,96,.12);border-color:rgba(233,69,96,.5);transform:translateY(-2px)}
-  .app-link .name{color:white;font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
-  .app-link .desc{color:#9ca3af;font-size:12px;margin-top:4px}
-  .tag{background:#e94560;color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.5px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#14213d;--navy2:#1c2d4f;--gold:#c8944e;--bg:#f4f5f7;--card:#fff;--tx:#16213a;--mut:#6b7280;--bd:#e4e7ec}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:960px;margin:0 auto;background:var(--bg)}
+header{background:var(--navy);color:#fff;padding:18px 20px;display:flex;align-items:center;gap:13px}
+header .mark{width:48px;height:48px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;overflow:hidden}
+header .mark img{width:100%;height:100%;object-fit:contain}
+header .mark span{font-weight:800;color:var(--navy);font-size:16px}
+header h1{font-size:20px;font-weight:800;letter-spacing:.6px;line-height:1.2}
+header .dom{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.5px;margin-top:1px}
+.hero{background:linear-gradient(160deg,var(--navy),var(--navy2));color:#fff;padding:34px 20px 38px;text-align:center}
+.hero h2{font-size:25px;font-weight:800;line-height:1.25;letter-spacing:-.3px}
+.hero p{color:rgba(255,255,255,.8);font-size:15px;margin-top:10px;max-width:560px;margin-left:auto;margin-right:auto}
+.hero .line{width:56px;height:4px;background:var(--gold);border-radius:2px;margin:18px auto 0}
+.sec{padding:26px 16px 0}
+h3{font-size:12px;letter-spacing:1.1px;text-transform:uppercase;color:var(--navy);font-weight:800;margin:0 4px 12px;display:flex;align-items:center;gap:8px}
+h3::before{content:'';width:4px;height:15px;background:var(--gold);border-radius:2px}
+.grid{display:grid;grid-template-columns:1fr;gap:13px}
+.item{background:var(--card);border:1px solid var(--bd);border-radius:14px;overflow:hidden}
+.item .ph{width:100%;aspect-ratio:16/9;background:#e8ebef;display:block;object-fit:cover}
+.item .ph.off{display:none}
+.item .bd{padding:14px 16px}
+.item h4{font-size:16px;font-weight:800}
+.item p{font-size:13.5px;color:var(--mut);margin-top:5px}
+.pred{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:2px}
+.pred div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:13px}
+.pred b{display:block;font-size:12px;font-weight:800}
+.pred span{font-size:12px;color:var(--mut)}
+.links{display:flex;gap:9px;flex-wrap:wrap;margin-top:2px}
+.links a{flex:1 1 200px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;text-decoration:none;color:var(--tx);font-weight:700;font-size:14px}
+.links a span{display:block;font-size:12px;color:var(--mut);font-weight:400;margin-top:2px}
+.links a:hover{border-color:var(--gold)}
+.cta{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--bd);box-shadow:0 -6px 18px rgba(15,23,42,.10);padding:11px 14px;display:flex;gap:9px;margin-top:26px;z-index:50}
+.cta a{flex:1;text-align:center;padding:14px;border-radius:11px;text-decoration:none;font-weight:800;font-size:14.5px}
+.cta .call{background:var(--navy);color:#fff}
+.cta .vib{background:var(--gold);color:#fff}
+footer{padding:20px 16px 28px;text-align:center;color:var(--mut);font-size:12px}
+footer b{display:block;color:var(--navy);font-size:14px;letter-spacing:.5px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}.pred{grid-template-columns:repeat(4,1fr)}.hero h2{font-size:30px}
+.cta{position:static;box-shadow:none;border-radius:14px;border:1px solid var(--bd);margin:26px 16px 0}}
 </style>
 </head>
 <body>
-<div class="menu">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
-    <rect width="192" height="192" rx="32" fill="#1a1a2e"/>
-    <rect x="24" y="44" width="144" height="8" rx="4" fill="#e94560"/>
-    <rect x="28" y="88" width="10" height="60" rx="3" fill="#3b82f6"/>
-    <rect x="154" y="88" width="10" height="60" rx="3" fill="#3b82f6"/>
-    <text x="96" y="134" font-family="Arial" font-size="28" font-weight="800" fill="white" text-anchor="middle">AG</text>
-    <rect x="60" y="140" width="72" height="3" rx="1.5" fill="#e94560"/>
-  </svg>
-  <h1>PROHORECA AG GROUP</h1>
-  <div class="sub">Generator Tehničkih Crteža</div>
+<div class="wrap">
 
-  <a class="app-link" href="pergola-v2.html">
-    <div class="name">&#11041; Pergole Pro <span class="tag">v2 NOVO</span></div>
-    <div class="desc">Pergole — projekti, 2D + 3D tehnički crtež, specifikacija materijala, cenovnik</div>
-  </a>
+<header>
+  <div class="mark"><img src="logo.png" alt="AG GROUP" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none">AG</span></div>
+  <div><h1>AG GROUP</h1><div class="dom">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS</div></div>
+</header>
 
-  <a class="app-link" href="dizajn-pergola.html">
-    <div class="name">&#9998; Klasična verzija</div>
-    <div class="desc">Pergole + klizna stakla + giljotina stakla — originalna aplikacija</div>
-  </a>
+<div class="hero">
+  <h2>Pergole i sistemi za natkrivanje terasa</h2>
+  <p>Aluminijumske konstrukcije po meri — izrada, isporuka i montaža. Za ponudu nam javite dimenzije prostora i pozovite.</p>
+  <div class="line"></div>
+</div>
 
-  <a class="app-link" href="uputstvo-mere.html">
-    <div class="name">&#128207; Uputstvo za mere <span class="tag">ZA KUPCE</span></div>
-    <div class="desc">Stranica koju šaljete klijentu — kako sam da izmeri prostor za pergolu</div>
-  </a>
+<div class="sec">
+  <h3>Naši modeli</h3>
+  <div class="grid">
+    <div class="item">
+      <img class="ph" data-id="bio-3" alt="Bioklimatska pergola">
+      <div class="bd"><h4>Bioklimatska pergola</h4><p>Krov od rotirajućih lamela — uglom lamela regulišete svetlost i strujanje vazduha. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu sa odvodom vode.</p></div>
+    </div>
+    <div class="item">
+      <img class="ph" data-id="klas-3" alt="Klasična pergola">
+      <div class="bd"><h4>Klasična pergola sa padom</h4><p>Tehničko platno koje se vođicama otvara i skuplja. Razvučeno pravi senku i štiti prostor, a kada želite otvoreno nebo — krov se povlači.</p></div>
+    </div>
+    <div class="item">
+      <img class="ph" data-id="ravna-3" alt="Ravna pergola">
+      <div class="bd"><h4>Ravna pergola</h4><p>Ravna krovna ravan sa tehničkim platnom na motorni pogon. Čistih linija, pogodna uz savremene fasade i veće terase.</p></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:26px">Zašto AG GROUP</h3>
+  <div class="pred">
+    <div><b>ALUMINIJUM VISOKE ČVRSTOĆE</b><span>Plastifikacija u RAL nijansi po izboru</span></div>
+    <div><b>OTPORNOST NA VREMENSKE USLOVE</b><span>Kiša, vetar i UV zaštita</span></div>
+    <div><b>GARANCIJA 2 GODINE</b><span>Na konstrukciju i mehanizam</span></div>
+    <div><b>PROFESIONALNA MONTAŽA</b><span>Montaža sopstvenom ekipom</span></div>
+  </div>
+
+  <h3 style="margin-top:26px">Više o nama</h3>
+  <div class="links">
+    <a href="https://pergola.rs" target="_blank" rel="noopener">PERGOLA.RS<span>Pergole i sistemi za natkrivanje</span></a>
+    <a href="https://prohoreca.rs" target="_blank" rel="noopener">PROHORECA.RS<span>Oprema za ugostiteljstvo</span></a>
+    <a href="uputstvo-mere.html">Kako uzeti mere<span>Uputstvo za merenje prostora</span></a>
+  </div>
+</div>
+
+<div class="cta">
+  <a class="call" href="tel:0648979242">&#128222; Pozovi</a>
+  <a class="vib" href="viber://chat?number=%2B381648979242">Viber poruka</a>
+</div>
+
+<footer>
+  <b>AG GROUP</b>
+  PERGOLA.RS | PROHORECA.RS<br>
+  064 89 79 242 &nbsp;•&nbsp; Proizvedeno u Srbiji
+</footer>
+
 </div>
 <script>
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+(function(){
+  var ext=['jpeg','jpg','png','webp','JPG','JPEG','PNG'];
+  document.querySelectorAll('.ph[data-id]').forEach(function(im){
+    var i=0,id=im.dataset.id;
+    im.onerror=function(){ i++; if(i<ext.length) im.src='foto/'+id+'.'+ext[i]; else im.classList.add('off'); };
+    im.src='foto/'+id+'.'+ext[0];
+  });
+})();
 </script>
 </body>
 </html>
