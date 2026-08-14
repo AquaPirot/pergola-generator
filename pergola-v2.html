@@ -1647,18 +1647,34 @@ function generate3D(){
    PONUDA ZA KUPCA — FOTO + TEHNIČKI CRTEŽI + SPECIFIKACIJA
    ═══════════════════════════════════════════════════════════ */
 // Prednosti u dnu ponude — slobodno izmenite tekst prema svojim uslovima
-const PG_UKLJUCENO=[
-  'Model pergole sa slike',
-  'Samsung LED rasveta',
-  'Motor i daljinski upravljač — motor i rasveta na istom daljinskom',
-  'Konstrukcija od ekstrudiranog aluminijuma, farbana elektrostatskom farbom',
-  'Aluminijumske vodilice pergole',
-  'Nagib pergole od 10–15%',
-  'Oluci za vodu sakriveni u konstrukciji',
-  'Limena nadstrešnica za skupljenu pergolu',
-  '3D blockout — troslojno termostabilno platno',
-  'Transport i montaža'
-];
+/* Liste za ponudu — po tipu pergole. Slobodno izmenite tekst. */
+const PG_UKLJUCENO={
+  klasicna:[
+    'Model pergole sa slike',
+    'Samsung LED rasveta',
+    'Motor i daljinski upravljač — motor i rasveta na istom daljinskom',
+    'Konstrukcija od ekstrudiranog aluminijuma, farbana elektrostatskom farbom',
+    'Aluminijumske vodilice pergole',
+    'Nagib pergole od 10–15%',
+    'Oluci za vodu sakriveni u konstrukciji',
+    'Limena nadstrešnica za skupljenu pergolu',
+    '3D blockout — troslojno termostabilno platno',
+    'Transport i montaža'
+  ],
+  bioklimatska:[
+    'Model pergole sa slike',
+    'Samsung LED rasveta',
+    'Motori i daljinski upravljač — motor i rasveta na istom daljinskom',
+    'Konstrukcija od ekstrudiranog aluminijuma, farbana elektrostatskom farbom',
+    'Aluminijumske vodilice lamela',
+    'Nagib pergole od 1–2%',
+    'Oluci za vodu sakriveni u konstrukciji',
+    'Aluminijumske lamele kao krovni pokrivač',
+    'Transport i montaža'
+  ]
+};
+PG_UKLJUCENO.ravna=PG_UKLJUCENO.klasicna;   // ravna za sada koristi listu klasične
+function pgUkljuceno(){return PG_UKLJUCENO[pgS.type]||PG_UKLJUCENO.klasicna;}
 const PG_NIJE=[
   'Elektro priključak do mesta montaže',
   'Građevinski radovi — temelj i sidrenje u beton ako podloga nije spremna',
@@ -1762,8 +1778,9 @@ async function generatePonuda(){
   const r4Y=r3Y+r3H+22;
   const incW=Math.round((CW-2*MG-18)*.62),excW=CW-2*MG-18-incW;
   const incCol=Math.floor((incW-44)/2);
-  const incLeft=PG_UKLJUCENO.slice(0,Math.ceil(PG_UKLJUCENO.length/2));
-  const incRight=PG_UKLJUCENO.slice(Math.ceil(PG_UKLJUCENO.length/2));
+  const incAll=pgUkljuceno();
+  const incLeft=incAll.slice(0,Math.ceil(incAll.length/2));
+  const incRight=incAll.slice(Math.ceil(incAll.length/2));
   const r4H=Math.max(listH(incLeft,incCol,17),listH(incRight,incCol,17),listH(PG_NIJE,excW-44,17))+58;
   const badY=r4Y+r4H+20,badH=76;
   const CH=badY+badH+250;
@@ -2099,7 +2116,7 @@ async function generateLink(){
       uslovi:['Ponuda važi 7 dana od datuma izdavanja.',
               'Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',
               'Rok isporuke i montaže: '+(rok||'po dogovoru')+'.'],
-      ukljuceno:PG_UKLJUCENO,nije:PG_NIJE,
+      ukljuceno:pgUkljuceno(),nije:PG_NIJE,
       prednosti:PG_PREDNOSTI,
       broj:genId('PON'),datum:ds()
     };
