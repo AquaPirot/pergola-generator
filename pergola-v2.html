@@ -115,7 +115,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 #outputContainer,#output3dContainer,#outputNalogContainer,#outputPonudaContainer{background:white;border-radius:var(--radius-sm);overflow:hidden}
 .output-canvas{width:100%;display:block}
 .info-note{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:10px 12px;font-size:11px;color:#166534;margin-top:8px;line-height:1.5}
-.proj-list{display:flex;flex-direction:column;gap:6px}
+.proj-list{display:flex;flex-direction:column;gap:6px;max-height:290px;overflow-y:auto}
+.proj-list::-webkit-scrollbar{width:5px}
+.proj-list::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+.proj-tools{display:flex;gap:6px;margin-bottom:9px}
+.proj-tools input{flex:1;padding:8px 10px;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:var(--font);font-weight:600;background:#fafbfc}
+.proj-tools input:focus{outline:none;border-color:var(--accent);background:#fff}
+.btn-arh{padding:8px 11px;border:2px solid var(--border);border-radius:var(--radius-sm);background:#fafbfc;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);color:var(--text-muted);white-space:nowrap}
+.btn-arh:hover{border-color:var(--accent)}
+.btn-arh.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.proj-row.arh{opacity:.7;background:#f1f5f9}
 .proj-row{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#f8f9fa;border:1px solid var(--border);border-radius:var(--radius-sm)}
 .proj-row .proj-name{flex:1;font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .proj-row .proj-date{font-size:10px;color:var(--text-muted);font-weight:400}
@@ -188,9 +197,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 </header>
 
 <div class="view-bar">
-  <button class="view-btn active" onclick="switchView('2d',this)">&#9998; 2D Tehnički Crtež</button>
-  <button class="view-btn" onclick="switchView('3d',this)">&#11041; 3D Tehnički Prikaz</button>
-  <button class="view-btn" onclick="switchView('ponuda',this)">&#128247; Ponuda za Kupca</button>
+  <button class="view-btn active" id="pg_tabPonuda" onclick="switchView('ponuda',this)">&#128247; Ponuda za Kupca</button>
+  <button class="view-btn" id="pg_tab2d" onclick="switchView('2d',this)">&#9998; 2D Tehnički Crtež</button>
+  <button class="view-btn" id="pg_tab3d" onclick="switchView('3d',this)">&#11041; 3D Tehnički Prikaz</button>
   <button class="view-btn" id="pg_viewNalogBtn" style="display:none" onclick="switchView('nalog',this)">&#9874; Nalog — Konstrukcija</button>
 </div>
 
@@ -198,7 +207,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   <div class="sidebar">
     <div class="card" style="margin-bottom:18px">
       <div class="card-header"><div class="icon">&#128193;</div> Projekti <span id="pg_cloudBadge" style="font-size:10px;font-weight:600;margin-left:4px;color:rgba(255,255,255,.5)">&#9729; nije povezano</span> <button class="btn-mini" onclick="pgProjSave()">&#128190; Sačuvaj</button><button class="btn-mini" onclick="pgCloudConnect()" title="Sinhronizacija sa serverom" style="margin-left:6px">&#9729;</button></div>
-      <div class="card-body"><div class="proj-list" id="pg_projList"></div></div>
+      <div class="card-body">
+        <div class="proj-tools">
+          <input type="search" id="pg_projSearch" placeholder="Pretraga po nazivu..." oninput="pgProjRender()">
+          <button class="btn-arh" id="pg_arhBtn" onclick="pgProjToggleArh()">&#128230; Arhiva</button>
+        </div>
+        <div class="proj-list" id="pg_projList"></div>
+      </div>
     </div>
     <div class="card">
       <div class="card-header"><div class="icon">&#9881;</div> Konfiguracija Pergole</div>
@@ -420,7 +435,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       <div class="stat-card"><div class="stat-value" id="stat4">-</div><div class="stat-label" id="stat4L">-</div></div>
     </div>
 
-    <div class="view-panel active" id="panel-2d">
+    <div class="view-panel" id="panel-2d">
       <div id="outputContainer">
         <div class="drawing-placeholder" id="placeholder"><div class="placeholder-icon">&#9634;</div><p>Konfigurišite i kliknite "Generiši 2D"</p><div class="hint">Tehnički crtež će biti prikazan ovde</div></div>
         <canvas id="outputCanvas" class="output-canvas" style="display:none"></canvas>
@@ -434,7 +449,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
       </div>
     </div>
 
-    <div class="view-panel" id="panel-ponuda">
+    <div class="view-panel active" id="panel-ponuda">
       <div id="outputPonudaContainer">
         <div class="drawing-placeholder" id="placeholderPonuda"><div class="placeholder-icon">&#128247;</div><p>Ponuda za kupca sa fotografijom modela</p><div class="hint">Izaberite model, dodajte fotografiju i kliknite "Generiši Ponudu"</div></div>
         <canvas id="canvasPonuda" class="output-canvas" style="display:none"></canvas>
@@ -501,7 +516,7 @@ function pgMountUI(){
   const nb=document.getElementById('pg_btnNalog'),vb=document.getElementById('pg_viewNalogBtn');
   if(nb)nb.style.display=steel?'flex':'none';
   if(vb)vb.style.display=steel?'block':'none';
-  if(!steel){const pnl=document.getElementById('panel-nalog');if(pnl&&pnl.classList.contains('active'))switchView('2d',document.querySelectorAll('.view-btn')[0]);}
+  if(!steel){const pnl=document.getElementById('panel-nalog');if(pnl&&pnl.classList.contains('active'))switchView('2d',document.getElementById('pg_tab2d'));}
   if(steel)document.getElementById('pg_steelNote').textContent=pgS.mount==='samostojeca'
     ?'Samostojeći objekat: čelična konstrukcija nosi zadnju stranu pergole — 2 ili 3 stuba ankerisana u temelj, greda zavarena odozgo. Polje „Visina na zidu" predstavlja visinu vrha konstrukcije.'
     :'Konstrukcija se postavlja uz objekat: 2 ili 3 stuba uz zid sa gredom zavarenom odozgo — pergola kreće od te grede, bez oslanjanja na fasadu.';
@@ -542,12 +557,12 @@ pgBuildDims();
 
 /* ═══ KATALOG MODELA + FOTOGRAFIJE ═══ */
 const PG_MODELS=[
-  {id:'bio-2',tip:'bioklimatska',stubovi:2,naziv:'Bioklimatska — 2 stuba / 2 roga',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
-  {id:'bio-3',tip:'bioklimatska',stubovi:3,naziv:'Bioklimatska — 3 stuba / 3 roga',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
-  {id:'bio-4',tip:'bioklimatska',stubovi:4,naziv:'Bioklimatska — 4 stuba / 4 roga',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
-  {id:'ravna-2',tip:'ravna',stubovi:2,naziv:'Ravna — 2 stuba / 2 roga',opis:'Ravna pergola sa 3D Blockout platnom na motorni pogon. Konstrukcija na 2 stuba sa 2 roga. Platno se uvlači u kasetu, potpuna zaštita od sunca i kiše.'},
-  {id:'ravna-3',tip:'ravna',stubovi:3,naziv:'Ravna — 3 stuba / 3 roga',opis:'Ravna pergola sa 3D Blockout platnom na motorni pogon. Konstrukcija na 3 stuba sa 3 roga za veće raspone. Platno se uvlači u kasetu.'},
-  {id:'ravna-4',tip:'ravna',stubovi:4,naziv:'Ravna — 4 stuba / 4 roga',opis:'Ravna pergola sa 3D Blockout platnom, ojačana konstrukcija na 4 stuba sa 4 roga. Platno se uvlači u kasetu.'},
+  {id:'bio-2',tip:'bioklimatska',stubovi:2,naziv:'Bioklimatska — 2 stuba',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
+  {id:'bio-3',tip:'bioklimatska',stubovi:3,naziv:'Bioklimatska — 3 stuba',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
+  {id:'bio-4',tip:'bioklimatska',stubovi:4,naziv:'Bioklimatska — 4 stuba',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
+  {id:'ravna-2',tip:'ravna',stubovi:2,naziv:'Ravna — 2 stuba',opis:'Ravna pergola sa 3D Blockout platnom na motorni pogon. Konstrukcija na 2 stuba. Platno se uvlači u kasetu, potpuna zaštita od sunca i kiše.'},
+  {id:'ravna-3',tip:'ravna',stubovi:3,naziv:'Ravna — 3 stuba',opis:'Ravna pergola sa 3D Blockout platnom na motorni pogon. Konstrukcija na 3 stuba za veće raspone. Platno se uvlači u kasetu.'},
+  {id:'ravna-4',tip:'ravna',stubovi:4,naziv:'Ravna — 4 stuba',opis:'Ravna pergola sa 3D Blockout platnom, ojačana konstrukcija na 4 stuba. Platno se uvlači u kasetu.'},
   {id:'klas-2',tip:'klasicna',stubovi:2,naziv:'Klasična sa padom — 2 stuba / 2 roga',opis:'Klasična pergola je aluminijumska konstrukcija sa tehničkim platnom koje se pomoću vođica otvara i skuplja. Kada je platno razvučeno, pravi senku i štiti prostor od uobičajenih vremenskih uslova u granicama konkretnog sistema. Kada želite otvoreno nebo, krov se povlači. Zbog lakšeg izgleda i dobre prilagodljivosti često je racionalan izbor za natkrivanje većih terasa.'},
   {id:'klas-3',tip:'klasicna',stubovi:3,naziv:'Klasična sa padom — 3 stuba / 3 roga',opis:'Klasična pergola je aluminijumska konstrukcija sa tehničkim platnom koje se pomoću vođica otvara i skuplja. Kada je platno razvučeno, pravi senku i štiti prostor od uobičajenih vremenskih uslova u granicama konkretnog sistema. Kada želite otvoreno nebo, krov se povlači. Zbog lakšeg izgleda i dobre prilagodljivosti često je racionalan izbor za natkrivanje većih terasa.'},
   {id:'klas-4',tip:'klasicna',stubovi:4,naziv:'Klasična sa padom — 4 stuba / 4 roga',opis:'Klasična pergola je aluminijumska konstrukcija sa tehničkim platnom koje se pomoću vođica otvara i skuplja. Kada je platno razvučeno, pravi senku i štiti prostor od uobičajenih vremenskih uslova u granicama konkretnog sistema. Kada želite otvoreno nebo, krov se povlači. Zbog lakšeg izgleda i dobre prilagodljivosti često je racionalan izbor za natkrivanje većih terasa.'}
@@ -679,10 +694,37 @@ function pgProjDel(id){
   pgProjStore(pgProjAll().filter(x=>x.id!==id));pgProjRender();
   if(pgSyncKey)pgApi('delete',{id}).catch(()=>{});
 }
+let pgShowArh=false;
+function pgIsArh(pr){return !!(pr&&pr.data&&pr.data.arh);}
+function pgProjToggleArh(){pgShowArh=!pgShowArh;pgProjRender();}
+function pgProjArh(id,val){
+  const all=pgProjAll(),pr=all.find(x=>x.id===id);if(!pr)return;
+  if(!pr.data)pr.data={};
+  pr.data.arh=val?1:0;
+  pgProjStore(all);pgProjRender();pgStartProjList();pgCloudPush(pr);
+}
 function pgProjRender(){
   const all=pgProjAll(),el=document.getElementById('pg_projList');
-  if(!all.length){el.innerHTML='<div class="proj-empty">Nema sačuvanih projekata.<br>Unesite naziv klijenta i kliknite "Sačuvaj".</div>';return;}
-  el.innerHTML=all.map(pr=>`<div class="proj-row"><div class="proj-name" title="${esc(pr.name)}">${esc(pr.name)}<div class="proj-date">${esc(pr.date)}</div></div><button class="proj-btn" title="Otvori" onclick="pgProjOpen(${pr.id})">&#128194;</button><button class="proj-btn" title="Dupliraj" onclick="pgProjDup(${pr.id})">&#10697;</button><button class="proj-btn" title="Obriši" onclick="pgProjDel(${pr.id})">&#10005;</button></div>`).join('');
+  const sEl=document.getElementById('pg_projSearch');
+  const q=((sEl&&sEl.value)||'').trim().toLowerCase();
+  const arh=all.filter(pgIsArh),akt=all.filter(p=>!pgIsArh(p));
+  const btn=document.getElementById('pg_arhBtn');
+  if(btn){
+    btn.innerHTML=pgShowArh?('&#8617; Aktivni ('+akt.length+')'):('&#128230; Arhiva ('+arh.length+')');
+    btn.classList.toggle('on',pgShowArh);
+  }
+  let list=pgShowArh?arh:akt;
+  if(q)list=list.filter(p=>String(p.name||'').toLowerCase().includes(q));
+  if(!list.length){
+    el.innerHTML='<div class="proj-empty">'+(q?'Nema projekta sa tim nazivom.':(pgShowArh?'Arhiva je prazna.':'Nema aktivnih projekata.<br>Unesite naziv klijenta i kliknite „Sačuvaj".'))+'</div>';
+    return;
+  }
+  el.innerHTML=list.map(pr=>{
+    const a=pgIsArh(pr);
+    const arhBtn=a?`<button class="proj-btn" title="Vrati iz arhive" onclick="pgProjArh(${pr.id},0)">&#8617;</button>`
+                  :`<button class="proj-btn" title="Prebaci u arhivu" onclick="pgProjArh(${pr.id},1)">&#128230;</button>`;
+    return `<div class="proj-row${a?' arh':''}"><div class="proj-name" title="${esc(pr.name)}">${esc(pr.name)}<div class="proj-date">${esc(pr.date)}</div></div><button class="proj-btn" title="Otvori" onclick="pgProjOpen(${pr.id})">&#128194;</button><button class="proj-btn" title="Dupliraj" onclick="pgProjDup(${pr.id})">&#10697;</button>${arhBtn}<button class="proj-btn" title="Obriši" onclick="pgProjDel(${pr.id})">&#10005;</button></div>`;
+  }).join('');
 }
 
 /* ═══ SINHRONIZACIJA SA SERVEROM (api.php + MySQL) ═══ */
@@ -771,7 +813,7 @@ function pgStartNew(){pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F
 function pgStartContinue(){pgLoadState();pgStartClose();}
 function pgStartProjList(){
   const el=document.getElementById('pg_startProjects');if(!el)return;
-  const projs=pgProjAll();
+  const projs=pgProjAll().filter(p=>!pgIsArh(p));
   el.innerHTML=projs.length?'<div class="sm-sub">Sačuvani projekti</div>'+projs.slice(0,6).map(pr=>`<button class="sm-proj" onclick="pgProjOpen(${pr.id});pgStartClose()">${esc(pr.name)}<span>${esc(pr.date)}</span></button>`).join(''):'';
 }
 function pgStartInit(){
@@ -959,7 +1001,7 @@ function generatePergola(){
   document.getElementById('pg_btnExport').style.display='flex';
   document.getElementById('pg_btnPDF').style.display='flex';
   document.getElementById('pg_btnShare').style.display='flex';
-  switchView('2d',document.querySelectorAll('.view-btn')[0]);
+  switchView('2d',document.getElementById('pg_tab2d'));
   pgRenderWarnings();
 
   // ── proračun rasporeda lista ──
@@ -1264,7 +1306,7 @@ function generate3D(){
   document.getElementById('pg_btn3dExport').style.display='flex';
   document.getElementById('pg_btn3dPDF').style.display='flex';
   document.getElementById('pg_btnShare').style.display='flex';
-  switchView('3d',document.querySelectorAll('.view-btn')[1]);
+  switchView('3d',document.getElementById('pg_tab3d'));
 
   pgRenderWarnings();
   const CW=1600,CH=1560;
@@ -1767,7 +1809,7 @@ async function generatePonuda(){
   document.getElementById('pg_btnPonudaExport').style.display='flex';
   document.getElementById('pg_btnPonudaPDF').style.display='flex';
   document.getElementById('pg_btnShare').style.display='flex';
-  switchView('ponuda',document.querySelectorAll('.view-btn')[2]);
+  switchView('ponuda',document.getElementById('pg_tabPonuda'));
 
   const img=await pgLoadImgAny(pgModelFotoList());
 
