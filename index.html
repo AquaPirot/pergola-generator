@@ -43,13 +43,21 @@ h3::before{content:'';width:4px;height:15px;background:var(--gold);border-radius
 .links a{flex:1 1 200px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;text-decoration:none;color:var(--tx);font-weight:700;font-size:14px}
 .links a span{display:block;font-size:12px;color:var(--mut);font-weight:400;margin-top:2px}
 .links a:hover{border-color:var(--gold)}
+.gal{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;display:block;cursor:zoom-in;background:#e8ebef}
+.galwrap{display:none}
+.galwrap.on{display:block}
+#lb{position:fixed;inset:0;background:rgba(8,12,22,.94);display:none;align-items:center;justify-content:center;z-index:99;padding:8px}
+#lb.on{display:flex}
+#lb img{max-width:100%;max-height:100%;object-fit:contain}
+#lb .x{position:absolute;top:12px;right:16px;color:#fff;font-size:30px;font-weight:300;line-height:1}
 .cta{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--bd);box-shadow:0 -6px 18px rgba(15,23,42,.10);padding:11px 14px;display:flex;gap:9px;margin-top:26px;z-index:50}
 .cta a{flex:1;text-align:center;padding:14px;border-radius:11px;text-decoration:none;font-weight:800;font-size:14.5px}
 .cta .call{background:var(--navy);color:#fff}
 .cta .vib{background:var(--gold);color:#fff}
 footer{padding:20px 16px 28px;text-align:center;color:var(--mut);font-size:12px}
 footer b{display:block;color:var(--navy);font-size:14px;letter-spacing:.5px}
-@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}.pred{grid-template-columns:repeat(4,1fr)}.hero h2{font-size:30px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}.pred{grid-template-columns:repeat(4,1fr)}.hero h2{font-size:30px}.gal{grid-template-columns:repeat(3,1fr)}
 .cta{position:static;box-shadow:none;border-radius:14px;border:1px solid var(--bd);margin:26px 16px 0}}
 </style>
 </head>
@@ -92,6 +100,11 @@ footer b{display:block;color:var(--navy);font-size:14px;letter-spacing:.5px}
     <div><b>PROFESIONALNA MONTAŽA</b><span>Montaža sopstvenom ekipom</span></div>
   </div>
 
+  <div class="galwrap" id="galwrap">
+    <h3 style="margin-top:26px">Naši radovi</h3>
+    <div class="gal" id="gal"></div>
+  </div>
+
   <h3 style="margin-top:26px">Više o nama</h3>
   <div class="links">
     <a href="https://pergola.rs" target="_blank" rel="noopener">PERGOLA.RS<span>Pergole i sistemi za natkrivanje</span></a>
@@ -112,7 +125,24 @@ footer b{display:block;color:var(--navy);font-size:14px;letter-spacing:.5px}
 </footer>
 
 </div>
+<div id="lb" onclick="this.classList.remove('on')"><span class="x">&times;</span><img id="lbi" alt=""></div>
 <script>
+function zoom(s){document.getElementById('lbi').src=s;document.getElementById('lb').classList.add('on');}
+(function(){
+  var ext=['jpg','jpeg','png','webp','JPG','JPEG'],box=document.getElementById('gal'),max=24,n=0;
+  function next(i){
+    if(i>max)return fin();
+    var k=0,im=new Image();
+    im.onload=function(){
+      var d=document.createElement('img');d.src=im.src;d.loading='lazy';d.alt='Realizovan rad '+i;
+      d.onclick=function(){zoom(im.src);};box.appendChild(d);n++;next(i+1);
+    };
+    im.onerror=function(){k++;if(k<ext.length)im.src='galerija/'+i+'.'+ext[k];else fin();};
+    im.src='galerija/'+i+'.'+ext[0];
+  }
+  function fin(){if(n)document.getElementById('galwrap').classList.add('on');}
+  next(1);
+})();
 (function(){
   var ext=['jpeg','jpg','png','webp','JPG','JPEG','PNG'];
   document.querySelectorAll('.ph[data-id]').forEach(function(im){

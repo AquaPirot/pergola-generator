@@ -2217,6 +2217,11 @@ figure img{width:100%;display:block;border-radius:8px;cursor:zoom-in}
 .usl.nije li{color:var(--mut)}
 .pred{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 0 4px}
 .pred div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px}
+.gal{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;display:block;cursor:zoom-in;background:#e8ebef}
+@media(min-width:620px){.gal{grid-template-columns:repeat(3,1fr)}}
+.galwrap{display:none}
+.galwrap.on{display:block}
 .pred b{display:block;font-size:11.5px;font-weight:800;letter-spacing:.3px}
 .pred span{font-size:11.5px;color:var(--mut)}
 .sec{padding-bottom:4px}
@@ -2252,13 +2257,35 @@ ${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div clas
   <div class="card"><ul class="usl">${o.uslovi.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>
   <h3>Zašto AG GROUP</h3>
   <div class="pred">${o.prednosti.map(p=>`<div><b>${esc(p[0])}</b><span>${esc(p[1])}</span></div>`).join('')}</div>
+  <div class="galwrap" id="galwrap">
+    <h3>Naši radovi</h3>
+    <div class="gal" id="gal"></div>
+    <p style="font-size:12px;color:var(--mut);padding:8px 4px 0">Dodirnite fotografiju za uvećanje.</p>
+  </div>
 </div>
 <div class="cta">
   <a class="call" href="tel:${o.telRaw}">&#128222; Pozovi</a>
   <a class="vib" href="viber://chat?number=%2B381${o.telRaw.replace(/^0/,'')}">Viber poruka</a>
 </div>
 <footer><b>${esc(o.firma)}</b>${esc(o.domeni)}<br>${esc(o.tel)} &nbsp;•&nbsp; Proizvedeno u Srbiji<br><span style="opacity:.7">Ponuda ${esc(o.broj)} &nbsp;•&nbsp; ${esc(o.datum)}</span></footer>
-<div id="lb" onclick="this.classList.remove('on')"><span class="x">&times;</span><img id="lbi" alt=""></div><script>function zoom(s){document.getElementById('lbi').src=s;document.getElementById('lb').classList.add('on');}<\/script></div></body></html>`;
+<div id="lb" onclick="this.classList.remove('on')"><span class="x">&times;</span><img id="lbi" alt=""></div><script>
+function zoom(s){document.getElementById('lbi').src=s;document.getElementById('lb').classList.add('on');}
+(function(){
+  var ext=['jpg','jpeg','png','webp','JPG','JPEG'],box=document.getElementById('gal'),base='${o.galBase}',max=24,n=0;
+  function next(i){
+    if(i>max)return fin();
+    var k=0,im=new Image();
+    im.onload=function(){
+      var d=document.createElement('img');d.src=im.src;d.loading='lazy';d.alt='Realizovan rad '+i;
+      d.onclick=function(){zoom(im.src);};box.appendChild(d);n++;next(i+1);
+    };
+    im.onerror=function(){k++;if(k<ext.length)im.src=base+i+'.'+ext[k];else fin();};
+    im.src=base+i+'.'+ext[0];
+  }
+  function fin(){if(n)document.getElementById('galwrap').classList.add('on');}
+  next(1);
+})();
+<\/script></div></body></html>`;
 }
 async function generateLink(){
   pgGather();
@@ -2315,6 +2342,7 @@ async function generateLink(){
              ].concat(V?[]:['Visine se utvrđuju prilikom uzimanja mera.']),
       ukljuceno:pgUkljuceno(),nije:PG_NIJE,
       prednosti:PG_PREDNOSTI,
+      galBase:'../galerija/',
       broj:genId('PON'),datum:ds()
     };
     const html=pgPonudaHTML(o);
