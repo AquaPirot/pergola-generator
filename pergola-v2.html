@@ -586,55 +586,6 @@ function pgBuildDims(){
 pgBuildDims();
 
 
-
-/* ═══ IKONICE (jedan izvor — koristi se i na stranici i u PDF-u) ═══ */
-const PG_IKONE={
-  alu:'M3.5 7h17v10h-17z M7 10.5h10v3H7z',
-  weather:'M6.5 13.5a3 3 0 0 1 .4-6 4.6 4.6 0 0 1 8.7 1.2 3 3 0 0 1 2.4 4.8 M6.5 13.5h11 M8 17v2.5 M12 17v3.5 M16 17v2.5',
-  inox:'M8.5 3.5h7l1.4 2.4-1.4 2.4h-7L7.1 5.9z M10.6 8.3v11.2 M13.4 8.3v11.2 M10.6 11.5h2.8 M10.6 14.5h2.8',
-  motor:'M9 3.2h6v17.6H9z M11 6.4h2 M11 9.4h2 M11 12.4h2 M17 5.4a5 5 0 0 1 0 6.2 M19.4 3.2a8.4 8.4 0 0 1 0 10.6',
-  led:'M12 3.2a5.8 5.8 0 0 0-3.2 10.6V16h6.4v-2.2A5.8 5.8 0 0 0 12 3.2z M10 18.4h4 M10.8 20.8h2.4',
-  voda:'M3.5 5.5h17 M3.5 5.5v4.2a2.4 2.4 0 0 0 2.4 2.4h12.2a2.4 2.4 0 0 0 2.4-2.4V5.5 M12 12.1v4.6 M7.5 20.2c1.5-1.6 3 1.6 4.5 0s3 1.6 4.5 0',
-  mera:'M2.8 9h18.4v6H2.8z M7 9v3.2 M10.4 9v2.2 M13.8 9v3.2 M17.2 9v2.2',
-  garancija:'M12 3.2l7 2.6v5.4c0 4.2-2.9 7.6-7 9.6-4.1-2-7-5.4-7-9.6V5.8z M8.8 12.2l2.4 2.4 4-4.6',
-  zip:'M3.5 3.6h17v3.2h-17z M5.2 6.8v13.6 M18.8 6.8v13.6 M7.4 10.4h9.2 M7.4 13.6h9.2 M7.4 16.8h9.2',
-  staklo:'M3.6 3.6h16.8v16.8H3.6z M9.2 3.6v16.8 M14.8 3.6v16.8 M5.6 8.2l2.2-2.2 M5.6 12.4l3.4-3.4'
-};
-const PG_KARAKTERISTIKE=[
-  ['alu','ALUMINIJUM VISOKE ČVRSTOĆE','Ekstrudirani profili, plastifikacija u RAL nijansi'],
-  ['weather','OTPORNOST NA VREMENSKE USLOVE','Kiša, vetar i UV zaštita'],
-  ['inox','NERĐAJUĆE KOMPONENTE','Inox vijci i okovi'],
-  ['motor','MOTOR I DALJINSKI','Motor i rasveta na istom daljinskom'],
-  ['led','SAMSUNG LED RASVETA','Ugrađena u konstrukciju'],
-  ['voda','POSEBAN ODVOD VODE','Bočni profili su oluci — odvod kroz stubove'],
-  ['mera','IZRADA PO MERI','Dimenzije prema vašem prostoru'],
-  ['garancija','GARANCIJA 2 GODINE','Na konstrukciju i mehanizam']
-];
-const PG_OPCIJE=[
-  ['zip','ZIP SCREEN ZAVESE','Bočno zatvaranje — zaštita od vetra, sunca i pogleda'],
-  ['staklo','STAKLENE KLIZNE STENE','Zatvaranje prostora za korišćenje tokom cele godine']
-];
-/* Usaglašenost se odnosi na sistem proizvođača profila i mehanizma */
-const PG_USAGLASENOST=[['CE','Usaglašenost sistema proizvođača'],['ISO 9001','Sistem upravljanja kvalitetom proizvođača']];
-function pgSvgIcon(k){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${PG_IKONE[k]}"/></svg>`;}
-function drawIcon(c,key,x,y,sz,col,lw){
-  const d=PG_IKONE[key];if(!d)return;
-  c.save();c.translate(x,y);const k=sz/24;c.scale(k,k);
-  c.strokeStyle=col;c.lineWidth=(lw||1.7)/k;c.lineCap='round';c.lineJoin='round';
-  try{c.stroke(new Path2D(d));}catch(e){}
-  c.restore();
-}
-function drawTextBadge(c,txt,x,y,sz,col){
-  c.save();
-  c.strokeStyle=col;c.lineWidth=1.6;
-  roundRect(c,x,y,sz,sz,sz*.22);c.stroke();
-  c.fillStyle=col;c.textAlign='center';c.textBaseline='middle';
-  c.font=`bold ${Math.round(sz*(txt.length>3?.24:.38))}px Segoe UI,sans-serif`;
-  c.fillText(txt,x+sz/2,y+sz/2);
-  c.textBaseline='alphabetic';c.textAlign='left';
-  c.restore();
-}
-
 /* ═══ RASPORED SISTEMA (bioklimatska) — skice ═══ */
 const PG_LAYOUTS=[
   {id:'zid1',   naziv:'Na zid',            sub:'1 sistem — 2 stuba',  mount:'zid',        count:1, depth:1},
@@ -2011,7 +1962,7 @@ async function generatePonuda(){
   const incLeft=incAll.slice(0,Math.ceil(incAll.length/2));
   const incRight=incAll.slice(Math.ceil(incAll.length/2));
   const r4H=Math.max(listH(incLeft,incCol,17),listH(incRight,incCol,17),listH(PG_NIJE,excW-44,17))+58;
-  const badY=r4Y+r4H+20,badH=150;
+  const badY=r4Y+r4H+20,badH=76;
   const CH=badY+badH+250;
 
   const c=initCanvas('canvasPonuda',CW,CH);
@@ -2165,43 +2116,19 @@ async function generatePonuda(){
   c.fillText('NIJE UKLJUČENO',exX+22,r4Y+30);
   drawList(c,exX+22,r4Y+56,excW-44,PG_NIJE,'•','#9ca3af',17);
 
-  /* ── KARAKTERISTIKE / OPREMA / USAGLAŠENOST ── */
+  /* ── PREDNOSTI ── */
   c.fillStyle='#f8fafc';c.fillRect(0,badY,CW,badH);
   c.strokeStyle='#e2e8f0';c.lineWidth=1;
   c.beginPath();c.moveTo(0,badY);c.lineTo(CW,badY);c.moveTo(0,badY+badH);c.lineTo(CW,badY+badH);c.stroke();
-  {
-    const cols=4,bw2=CW/cols,rh5=54;
-    PG_KARAKTERISTIKE.forEach((b,i)=>{
-      const cx4=(i%cols)*bw2+30,cy4=badY+18+Math.floor(i/cols)*rh5;
-      drawIcon(c,b[0],cx4,cy4+4,26,PG_ACCENT,1.7);
-      c.fillStyle=PG_NAVY;c.font='bold 12px Segoe UI,sans-serif';c.textAlign='left';
-      let t1=b[1];while(c.measureText(t1).width>bw2-76&&t1.length>6)t1=t1.slice(0,-2);
-      c.fillText(t1,cx4+36,cy4+16);
-      c.fillStyle='#6b7280';c.font='11px Segoe UI,sans-serif';
-      let t2=b[2];while(c.measureText(t2).width>bw2-70&&t2.length>6)t2=t2.slice(0,-2);
-      c.fillText(t2,cx4+36,cy4+32);
-    });
-    const oy5=badY+18+2*rh5+2;
-    c.strokeStyle='#e2e8f0';c.lineWidth=1;c.beginPath();c.moveTo(30,oy5-8);c.lineTo(CW-30,oy5-8);c.stroke();
-    c.fillStyle=PG_NAVY;c.font='bold 11px Segoe UI,sans-serif';c.textAlign='left';
-    c.fillText('DOSTUPNO KAO DOPLATA:',30,oy5+10);
-    let ox5=205;
-    PG_OPCIJE.forEach(o=>{
-      drawIcon(c,o[0],ox5,oy5-4,20,PG_ACCENT,1.7);
-      c.fillStyle=PG_NAVY;c.font='bold 12px Segoe UI,sans-serif';c.fillText(o[1],ox5+26,oy5+10);
-      ox5+=26+c.measureText(o[1]).width+40;
-    });
-    let ux5=CW-30;
-    c.textAlign='right';
-    [...PG_USAGLASENOST].reverse().forEach(u=>{
-      c.font='bold 11px Segoe UI,sans-serif';
-      const tw5=c.measureText(u[0]).width;
-      c.fillStyle='#6b7280';c.fillText(u[0],ux5,oy5+10);
-      drawTextBadge(c,u[0]==='CE'?'CE':'ISO',ux5-tw5-30,oy5-8,22,'#9ca3af');
-      ux5-=tw5+64;
-    });
-    c.textAlign='left';
-  }
+  const bw2=CW/PG_PREDNOSTI.length;
+  PG_PREDNOSTI.forEach((b,i)=>{
+    const bx3=i*bw2+34;
+    checkIcon(c,bx3+14,badY+badH/2,15);
+    c.fillStyle=PG_NAVY;c.font='bold 13px Segoe UI,sans-serif';c.textAlign='left';
+    c.fillText(b[0],bx3+40,badY+badH/2-3);
+    c.fillStyle='#6b7280';c.font='12px Segoe UI,sans-serif';
+    c.fillText(b[1],bx3+40,badY+badH/2+16);
+  });
 
   titleBlock(c,CW,CH,[
     ['Projekat',pn||'—'],
@@ -2295,13 +2222,7 @@ figure img{width:100%;display:block;border-radius:8px;cursor:zoom-in}
 @media(min-width:620px){.gal{grid-template-columns:repeat(3,1fr)}}
 .galwrap{display:none}
 .galwrap.on{display:block}
-.pred i{display:block;width:26px;height:26px;color:var(--gold);margin-bottom:7px}
-.pred i svg{width:100%;height:100%;display:block}
 .pred b{display:block;font-size:11.5px;font-weight:800;letter-spacing:.3px}
-.conf{display:flex;gap:10px;flex-wrap:wrap;margin-top:11px;padding:0 2px}
-.conf div{flex:1 1 150px;border:1px solid var(--bd);border-radius:10px;padding:9px 12px;background:var(--card)}
-.conf b{display:block;font-size:12px;font-weight:800;letter-spacing:1px;color:var(--navy)}
-.conf span{font-size:10.5px;color:var(--mut)}
 .pred span{font-size:11.5px;color:var(--mut)}
 .sec{padding-bottom:4px}
 .cta{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--bd);box-shadow:0 -6px 18px rgba(15,23,42,.10);padding:11px 14px;display:flex;gap:9px;margin-top:22px;z-index:50}
@@ -2334,11 +2255,8 @@ ${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div clas
   <div class="card"><ul class="usl nije">${o.nije.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>
   <h3>Uslovi</h3>
   <div class="card"><ul class="usl">${o.uslovi.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>
-  <h3>Karakteristike</h3>
-  <div class="pred">${o.karakteristike.map(p=>`<div><i>${p[3]}</i><b>${esc(p[1])}</b><span>${esc(p[2])}</span></div>`).join('')}</div>
-  <h3>Dostupno kao doplata</h3>
-  <div class="pred">${o.opcije.map(p=>`<div><i>${p[3]}</i><b>${esc(p[1])}</b><span>${esc(p[2])}</span></div>`).join('')}</div>
-  <div class="conf">${o.usaglasenost.map(u=>`<div><b>${esc(u[0])}</b><span>${esc(u[1])}</span></div>`).join('')}</div>
+  <h3>Zašto AG GROUP</h3>
+  <div class="pred">${o.prednosti.map(p=>`<div><b>${esc(p[0])}</b><span>${esc(p[1])}</span></div>`).join('')}</div>
   <div class="galwrap" id="galwrap">
     <h3>Naši radovi</h3>
     <div class="gal" id="gal"></div>
@@ -2423,9 +2341,6 @@ async function generateLink(){
               'Rok isporuke i montaže: '+(rok||'po dogovoru')+'.'
              ].concat(V?[]:['Visine se utvrđuju prilikom uzimanja mera.']),
       ukljuceno:pgUkljuceno(),nije:PG_NIJE,
-      karakteristike:PG_KARAKTERISTIKE.map(k=>[k[0],k[1],k[2],pgSvgIcon(k[0])]),
-      opcije:PG_OPCIJE.map(k=>[k[0],k[1],k[2],pgSvgIcon(k[0])]),
-      usaglasenost:PG_USAGLASENOST,
       prednosti:PG_PREDNOSTI,
       galBase:'../galerija/',
       broj:genId('PON'),datum:ds()
