@@ -339,7 +339,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
             </div>
           </div>
           <div class="form-row single">
-            <div class="form-group"><label>Odvod vode (oluk kroz stub)</label>
+            <div class="form-group"><label>Odvod vode (kroz stub)</label>
               <select id="pg_drain">
                 <option value="none">Bez oznake na crtežu</option>
                 <option value="left">Levi ugaoni stub</option>
@@ -348,6 +348,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
               </select>
             </div>
           </div>
+          <div class="info-note" id="pg_drainNote">Bočni profili pergole su ujedno oluci: voda sa lamela otiče u njih, preusmerava se ka stubovima i kroz otvor u dnu stuba izlazi napolje.</div>
         </div>
 
         <!-- ZIDNA CEV - NOVO -->
@@ -805,11 +806,18 @@ function pgPriceModeUI(){const fix=pgS.priceMode!=='m2';document.getElementById(
 function pgPrice(){if(pgS.priceMode!=='m2')return parseFloat(pgS.priceFix)||0;return pgTA()*(pgPrices[pgS.type]||0);}
 
 /* ═══ TEHNIČKA UPOZORENJA ═══ */
+/* Granice jednog bioklimatskog sistema (modula) */
+const PG_BIO_MAXW=697.5, PG_BIO_P2=400, PG_BIO_P3=500;
 function pgWarnings(){
   const w=[];
   pgS.pergs.forEach((pg,i)=>{
     const span=pgS.ppp>1?pg.w/(pgS.ppp-1):pg.w;
     if(span>450)w.push(`P${i+1}: raspon između stubova ${Math.round(span)} cm prelazi 450 cm — preporučen dodatni stub ili ojačani profil.`);
+    if(pgS.type==='bioklimatska'){
+      if(pg.w>PG_BIO_MAXW)w.push(`P${i+1}: širina ${pg.w} cm prelazi maksimalnu širinu jednog sistema (${PG_BIO_MAXW} cm) — podeliti na više sistema u nizu.`);
+      if(pg.p>PG_BIO_P3)w.push(`P${i+1}: projekcija ${pg.p} cm prelazi maksimalnih ${PG_BIO_P3} cm po sistemu.`);
+      else if(pg.p>PG_BIO_P2)w.push(`P${i+1}: projekcija ${pg.p} cm — zahteva sistem sa 3 šine (do ${PG_BIO_P2} cm dovoljne su 2 šine).`);
+    }
   });
   if(pgS.type==='klasicna'){const sl=parseFloat(pgSl());if(sl>0&&sl<5)w.push(`Pad krova ${sl}% je manji od preporučenih 5% za siguran odvod vode.`);}
   if(pgSteel()){const n=pgS.steelPosts||2,span=n>1?(pgTW()-pgSteelP())/(n-1):pgTW();if(span>600)w.push(`Čelična konstrukcija: raspon grede između stubova ${Math.round(span)} cm prelazi 600 cm — preporučen treći stub ili jači profil grede.`);}
@@ -1925,6 +1933,7 @@ async function generatePonuda(){
   );
   if(pgS.type==='klasicna'&&V)rows.splice(4,0,['Pad krova',`${sl} %`]);
   if(pgSteel())rows.push(['Čelična konstrukcija',`${pgS.steelPosts}× cev ${pgS.steelProfile}×${pgS.steelProfile} mm`]);
+  rows.push(['Odvod vode',pgS.drain==='none'?'kroz bočne profile i stubove':'kroz bočne profile i '+({left:'levi ugaoni stub',right:'desni ugaoni stub',both:'oba ugaona stuba'}[pgS.drain])]);
   if(pgS.motorSides&&pgS.motorSides.some(m=>m!=='none'))rows.push(['Motor',pgS.motorSides.map((m,i)=>m!=='none'?`P${i+1}: ${m==='levo'?'leva':'desna'}`:'').filter(Boolean).join(', ')]);
   const priceH2=showP?96:56;
   const availH=r1H-(sy2-r1Y)-priceH2-18;
@@ -2198,6 +2207,7 @@ async function generateLink(){
       ['Stubovi',`${tp} kom — ${pgS.postW}×${pgS.postD} cm`],
       ['Montaža',pgS.mount==='samostojeca'?(pgOwnBack()?'samostojeća — sopstveni stubovi':'samostojeća — čelična konstrukcija'):(pgS.mount==='uzobjekat'?'čelična konstrukcija uz objekat':'uz objekat (zid)')]);
     if(pgSteel())spec.push(['Čelična konstrukcija',`${pgS.steelPosts}× cev ${pgS.steelProfile}×${pgS.steelProfile} mm`]);
+    spec.push(['Odvod vode',pgS.drain==='none'?'kroz bočne profile i stubove':'kroz bočne profile i '+({left:'levi ugaoni stub',right:'desni ugaoni stub',both:'oba ugaona stuba'}[pgS.drain])]);
     if(pgS.motorSides&&pgS.motorSides.some(m=>m!=='none'))spec.push(['Motor',pgS.motorSides.map((m,i)=>m!=='none'?`P${i+1}: ${m==='levo'?'leva':'desna'}`:'').filter(Boolean).join(', ')]);
     if(pgS.count>1)spec.push(['Broj pergola',`${pgS.count} — `+pgS.pergs.map((p,i)=>`P${i+1}: ${p.w}×${p.p}`).join(', ')]);
     const o={
