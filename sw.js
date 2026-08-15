@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aggroup-pergola-v27';
+const CACHE_NAME = 'aggroup-pergola-v28';
 const ASSETS = [
   'index.html',
   'alat.html',
