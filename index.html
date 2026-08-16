@@ -129,16 +129,18 @@ footer b{display:block;color:var(--navy);font-size:14px;letter-spacing:.5px}
 <script>
 function zoom(s){document.getElementById('lbi').src=s;document.getElementById('lb').classList.add('on');}
 (function(){
-  var ext=['jpg','jpeg','png','webp','JPG','JPEG'],box=document.getElementById('gal'),max=24,n=0;
+  var ext=['jpg','jpeg','png','webp','JPG','JPEG'],dirs=['bio','klas','ravna'],
+      box=document.getElementById('gal'),max=24,n=0,di=0;
+  function nextDir(){di++;if(di<dirs.length)next(1);else fin();}
   function next(i){
-    if(i>max)return fin();
-    var k=0,im=new Image();
+    if(i>max)return nextDir();
+    var k=0,im=new Image(),base='galerija/'+dirs[di]+'/';
     im.onload=function(){
-      var d=document.createElement('img');d.src=im.src;d.loading='lazy';d.alt='Realizovan rad '+i;
+      var d=document.createElement('img');d.src=im.src;d.loading='lazy';d.alt='Realizovan rad';
       d.onclick=function(){zoom(im.src);};box.appendChild(d);n++;next(i+1);
     };
-    im.onerror=function(){k++;if(k<ext.length)im.src='galerija/'+i+'.'+ext[k];else fin();};
-    im.src='galerija/'+i+'.'+ext[0];
+    im.onerror=function(){k++;if(k<ext.length)im.src=base+i+'.'+ext[k];else nextDir();};
+    im.src=base+i+'.'+ext[0];
   }
   function fin(){if(n)document.getElementById('galwrap').classList.add('on');}
   next(1);

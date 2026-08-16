@@ -2342,7 +2342,7 @@ async function generateLink(){
              ].concat(V?[]:['Visine se utvrđuju prilikom uzimanja mera.']),
       ukljuceno:pgUkljuceno(),nije:PG_NIJE,
       prednosti:PG_PREDNOSTI,
-      galBase:'../galerija/',
+      galBase:'../galerija/'+({bioklimatska:'bio',klasicna:'klas',ravna:'ravna'}[pgS.type]||'klas')+'/',
       broj:genId('PON'),datum:ds()
     };
     const html=pgPonudaHTML(o);
