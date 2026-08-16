@@ -229,7 +229,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
         <div class="form-section">
           <div class="form-section-title">&#9670; Projekat</div>
           <div class="form-row single"><div class="form-group"><label>Naziv / klijent</label><input type="text" id="pg_projectName" placeholder="npr. Vila Marković - terasa"></div></div>
-          <div class="form-row single"><div class="form-group"><label>Rok isporuke i montaže</label><input type="text" id="pg_rok" placeholder="npr. 25 radnih dana od uplate avansa"></div></div>
+          <div class="form-row single"><div class="form-group"><label>Rok isporuke i montaže</label><input type="text" id="pg_rok" value="20 dana" placeholder="npr. 20 dana"></div></div>
           <div class="form-row single"><div class="form-group"><label>Napomena</label><textarea id="pg_notes" placeholder="Dodatne informacije..."></textarea></div></div>
         </div>
 
@@ -361,7 +361,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
               </select>
             </div>
           </div>
-          <div class="info-note" id="pg_drainNote">Bočni profili pergole su ujedno oluci: voda sa lamela otiče u njih, preusmerava se ka stubovima i kroz otvor u dnu stuba izlazi napolje.</div>
+          <div class="info-note" id="pg_drainNote"></div>
         </div>
 
         <!-- ZIDNA CEV - NOVO -->
@@ -399,7 +399,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
             <div class="color-option" data-ral="custom" onclick="pgSelectColor(this)"><div class="color-swatch" style="background:linear-gradient(135deg,#f00,#0f0,#00f)"></div><span class="color-name">Po izboru</span></div>
           </div>
           <div class="custom-ral-input" id="pg_customRalWrap"><div class="form-group" style="margin-top:8px"><label>RAL broj</label><input type="text" id="pg_customRal" placeholder="npr. 3020" maxlength="4"></div></div>
-          <div class="form-group" style="margin-top:10px"><label>Boja cerade / platna</label><input type="text" id="pg_ceradaBoja" placeholder="npr. antracit, siva, RAL 7016..."></div>
+          <div class="form-group" style="margin-top:10px"><label>Boja cerade / platna</label><input type="text" id="pg_ceradaBoja" placeholder="Po izboru"></div>
         </div>
 
         <div class="form-section">
@@ -530,11 +530,21 @@ function switchView(v,btn){
 }
 
 /* ═══ UI HANDLERS ═══ */
-function pgSelectType(el){document.querySelectorAll('#pg_typeSel .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.type=el.dataset.type;pgS.samoTip=pgS.type==='bioklimatska'?'stubovi':'celik';pgModelAuto();pgMountUI();pgLayRender();}
+function pgSelectType(el){document.querySelectorAll('#pg_typeSel .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.type=el.dataset.type;pgS.samoTip=pgS.type==='bioklimatska'?'stubovi':'celik';pgCeradaDefault();pgDrainNote();pgModelAuto();pgMountUI();pgLayRender();}
 function pgSelectCount(el){document.querySelectorAll('#pg_countSel .num-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.count=parseInt(el.dataset.count);pgBuildDims();document.getElementById('sharedPostSection').style.display=pgS.count>1?'block':'none';pgLayRender();}
 function pgSelectMount(el){document.querySelectorAll('#pg_mountSel .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.mount=el.dataset.mount;if(!pgS.samoTip)pgS.samoTip=pgS.type==='bioklimatska'?'stubovi':'celik';pgMountUI();pgLayRender();}
 function pgSelectSamoTip(el){document.querySelectorAll('#pg_samoTipSel .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.samoTip=el.dataset.st;pgMountUI();}
 function pgSelectSteelPosts(el){document.querySelectorAll('#pg_steelPostsSel .num-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.steelPosts=parseInt(el.dataset.sp);}
+function pgCeradaDefault(){
+  const el=document.getElementById('pg_ceradaBoja');if(!el)return;
+  if(pgS.type!=='bioklimatska'&&!el.value.trim())el.value='Po izboru';
+}
+function pgDrainNote(){
+  const el=document.getElementById('pg_drainNote');if(!el)return;
+  el.textContent=pgS.type==='bioklimatska'
+    ?'Bočni profili pergole su ujedno oluci: voda sa lamela otiče u njih, preusmerava se ka stubovima i kroz otvor u dnu stuba izlazi napolje.'
+    :'Oluci su integrisani u konstrukciju: voda sa platna otiče u oluk i odvodi se kroz stubove.';
+}
 function pgMountUI(){
   const steel=pgS.mount!=='zid';
   document.getElementById('pg_steelFields').classList.toggle('visible',steel);
@@ -905,7 +915,7 @@ function pgRenderWarnings(){
 
 /* ═══ POČETNI EKRAN ═══ */
 const PG_DEF_S={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back',mount:'zid',steelPosts:2,steelProfile:100,samoTip:'stubovi',depth:1,model:'bio-3',priceMode:'fix'};
-const PG_DEF_F={pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',pg_postW:'12',pg_postD:'12',pg_projectName:'',pg_notes:'',pg_customRal:'',pg_wallBaseH:'40',pg_postHeight:'190',pg_tubeW:'40',pg_tubeH:'80',pg_drain:'none',pg_ceradaBoja:'',pg_steelProfile:'100',pg_priceFix:'',pg_rok:'',pw_0:'500',pp_0:'400',pm_0:'none',pw_1:'500',pp_1:'400',pm_1:'none',pw_2:'500',pp_2:'400',pm_2:'none',pg_gap_0:'0',pg_gap_1:'0'};
+const PG_DEF_F={pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',pg_postW:'12',pg_postD:'12',pg_projectName:'',pg_notes:'',pg_customRal:'',pg_wallBaseH:'40',pg_postHeight:'190',pg_tubeW:'40',pg_tubeH:'80',pg_drain:'none',pg_ceradaBoja:'',pg_steelProfile:'100',pg_priceFix:'',pg_rok:'20 dana',pw_0:'500',pp_0:'400',pm_0:'none',pw_1:'500',pp_1:'400',pm_1:'none',pw_2:'500',pp_2:'400',pm_2:'none',pg_gap_0:'0',pg_gap_1:'0'};
 function pgStartClose(){document.getElementById('pg_startOverlay').classList.remove('visible');}
 function pgStartNew(){pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F});pgSaveState();pgStartClose();}
 function pgStartContinue(){pgLoadState();pgStartClose();}
@@ -926,7 +936,7 @@ function pgStartInit(){
   ov.addEventListener('click',e=>{if(e.target===ov)pgStartContinue();});
 }
 
-pgProjRender();pgPricesLoad();pgPriceModeUI();pgModelRender();pgLayRender();pgStartInit();pgCloudSync();
+pgProjRender();pgPricesLoad();pgPriceModeUI();pgModelRender();pgLayRender();pgCeradaDefault();pgDrainNote();pgStartInit();pgCloudSync();
 
 /* ═══ DATA HELPERS ═══ */
 function pgGather(){
@@ -951,7 +961,7 @@ function pgGather(){
   pgS.steelProfile=parseInt(document.getElementById('pg_steelProfile').value)||100;
   pgS.samoTip=pgS.samoTip||'stubovi';
   pgS.depth=pgDepth();
-  pgS.ceradaBoja=document.getElementById('pg_ceradaBoja').value.trim();
+  pgS.ceradaBoja=document.getElementById('pg_ceradaBoja').value.trim()||(pgS.type!=='bioklimatska'?'Po izboru':'');
   pgS.motorSides=[];for(let i=0;i<pgS.count;i++){const el=document.getElementById('pm_'+i);pgS.motorSides.push(el?el.value:'none');}
   pgS.gaps=[];for(let i=0;i<pgS.count-1;i++){const el=document.getElementById('pg_gap_'+i);pgS.gaps.push(el?(parseInt(el.value)||0):0);}
   pgS.pergs=[];for(let i=0;i<pgS.count;i++)pgS.pergs.push({w:parseInt(document.getElementById('pw_'+i).value)||500,p:parseInt(document.getElementById('pp_'+i).value)||400});
@@ -975,6 +985,11 @@ function pgPP(){
       if(si===0&&joinPrev)continue;
       pos.push({x:gx,pi,sh:joinNext&&si===pp-1});}}
   return pos;}
+function pgOdvodTxt(){
+  const base=pgS.type==='bioklimatska'?'kroz bočne profile i stubove':'kroz integrisane oluke u konstrukciji';
+  if(pgS.drain==='none')return base;
+  return base+' — '+({left:'levi ugaoni stub',right:'desni ugaoni stub',both:'oba ugaona stuba'}[pgS.drain]||'');
+}
 function pgSteel(){return pgS.mount==='uzobjekat'||(pgS.mount==='samostojeca'&&pgS.samoTip!=='stubovi');}
 function pgOwnBack(){return pgS.mount==='samostojeca'&&pgS.samoTip==='stubovi';}
 function pgDepth(){return Math.max(1,parseInt(pgS.depth)||1);}   // broj sistema u dubinu
@@ -2020,7 +2035,7 @@ async function generatePonuda(){
   );
   if(pgS.type==='klasicna'&&V)rows.splice(4,0,['Pad krova',`${sl} %`]);
   if(pgSteel())rows.push(['Čelična konstrukcija',`${pgS.steelPosts}× cev ${pgS.steelProfile}×${pgS.steelProfile} mm`]);
-  rows.push(['Odvod vode',pgS.drain==='none'?'kroz bočne profile i stubove':'kroz bočne profile i '+({left:'levi ugaoni stub',right:'desni ugaoni stub',both:'oba ugaona stuba'}[pgS.drain])]);
+  rows.push(['Odvod vode',pgOdvodTxt()]);
   if(pgS.motorSides&&pgS.motorSides.some(m=>m!=='none'))rows.push(['Motor',pgS.motorSides.map((m,i)=>m!=='none'?`P${i+1}: ${m==='levo'?'leva':'desna'}`:'').filter(Boolean).join(', ')]);
   const priceH2=showP?96:56;
   const availH=r1H-(sy2-r1Y)-priceH2-18;
@@ -2097,7 +2112,7 @@ async function generatePonuda(){
   c.fillStyle='#374151';c.font='13px Segoe UI,sans-serif';
   const uslovi=['Ponuda važi 7 dana — do '+dsPlus(7),
    'Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',
-   'Rok isporuke i montaže: '+(rok||'po dogovoru')+'.'];
+   'Rok isporuke i montaže: '+(rok||'20 dana')+'.'];
   if(!V)uslovi.push('Visine se utvrđuju prilikom uzimanja mera.');
   uslovi.push('Kontakt: '+PG_TEL+'  •  '+PG_FIRMA);
   uslovi.forEach((t,i)=>c.fillText(t,uX,r3Y+24+i*21));
@@ -2321,7 +2336,7 @@ async function generateLink(){
       ['Stubovi',`${tp} kom — ${pgS.postW}×${pgS.postD} cm`],
       ['Montaža',pgS.mount==='samostojeca'?(pgOwnBack()?'samostojeća — sopstveni stubovi':'samostojeća — čelična konstrukcija'):(pgS.mount==='uzobjekat'?'čelična konstrukcija uz objekat':'uz objekat (zid)')]);
     if(pgSteel())spec.push(['Čelična konstrukcija',`${pgS.steelPosts}× cev ${pgS.steelProfile}×${pgS.steelProfile} mm`]);
-    spec.push(['Odvod vode',pgS.drain==='none'?'kroz bočne profile i stubove':'kroz bočne profile i '+({left:'levi ugaoni stub',right:'desni ugaoni stub',both:'oba ugaona stuba'}[pgS.drain])]);
+    spec.push(['Odvod vode',pgOdvodTxt()]);
     if(pgS.motorSides&&pgS.motorSides.some(m=>m!=='none'))spec.push(['Motor',pgS.motorSides.map((m,i)=>m!=='none'?`P${i+1}: ${m==='levo'?'leva':'desna'}`:'').filter(Boolean).join(', ')]);
     if(pgS.count>1)spec.push(['Broj pergola',`${pgS.count} — `+pgS.pergs.map((p,i)=>`P${i+1}: ${p.w}×${p.p}`).join(', ')]);
     const o={
@@ -2338,7 +2353,7 @@ async function generateLink(){
       opis:pgModelOpis(),napomena:notes,
       uslovi:['Ponuda važi 7 dana — do '+dsPlus(7),
               'Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',
-              'Rok isporuke i montaže: '+(rok||'po dogovoru')+'.'
+              'Rok isporuke i montaže: '+(rok||'20 dana')+'.'
              ].concat(V?[]:['Visine se utvrđuju prilikom uzimanja mera.']),
       ukljuceno:pgUkljuceno(),nije:PG_NIJE,
       prednosti:PG_PREDNOSTI,
