@@ -130,7 +130,8 @@ footer b{display:block;color:var(--navy);font-size:14px;letter-spacing:.5px}
 function zoom(s){document.getElementById('lbi').src=s;document.getElementById('lb').classList.add('on');}
 (function(){
   var ext=['jpg','jpeg','png','webp','JPG','JPEG'],dirs=['bio','klas','ravna'],
-      box=document.getElementById('gal'),max=24,n=0,di=0;
+      box=document.getElementById('gal'),max=24,n=0,di=0,
+      dd=new Date(),vq='?v='+dd.getFullYear()+String(dd.getMonth()+1).padStart(2,'0')+String(dd.getDate()).padStart(2,'0')+String(dd.getHours()).padStart(2,'0');
   function nextDir(){di++;if(di<dirs.length)next(1);else fin();}
   function next(i){
     if(i>max)return nextDir();
@@ -139,8 +140,8 @@ function zoom(s){document.getElementById('lbi').src=s;document.getElementById('l
       var d=document.createElement('img');d.src=im.src;d.loading='lazy';d.alt='Realizovan rad';
       d.onclick=function(){zoom(im.src);};box.appendChild(d);n++;next(i+1);
     };
-    im.onerror=function(){k++;if(k<ext.length)im.src=base+i+'.'+ext[k];else nextDir();};
-    im.src=base+i+'.'+ext[0];
+    im.onerror=function(){k++;if(k<ext.length)im.src=base+i+'.'+ext[k]+vq;else nextDir();};
+    im.src=base+i+'.'+ext[0]+vq;
   }
   function fin(){if(n)document.getElementById('galwrap').classList.add('on');}
   next(1);
@@ -149,8 +150,9 @@ function zoom(s){document.getElementById('lbi').src=s;document.getElementById('l
   var ext=['jpeg','jpg','png','webp','JPG','JPEG','PNG'];
   document.querySelectorAll('.ph[data-id]').forEach(function(im){
     var i=0,id=im.dataset.id;
-    im.onerror=function(){ i++; if(i<ext.length) im.src='foto/'+id+'.'+ext[i]; else im.classList.add('off'); };
-    im.src='foto/'+id+'.'+ext[0];
+    var vq2='?v='+new Date().toISOString().slice(0,13).replace(/[-T:]/g,'');
+    im.onerror=function(){ i++; if(i<ext.length) im.src='foto/'+id+'.'+ext[i]+vq2; else im.classList.add('off'); };
+    im.src='foto/'+id+'.'+ext[0]+vq2;
   });
 })();
 </script>

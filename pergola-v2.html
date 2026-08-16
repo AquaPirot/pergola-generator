@@ -494,7 +494,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 const PG_NAVY='#14213d',PG_ACCENT='#c8944e',PG_INK='#0f172a';
 const PG_FIRMA='AG GROUP',PG_DOMENI='PERGOLA.RS  |  PROHORECA.RS',PG_TEL='064 89 79 242';
 let pgLogoImg=null;
-(function(){const cand=['logo.png','logo.jpg','logo.jpeg','logo.webp','logo.svg','logo.PNG','logo.JPG'];let i=0;const im=new Image();im.onload=()=>{pgLogoImg=im;};im.onerror=()=>{i++;if(i<cand.length)im.src=cand[i];else pgLogoImg=null;};im.src=cand[0];})();
+(function(){const vq='?v='+new Date().toISOString().slice(0,13).replace(/[-T:]/g,'');
+const cand=['logo.png','logo.jpg','logo.jpeg','logo.webp','logo.svg','logo.PNG','logo.JPG'].map(x=>x+vq);let i=0;const im=new Image();im.onload=()=>{pgLogoImg=im;};im.onerror=()=>{i++;if(i<cand.length)im.src=cand[i];else pgLogoImg=null;};im.src=cand[0];})();
 function pgLogoMark(c,x,y,sz){
   c.save();
   c.fillStyle='#fff';roundRect(c,x,y,sz,sz,sz*0.2);c.fill();
@@ -672,9 +673,10 @@ let pgOpisi={};try{pgOpisi=JSON.parse(localStorage.getItem('pg_model_opisi'))||{
 function pgModel(id){return PG_MODELS.find(m=>m.id===(id||pgS.model))||PG_MODELS[0];}
 function pgModelOpis(id){const m=pgModel(id);return (pgOpisi[m.id]!==undefined?pgOpisi[m.id]:m.opis);}
 const PG_FOTO_EXT=['jpg','jpeg','png','webp','JPG','JPEG','PNG'];
+function pgVer(){const d=new Date();return '?v='+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+String(d.getHours()).padStart(2,'0');}
 function pgModelFoto(id){const m=pgModel(id);return pgPhotos[m.id]||('foto/'+m.id+'.jpg');}
-function pgModelFotoList(id){const m=pgModel(id);if(pgPhotos[m.id])return[pgPhotos[m.id]];return PG_FOTO_EXT.map(e=>'foto/'+m.id+'.'+e);}
-function pgThumbErr(el,id){let i=parseInt(el.dataset.i||'0')+1;if(i<PG_FOTO_EXT.length){el.dataset.i=i;el.src='foto/'+id+'.'+PG_FOTO_EXT[i];}else{el.style.display='none';const nx=el.nextElementSibling;if(nx)nx.style.display='block';}}
+function pgModelFotoList(id){const m=pgModel(id);if(pgPhotos[m.id])return[pgPhotos[m.id]];const v=pgVer();return PG_FOTO_EXT.map(e=>'foto/'+m.id+'.'+e+v);}
+function pgThumbErr(el,id){let i=parseInt(el.dataset.i||'0')+1;if(i<PG_FOTO_EXT.length){el.dataset.i=i;el.src='foto/'+id+'.'+PG_FOTO_EXT[i]+pgVer();}else{el.style.display='none';const nx=el.nextElementSibling;if(nx)nx.style.display='block';}}
 function pgModelAuto(){
   const posts=parseInt(document.getElementById('pg_postsPerPergola').value)||3;
   const hit=PG_MODELS.find(m=>m.tip===pgS.type&&m.stubovi===posts);
@@ -688,7 +690,7 @@ function pgModelRender(){
     const up=pgPhotos[m.id];
     const thumb=up
       ?`<img src="${up}" alt=""><span class="mc-badge">FOTO</span>`
-      :`<img src="foto/${m.id}.jpg" data-i="0" alt="" onerror="pgThumbErr(this,'${m.id}')"><span class="mc-noimg" style="display:none">bez fotografije<br>${m.id}.jpg</span>`;
+      :`<img src="foto/${m.id}.jpg${pgVer()}" data-i="0" alt="" onerror="pgThumbErr(this,'${m.id}')"><span class="mc-noimg" style="display:none">bez fotografije<br>${m.id}.jpg</span>`;
     return `<div class="model-card${m.id===pgS.model?' active':''}" onclick="pgModelPick('${m.id}')"><div class="mc-thumb">${thumb}</div><div class="mc-name">${esc(m.naziv)}</div></div>`;
   }).join('');
   const t=document.getElementById('pg_modelOpis');if(t)t.value=pgModelOpis();
@@ -2286,7 +2288,8 @@ ${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div clas
 <div id="lb" onclick="this.classList.remove('on')"><span class="x">&times;</span><img id="lbi" alt=""></div><script>
 function zoom(s){document.getElementById('lbi').src=s;document.getElementById('lb').classList.add('on');}
 (function(){
-  var ext=['jpg','jpeg','png','webp','JPG','JPEG'],box=document.getElementById('gal'),base='${o.galBase}',max=24,n=0;
+  var ext=['jpg','jpeg','png','webp','JPG','JPEG'],box=document.getElementById('gal'),base='${o.galBase}',max=24,n=0,
+      dd=new Date(),vq='?v='+dd.getFullYear()+String(dd.getMonth()+1).padStart(2,'0')+String(dd.getDate()).padStart(2,'0')+String(dd.getHours()).padStart(2,'0');
   function next(i){
     if(i>max)return fin();
     var k=0,im=new Image();
