@@ -2288,17 +2288,19 @@ ${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div clas
 <div id="lb" onclick="this.classList.remove('on')"><span class="x">&times;</span><img id="lbi" alt=""></div><script>
 function zoom(s){document.getElementById('lbi').src=s;document.getElementById('lb').classList.add('on');}
 (function(){
-  var ext=['jpg','jpeg','png','webp','JPG','JPEG'],box=document.getElementById('gal'),base='${o.galBase}',max=24,n=0,
+  var ext=['jpg','jpeg','png','webp','JPG','JPEG'],box=document.getElementById('gal'),base='${o.galBase}',max=24,n=0,ok=0,
       dd=new Date(),vq='?v='+dd.getFullYear()+String(dd.getMonth()+1).padStart(2,'0')+String(dd.getDate()).padStart(2,'0')+String(dd.getHours()).padStart(2,'0');
   function next(i){
     if(i>max)return fin();
     var k=0,im=new Image();
+    function pokusaj(){im.src=base+i+'.'+ext[(ok+k)%ext.length]+vq;}
     im.onload=function(){
+      ok=(ok+k)%ext.length;
       var d=document.createElement('img');d.src=im.src;d.loading='lazy';d.alt='Realizovan rad '+i;
       d.onclick=function(){zoom(im.src);};box.appendChild(d);n++;next(i+1);
     };
-    im.onerror=function(){k++;if(k<ext.length)im.src=base+i+'.'+ext[k];else fin();};
-    im.src=base+i+'.'+ext[0];
+    im.onerror=function(){k++;if(k<ext.length)pokusaj();else fin();};
+    pokusaj();
   }
   function fin(){if(n)document.getElementById('galwrap').classList.add('on');}
   next(1);
