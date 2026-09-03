@@ -499,6 +499,8 @@ const PG_KONTAKT={
   bg:{domeni:'PERGOLAS.BG',tel:'0887 748 578',telRaw:'0887748578',viber:'%2B359887748578'}
 };
 function K(){return PG_KONTAKT[pgS&&pgS.lang==='bg'?'bg':'sr'];}
+/* Oznaka poreza uz cenu — prazno za srpsko trziste */
+function pgPDV(){return pgS&&pgS.lang==='bg'?'+ ДДС':'';}
 let pgLogoImg=null;
 (function(){const vq='?v='+new Date().toISOString().slice(0,13).replace(/[-T:]/g,'');
 const cand=['logo.png','logo.jpg','logo.jpeg','logo.webp','logo.svg','logo.PNG','logo.JPG'].map(x=>x+vq);let i=0;const im=new Image();im.onload=()=>{pgLogoImg=im;};im.onerror=()=>{i++;if(i<cand.length)im.src=cand[i];else pgLogoImg=null;};im.src=cand[0];})();
@@ -1164,14 +1166,14 @@ function generatePergola(){
   const CH=specEnd+268;
 
   const c=initCanvas('outputCanvas',CW,CH);
-  docHeader(c,CW,'TEHNIČKI CRTEŽ PERGOLE',PG_TL[pgS.type].toUpperCase(),id,d);
+  docHeader(c,CW,T('TEHNIČKI CRTEŽ PERGOLE'),T(PG_TL[pgS.type]).toUpperCase(),id,d);
   projInfo(c,CW,y0,pn);
   if(showP){
     c.fillStyle=PG_ACCENT;c.fillRect(0,yPrice,CW,46);
     c.fillStyle='#fff';c.font='bold 18px Segoe UI,sans-serif';c.textAlign='left';
-    c.fillText(`CENA: ${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`,30,yPrice+30);
+    c.fillText(`${T('CENA')}: ${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}${pgPDV()?'  '+pgPDV():''}`,30,yPrice+30);
     c.font='13px Segoe UI,sans-serif';c.textAlign='right';
-    c.fillText('Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',CW-30,yPrice+30);
+    c.fillText(T('Plaćanje: 50% avans, 50% dan pre isporuke i montaže.'),CW-30,yPrice+30);
     c.textAlign='left';
   }
   if(warns.length){
@@ -1474,7 +1476,7 @@ function generate3D(){
   pgRenderWarnings();
   const CW=1600,CH=1560;
   const c=initCanvas('canvas3d',CW,CH);
-  docHeader(c,CW,'3D TEHNIČKI PRIKAZ PERGOLE',PG_TL[pgS.type].toUpperCase(),id,d);
+  docHeader(c,CW,T('3D TEHNIČKI PRIKAZ PERGOLE'),T(PG_TL[pgS.type]).toUpperCase(),id,d);
   let y=projInfo(c,CW,105,pn);if(!pn)y=105;
   const dl=[`Širina: ${tw} cm`,`Projekcija: ${mp} cm`,`${pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina na zidu'}: ${pgS.wallHeight} cm`,`Prolazna visina: ${pgS.passHeight} cm (do oluka)`];
   if(pgS.hasWallTube)dl.push(`Zidna cev: ${pgS.wallTubeH*10}×${pgS.wallTubeW*10} mm`);
@@ -1487,9 +1489,9 @@ function generate3D(){
   if(pgS.showPrice&&price3>0){
     c.fillStyle=PG_ACCENT;c.fillRect(0,y,CW,46);
     c.fillStyle='#fff';c.font='bold 18px Segoe UI,sans-serif';c.textAlign='left';
-    c.fillText(`CENA: ${Math.round(price3).toLocaleString('sr-RS')} ${pgPrices.cur}`,30,y+30);
+    c.fillText(`${T('CENA')}: ${Math.round(price3).toLocaleString('sr-RS')} ${pgPrices.cur}${pgPDV()?'  '+pgPDV():''}`,30,y+30);
     c.font='13px Segoe UI,sans-serif';c.textAlign='right';
-    c.fillText('Plaćanje: 50% avans, 50% dan pre isporuke i montaže.',CW-30,y+30);
+    c.fillText(T('Plaćanje: 50% avans, 50% dan pre isporuke i montaže.'),CW-30,y+30);
     c.textAlign='left';y+=46;
   }
 
@@ -2082,7 +2084,9 @@ async function generatePonuda(){
     c.fillStyle='rgba(255,255,255,.55)';c.font='bold 12px Segoe UI,sans-serif';c.textAlign='left';
     c.fillText(T('UKUPNA CENA'),pnlX+24,pcY+28);
     c.fillStyle='#fff';c.font='bold 34px Segoe UI,sans-serif';
-    c.fillText(`${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`,pnlX+24,pcY+66);
+    const cenaTxt=`${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`;
+    c.fillText(cenaTxt,pnlX+24,pcY+66);
+    if(pgPDV()){const cw2=c.measureText(cenaTxt).width;c.fillStyle='rgba(255,255,255,.6)';c.font='bold 13px Segoe UI,sans-serif';c.fillText(pgPDV(),pnlX+24+cw2+9,pcY+66);}
     c.fillStyle='rgba(255,255,255,.5)';c.font='11px Segoe UI,sans-serif';
     c.fillText(T('Plaćanje: 50% avans  •  50% dan pre isporuke i montaže'),pnlX+24,pcY+86);
   }else{
@@ -2224,6 +2228,7 @@ header .dom{font-size:10.5px;color:var(--gold);font-weight:700;letter-spacing:.4
 .price{background:var(--navy);color:#fff;padding:16px 18px;border-radius:14px}
 .price .lbl{font-size:11px;letter-spacing:1px;color:rgba(255,255,255,.6);font-weight:700}
 .price .val{font-size:31px;font-weight:800;margin-top:2px;letter-spacing:-.5px}
+.price .val i{font-size:12.5px;font-weight:700;font-style:normal;opacity:.6;margin-left:7px;letter-spacing:0}
 .price .sub{font-size:11.5px;color:rgba(255,255,255,.65);margin-top:4px}
 h3{font-size:12px;letter-spacing:1.1px;text-transform:uppercase;color:var(--navy);font-weight:800;margin:20px 4px 9px;display:flex;align-items:center;gap:8px}
 h3::before{content:'';width:4px;height:15px;background:var(--gold);border-radius:2px}
@@ -2274,7 +2279,7 @@ ${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div clas
         :`<div class="nofoto">${esc(o.model)}<br><small>${esc(o.gabarit)}</small></div>`}
 <div class="sec">
   ${o.klijent?`<h3>${esc(o.L.ponudaZa)} ${esc(o.klijent)}</h3>`:''}
-  ${o.cena?`<div class="price"><div class="lbl">${esc(o.L.cena)}</div><div class="val">${esc(o.cena)}</div><div class="sub">${esc(o.L.placanje)}</div></div>`
+  ${o.cena?`<div class="price"><div class="lbl">${esc(o.L.cena)}</div><div class="val">${esc(o.cena)}${o.pdv?`<i>${esc(o.pdv)}</i>`:''}</div><div class="sub">${esc(o.L.placanje)}</div></div>`
           :`<div class="price"><div class="lbl">${esc(o.L.cenaUpit)}</div><div class="val">${esc(o.L.naUpit)}</div><div class="sub">${esc(o.L.upit2)}</div></div>`}
   <h3>${esc(o.L.spec)}</h3>
   <div class="card">${o.spec.map(r=>row(r[0],r[1])).join('')}</div>
@@ -2365,7 +2370,7 @@ async function generateLink(){
       logo,foto,fotoAbs,
       model:T(M.naziv),klijent:pn,
       gabarit:U(`${tw} × ${mp} cm`),prolazna:V?U(`${pgS.passHeight} cm`):'',
-      cena:showP?`${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`:'',
+      cena:showP?`${Math.round(price).toLocaleString('sr-RS')} ${pgPrices.cur}`:'',pdv:pgPDV(),
       spec,
       crtezi:V?[[T('Prednji pogled'),pgViewPNG('front',900,560)],
                 [T('Bočni presek'),pgViewPNG('side',900,560)],
