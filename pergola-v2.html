@@ -493,7 +493,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 <script>
 /* ═══ BREND — AG GROUP ═══ */
 const PG_NAVY='#14213d',PG_ACCENT='#c8944e',PG_INK='#0f172a';
-const PG_FIRMA='AG GROUP',PG_DOMENI='PERGOLA.RS  |  PROHORECA.RS',PG_TEL='064 89 79 242';
+const PG_FIRMA='AG GROUP';
+const PG_KONTAKT={
+  sr:{domeni:'PERGOLA.RS  |  PROHORECA.RS',tel:'064 89 79 242',telRaw:'0648979242',viber:'%2B381648979242'},
+  bg:{domeni:'PERGOLAS.BG',tel:'0887 748 578',telRaw:'0887748578',viber:'%2B359887748578'}
+};
+function K(){return PG_KONTAKT[pgS&&pgS.lang==='bg'?'bg':'sr'];}
 let pgLogoImg=null;
 (function(){const vq='?v='+new Date().toISOString().slice(0,13).replace(/[-T:]/g,'');
 const cand=['logo.png','logo.jpg','logo.jpeg','logo.webp','logo.svg','logo.PNG','logo.JPG'].map(x=>x+vq);let i=0;const im=new Image();im.onload=()=>{pgLogoImg=im;};im.onerror=()=>{i++;if(i<cand.length)im.src=cand[i];else pgLogoImg=null;};im.src=cand[0];})();
@@ -1036,8 +1041,8 @@ function hexDarken(hex,f){if(!hex||hex[0]!=='#')return hex;const r=parseInt(hex.
 function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();}
 function dimH(c,x1,y,x2,label){c.save();c.strokeStyle='#475569';c.lineWidth=1.1;c.beginPath();c.moveTo(x1,y);c.lineTo(x2,y);c.stroke();c.beginPath();c.moveTo(x1,y-6);c.lineTo(x1,y+6);c.moveTo(x2,y-6);c.lineTo(x2,y+6);c.stroke();[x1,x2].forEach((a,i)=>{c.beginPath();if(i===0){c.moveTo(a,y);c.lineTo(a+9,y-3.5);c.lineTo(a+9,y+3.5);}else{c.moveTo(a,y);c.lineTo(a-9,y-3.5);c.lineTo(a-9,y+3.5);}c.fillStyle='#475569';c.fill();});const mx=(x1+x2)/2;c.font='bold 13px Segoe UI,sans-serif';c.textAlign='center';const tw=c.measureText(label).width+10;c.fillStyle='#fff';c.fillRect(mx-tw/2,y-9,tw,17);c.fillStyle='#0f172a';c.fillText(label,mx,y+4);c.restore();}
 function dimV(c,x,y1,y2,label){c.save();c.strokeStyle='#475569';c.lineWidth=1.1;c.beginPath();c.moveTo(x,y1);c.lineTo(x,y2);c.stroke();c.beginPath();c.moveTo(x-6,y1);c.lineTo(x+6,y1);c.moveTo(x-6,y2);c.lineTo(x+6,y2);c.stroke();[y1,y2].forEach((a,i)=>{c.beginPath();if(i===0){c.moveTo(x,a);c.lineTo(x-3.5,a+9);c.lineTo(x+3.5,a+9);}else{c.moveTo(x,a);c.lineTo(x-3.5,a-9);c.lineTo(x+3.5,a-9);}c.fillStyle='#475569';c.fill();});const my=(y1+y2)/2;c.save();c.translate(x,my);c.rotate(-Math.PI/2);c.font='bold 13px Segoe UI,sans-serif';c.textAlign='center';const tw=c.measureText(label).width+10;c.fillStyle='#fff';c.fillRect(-tw/2,-9,tw,17);c.fillStyle='#0f172a';c.fillText(label,0,4);c.restore();c.restore();}
-function docHeader(c,CW,t1,t2,id,d){c.fillStyle=PG_NAVY;c.fillRect(0,0,CW,100);c.fillStyle=PG_ACCENT;c.fillRect(0,100,CW,5);pgLogoMark(c,24,18,58);c.textAlign='left';c.textBaseline='alphabetic';c.fillStyle='#fff';c.font='bold 28px Segoe UI,sans-serif';c.fillText(PG_FIRMA,96,38);c.fillStyle=PG_ACCENT;c.font='bold 11px Segoe UI,sans-serif';c.fillText(PG_DOMENI,96,57);c.fillStyle='rgba(255,255,255,0.7)';c.font='14px Segoe UI,sans-serif';c.fillText(t1,96,79);c.textAlign='right';c.fillStyle='#fff';c.font='bold 17px Segoe UI,sans-serif';c.fillText(t2,CW-28,38);c.fillStyle='rgba(255,255,255,0.6)';c.font='14px Segoe UI,sans-serif';c.fillText(id+'  |  '+d,CW-28,62);c.textAlign='left';c.textBaseline='alphabetic';}
-function docFooter(c,CW,CH,id,d){const fy=CH-65;c.fillStyle=PG_ACCENT;c.fillRect(0,fy-4,CW,4);c.fillStyle=PG_NAVY;c.fillRect(0,fy,CW,65);c.fillStyle='rgba(255,255,255,0.7)';c.font='14px Segoe UI,sans-serif';c.textAlign='left';c.fillText(PG_TEL+'  |  '+T('Proizvedeno u Srbiji'),28,fy+34);c.textAlign='center';c.fillText(id+'  |  '+d,CW/2,fy+34);c.fillStyle='rgba(255,255,255,0.5)';c.font='13px Segoe UI,sans-serif';c.textAlign='right';c.fillText(PG_FIRMA+'  •  '+PG_DOMENI,CW-28,fy+34);c.textAlign='left';}
+function docHeader(c,CW,t1,t2,id,d){c.fillStyle=PG_NAVY;c.fillRect(0,0,CW,100);c.fillStyle=PG_ACCENT;c.fillRect(0,100,CW,5);pgLogoMark(c,24,18,58);c.textAlign='left';c.textBaseline='alphabetic';c.fillStyle='#fff';c.font='bold 28px Segoe UI,sans-serif';c.fillText(PG_FIRMA,96,38);c.fillStyle=PG_ACCENT;c.font='bold 11px Segoe UI,sans-serif';c.fillText(K().domeni,96,57);c.fillStyle='rgba(255,255,255,0.7)';c.font='14px Segoe UI,sans-serif';c.fillText(t1,96,79);c.textAlign='right';c.fillStyle='#fff';c.font='bold 17px Segoe UI,sans-serif';c.fillText(t2,CW-28,38);c.fillStyle='rgba(255,255,255,0.6)';c.font='14px Segoe UI,sans-serif';c.fillText(id+'  |  '+d,CW-28,62);c.textAlign='left';c.textBaseline='alphabetic';}
+function docFooter(c,CW,CH,id,d){const fy=CH-65;c.fillStyle=PG_ACCENT;c.fillRect(0,fy-4,CW,4);c.fillStyle=PG_NAVY;c.fillRect(0,fy,CW,65);c.fillStyle='rgba(255,255,255,0.7)';c.font='14px Segoe UI,sans-serif';c.textAlign='left';c.fillText(K().tel+'  |  '+T('Proizvedeno u Srbiji'),28,fy+34);c.textAlign='center';c.fillText(id+'  |  '+d,CW/2,fy+34);c.fillStyle='rgba(255,255,255,0.5)';c.font='13px Segoe UI,sans-serif';c.textAlign='right';c.fillText(PG_FIRMA+'  •  '+K().domeni,CW-28,fy+34);c.textAlign='left';}
 function projInfo(c,CW,y,name){if(!name)return y;c.fillStyle=PG_ACCENT;c.font='bold 16px Segoe UI,sans-serif';c.textAlign='left';c.fillText(T('PROJEKAT:'),30,y+26);c.fillStyle=PG_NAVY;c.font='bold 22px Segoe UI,sans-serif';c.fillText(name,140,y+26);return y+42;}
 function infoBlock(c,CW,y,lt,ll,rt,rl){const hh=Math.max(ll.length,rl.length)*24+50;c.fillStyle='#f8f9fa';c.fillRect(0,y,CW,hh);c.strokeStyle='#e5e7eb';c.lineWidth=1;c.beginPath();c.moveTo(0,y+hh);c.lineTo(CW,y+hh);c.stroke();const cw=CW/2;c.fillStyle=PG_ACCENT;c.font='bold 14px Segoe UI,sans-serif';c.fillText(lt,30,y+26);c.fillStyle='#374151';c.font='15px Segoe UI,sans-serif';ll.forEach((l,i)=>c.fillText(l,30,y+52+i*24));c.fillStyle=PG_ACCENT;c.font='bold 14px Segoe UI,sans-serif';c.fillText(rt,cw+30,y+26);c.fillStyle='#374151';c.font='15px Segoe UI,sans-serif';rl.forEach((l,i)=>c.fillText(l,cw+30,y+52+i*24));return y+hh;}
 function matBar(c,CW,y,items){c.fillStyle=PG_NAVY;c.fillRect(0,y,CW,48);c.fillStyle='rgba(255,255,255,0.8)';c.font='bold 14px Segoe UI,sans-serif';c.textAlign='left';const sp=CW/items.length;items.forEach((it,i)=>c.fillText(it,30+i*sp,y+28));return y+48;}
@@ -2084,7 +2089,7 @@ async function generatePonuda(){
     c.fillStyle='rgba(255,255,255,.75)';c.font='bold 16px Segoe UI,sans-serif';c.textAlign='left';
     c.fillText(T('CENA NA UPIT'),pnlX+24,pcY+34);
     c.fillStyle='rgba(255,255,255,.5)';c.font='11px Segoe UI,sans-serif';
-    c.fillText(T('Kontakt: ')+PG_TEL,pnlX+24,pcY+52);
+    c.fillText(T('Kontakt: ')+K().tel,pnlX+24,pcY+52);
   }
   c.restore();
 
@@ -2127,7 +2132,7 @@ async function generatePonuda(){
    T('Plaćanje: 50% avans, 50% dan pre isporuke i montaže.'),
    T('Rok isporuke i montaže: ')+T(rok||'20 dana')+'.'];
   if(!V)uslovi.push(T('Visine se utvrđuju prilikom uzimanja mera.'));
-  uslovi.push(T('Kontakt: ')+PG_TEL+'  •  '+PG_FIRMA);
+  uslovi.push(T('Kontakt: ')+K().tel+'  •  '+PG_FIRMA);
   uslovi.forEach((t,i)=>c.fillText(t,uX,r3Y+24+i*21));
 
   /* ── U CENU JE UKLJUČENO / NIJE UKLJUČENO ── */
@@ -2265,7 +2270,7 @@ footer b{display:block;color:var(--navy);font-size:13px;letter-spacing:.5px}
   <div class="mark">${o.logo?`<img src="${o.logo}" alt="">`:'<span>AG</span>'}</div>
   <div><h1>${esc(o.firma)}</h1><div class="dom">${esc(o.domeni)}</div></div>
 </header>
-${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div class="cap"><h2>${esc(o.model)}</h2><p>${esc(o.gabarit)}${o.prolazna?' &nbsp;•&nbsp; prolazna visina '+esc(o.prolazna):''}</p></div></div>`
+${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div class="cap"><h2>${esc(o.model)}</h2><p>${esc(o.gabarit)}${o.prolazna?' &nbsp;•&nbsp; '+esc(o.L.prolazna)+esc(o.prolazna):''}</p></div></div>`
         :`<div class="nofoto">${esc(o.model)}<br><small>${esc(o.gabarit)}</small></div>`}
 <div class="sec">
   ${o.klijent?`<h3>${esc(o.L.ponudaZa)} ${esc(o.klijent)}</h3>`:''}
@@ -2293,7 +2298,7 @@ ${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div clas
 </div>
 <div class="cta">
   <a class="call" href="tel:${o.telRaw}">&#128222; ${esc(o.L.pozovi)}</a>
-  <a class="vib" href="viber://chat?number=%2B381${o.telRaw.replace(/^0/,'')}">${esc(o.L.viber)}</a>
+  <a class="vib" href="viber://chat?number=${o.viber}">${esc(o.L.viber)}</a>
 </div>
 <footer><b>${esc(o.firma)}</b>${esc(o.domeni)}<br>${esc(o.tel)} &nbsp;•&nbsp; ${esc(o.L.proizvod)}<br><span style="opacity:.7">${esc(o.L.ponuda)} ${esc(o.broj)} &nbsp;•&nbsp; ${esc(o.datum)}</span></footer>
 <div id="lb" onclick="this.classList.remove('on')"><span class="x">&times;</span><img id="lbi" alt=""></div><script>
@@ -2356,7 +2361,7 @@ async function generateLink(){
     if(pgS.motorSides&&pgS.motorSides.some(m=>m!=='none'))spec.push([T('Motor'),pgS.motorSides.map((m,i)=>m!=='none'?`P${i+1}: ${T(m==='levo'?'leva':'desna')}`:'').filter(Boolean).join(', ')]);
     if(pgS.count>1)spec.push([T('Broj pergola'),`${pgS.count} — `+pgS.pergs.map((p,i)=>`P${i+1}: ${p.w}×${p.p}`).join(', ')]);
     const o={
-      firma:PG_FIRMA,domeni:PG_DOMENI,tel:PG_TEL,telRaw:PG_TEL.replace(/\s/g,''),
+      firma:PG_FIRMA,domeni:K().domeni,tel:K().tel,telRaw:K().telRaw,viber:K().viber,
       logo,foto,fotoAbs,
       model:T(M.naziv),klijent:pn,
       gabarit:U(`${tw} × ${mp} cm`),prolazna:V?U(`${pgS.passHeight} cm`):'',
@@ -2382,7 +2387,7 @@ async function generateLink(){
          zoom:T('dodirnite za uvećanje'),zoomP:T('Dodirnite fotografiju za uvećanje.'),
          pozovi:T('Pozovi'),viber:T('Viber poruka'),ponudaZa:T('Ponuda za:'),
          napomena:T('Napomena: '),proizvod:T('Proizvedeno u Srbiji'),ponuda:T('Ponuda'),
-         nemaFoto:T('Nema fotografije za ovaj model')}
+         prolazna:T('prolazna visina '),nemaFoto:T('Nema fotografije za ovaj model')}
     };
     const html=pgPonudaHTML(o);
     const res=await pgApi('publish',{html});
