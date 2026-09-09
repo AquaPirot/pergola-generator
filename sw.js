@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aggroup-pergola-v39';
+const CACHE_NAME = 'aggroup-pergola-v40';
 const ASSETS = [
   'index.html',
   'alat.html',
@@ -13,7 +13,12 @@ const ASSETS = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    // cache:'reload' zaobilazi keš pregledača — inače se u zalihe upiše stara kopija
+    caches.open(CACHE_NAME).then(cache => Promise.all(
+      ASSETS.map(u => fetch(new Request(u, { cache: 'reload' }))
+        .then(r => (r && r.status === 200) ? cache.put(u, r) : null)
+        .catch(() => null))
+    ))
   );
   self.skipWaiting();
 });
@@ -39,7 +44,8 @@ self.addEventListener('fetch', event => {
   // HTML fajlovi: uvek pokušaj mrežu prvo — da korisnici uvek dobiju novu verziju
   if (req.headers.get('Accept') && req.headers.get('Accept').includes('text/html')) {
     event.respondWith(
-      fetch(req)
+      // cache:'reload' — HTML se uvek povlači sa mreže, nikad iz keša pregledača
+      fetch(new Request(req.url, { cache: 'reload', credentials: 'same-origin' }))
         .then(res => {
           if (res && res.status === 200) {
             const clone = res.clone();
