@@ -17,6 +17,27 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+/* ═══ BRZI UPIT ═══ */
+.qmode-bar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.qmode-btn{font:600 12px var(--font);padding:11px 6px;border:2px solid var(--border);background:var(--card);color:var(--text-muted);border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition)}
+.qmode-btn:hover{border-color:var(--accent)}
+.qmode-btn.active{border-color:var(--accent);background:rgba(200,148,78,.10);color:var(--primary)}
+.qpanel{display:none}
+body.qmode .qpanel{display:block}
+body.qmode #pg_cfgBody>.form-section,
+body.qmode #pg_cfgBody>.btn-generate,
+body.qmode #pg_cfgBody>.btn-3d,
+body.qmode #pg_cfgBody>.btn-export,
+body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
+.qprice{background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:var(--radius-sm);padding:14px 16px;margin:15px 0 11px;color:#fff}
+.qprice .qp-l{font-size:10px;font-weight:700;letter-spacing:1.2px;color:rgba(255,255,255,.58)}
+.qprice .qp-v{display:flex;align-items:center;gap:9px;margin-top:5px}
+.qprice .qp-v input{flex:1 1 auto;min-width:0;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);border-radius:8px;color:#fff;font:800 25px var(--font);padding:5px 10px}
+.qprice .qp-v input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.qprice .qp-v span{font:700 13px var(--font);color:rgba(255,255,255,.75);flex:0 0 auto}
+.qprice .qp-n{font-size:11px;color:rgba(255,255,255,.62);margin-top:7px;line-height:1.45}
+.qauto{background:#f8f9fa;border-left:3px solid var(--accent);border-radius:6px;padding:9px 12px;font-size:11.5px;color:var(--text-muted);line-height:1.65;margin-bottom:14px}
+.qauto b{color:var(--primary);font-weight:600}
 .app-header{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-lg)}
 .logo{display:flex;align-items:center;gap:14px}
 .logo-icon{width:44px;height:44px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:var(--primary);letter-spacing:.5px}
@@ -224,7 +245,41 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     </div>
     <div class="card">
       <div class="card-header"><div class="icon">&#9881;</div> Konfiguracija Pergole</div>
-      <div class="card-body">
+      <div class="card-body" id="pg_cfgBody">
+
+        <div class="qmode-bar">
+          <button class="qmode-btn active" id="pg_qmOn" onclick="pgQMode(true)">&#9889; Brzi upit</button>
+          <button class="qmode-btn" id="pg_qmOff" onclick="pgQMode(false)">&#9881; Detaljan unos</button>
+        </div>
+
+        <div class="qpanel" id="pg_qPanel">
+          <div class="form-row single"><div class="form-group"><label>Kupac</label>
+            <input type="text" id="pg_qName" placeholder="npr. Marko Petrović"></div></div>
+          <div class="form-row single"><div class="form-group"><label>Pergola</label>
+            <div class="type-selector" id="pg_qType" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+              <div class="type-option active" data-qt="klasicna" onclick="pgQType(this)"><span class="type-icon">&#9698;</span><span class="type-name">Klasična</span></div>
+              <div class="type-option" data-qt="bioklimatska" onclick="pgQType(this)"><span class="type-icon">&#9776;</span><span class="type-name">Bioklimatska</span></div>
+            </div></div></div>
+          <div class="form-row">
+            <div class="form-group"><label>Širina <span class="unit">(m)</span></label>
+              <input type="number" id="pg_qW" value="6" min="2" max="10" step="0.5" oninput="pgQCalc()"></div>
+            <div class="form-group"><label>Projekcija <span class="unit">(m)</span></label>
+              <input type="number" id="pg_qD" value="4" min="2" max="7" step="0.5" oninput="pgQCalc()"></div>
+          </div>
+
+          <div class="qprice">
+            <div class="qp-l">CENA ZA KUPCA</div>
+            <div class="qp-v"><input type="number" id="pg_qPrice" step="10" oninput="pgQRucnoSet()"><span id="pg_qCur">EUR</span></div>
+            <div class="qp-n" id="pg_qNote"></div>
+          </div>
+
+          <div class="qauto" id="pg_qAuto"></div>
+
+          <button class="btn-3d" onclick="pgQGo('link')" style="background:linear-gradient(135deg,#0f766e,#0b5e57)">&#128279; Link za Kupca (telefon)</button>
+          <button class="btn-3d" onclick="pgQGo('ponuda')" style="background:linear-gradient(135deg,#c8944e,#a97a37)">&#128247; Ponuda za Kupca</button>
+          <button class="btn-3d" onclick="pgQGo('detalji')" style="background:linear-gradient(135deg,#475569,#1e293b)">&#9881; Nastavi u detaljnom unosu</button>
+        </div>
+
 
         <div class="form-section">
           <div class="form-section-title">&#9670; Projekat</div>
@@ -802,7 +857,7 @@ function pgProjSave(){
   pgProjStore(all);pgProjRender();
   pgCloudPush(saved);
 }
-function pgProjOpen(id){const pr=pgProjAll().find(x=>x.id===id);if(!pr)return;pgApply(pr.data);pgSaveState();generatePergola();}
+function pgProjOpen(id){const pr=pgProjAll().find(x=>x.id===id);if(!pr)return;pgApply(pr.data);pgQMode(false);pgSaveState();generatePergola();}
 function pgProjDup(id){
   const all=pgProjAll(),pr=all.find(x=>x.id===id);if(!pr)return;
   const cp=JSON.parse(JSON.stringify(pr));cp.id=Date.now();cp.name=pr.name+' (kopija)';cp.date=ds();
@@ -938,7 +993,7 @@ const PG_DEF_S={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBas
 const PG_DEF_F={pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',pg_postW:'12',pg_postD:'12',pg_projectName:'',pg_notes:'',pg_customRal:'',pg_wallBaseH:'40',pg_postHeight:'190',pg_tubeW:'40',pg_tubeH:'80',pg_drain:'none',pg_ceradaBoja:'',pg_steelProfile:'100',pg_priceFix:'',pg_rok:'20 dana',pw_0:'500',pp_0:'400',pm_0:'none',pw_1:'500',pp_1:'400',pm_1:'none',pw_2:'500',pp_2:'400',pm_2:'none',pg_gap_0:'0',pg_gap_1:'0'};
 function pgStartClose(){document.getElementById('pg_startOverlay').classList.remove('visible');}
 function pgStartNew(){pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F});pgSaveState();pgStartClose();}
-function pgStartContinue(){pgLoadState();pgStartClose();}
+function pgStartContinue(){pgLoadState();pgQMode(false);pgStartClose();}
 function pgStartProjList(){
   const el=document.getElementById('pg_startProjects');if(!el)return;
   const projs=pgProjAll().filter(p=>!pgIsArh(p));
@@ -957,6 +1012,143 @@ function pgStartInit(){
 }
 
 pgProjRender();pgPricesLoad();pgPriceModeUI();pgModelRender();pgLayRender();pgCeradaDefault();pgDrainNote();pgStartInit();pgCloudSync();
+
+/* ═══════════ BRZI UPIT — cenovnik i automatika ═══════════ */
+/* Cene: klasicna pergola, montaza na zid. Redovi = projekcija, kolone = sirina (m). */
+const PG_QSIR=[2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10];
+const PG_QPRO=[2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7];
+const PG_CENE_KLAS=[
+ [2900,2900,3000,3000,3000,3350,3350,3400,3450,3500,3550,3600,3600,3700,3750,3800,3900],
+ [2900,2900,3000,3000,3100,3400,3500,3550,3650,3700,3750,3850,3900,4150,4150,4300,4500],
+ [2900,3000,3000,3100,3200,3500,3650,3700,3750,3850,4000,4100,4150,4250,4300,4450,4800],
+ [2900,3000,3100,3150,3300,3550,3700,3850,4000,4100,4150,4250,4350,4550,4750,4900,5000],
+ [3000,3100,3200,3300,3450,3650,3800,3950,4100,4250,4350,4550,4700,4900,5200,5350,5600],
+ [3100,3200,3300,3400,3550,3750,3950,4100,4300,4550,4700,4900,5200,5450,5600,5900,6150],
+ [3300,3400,3500,3600,3800,3950,4150,4300,4550,4850,5150,5300,5550,5900,6100,6200,6500],
+ [3300,3400,3500,3650,3900,4150,4350,4600,4900,5250,5450,5800,5950,6100,6400,6600,6900],
+ [3400,3500,3600,3800,4000,4500,4800,5100,5250,5500,5850,6000,6150,6300,6450,null,null],
+ [3500,3600,3700,3900,4200,4600,4950,5250,5500,5850,6100,6200,6400,null,null,null,null],
+ [3600,3700,3800,3950,4400,4750,5150,5550,5850,6100,6300,6500,null,null,null,null,null]
+];
+/* Bioklimatska: cena po m² prema povrsini — [do koliko m², €/m²] */
+const PG_BIO_M2=[[10,650],[15,590],[20,550],[30,490]];
+
+let pgQRucno=false;
+
+function pgQTip(){const a=document.querySelector('#pg_qType .type-option.active');return a?a.dataset.qt:'klasicna';}
+function pgQSnap(v,arr){for(let i=0;i<arr.length;i++)if(v<=arr[i]+1e-9)return arr[i];return null;}
+function pgQPosts(w){return w<=4?2:(w<=7.5?3:4);}
+function pgQVisine(tip,d){
+  if(tip==='bioklimatska')return{pass:250,wall:250,nag:0};
+  const pass=d<=4?240:230,nag=d<=5?0.12:0.10;
+  return{pass:pass,wall:pass+Math.round(nag*d*100),nag:nag};
+}
+function pgQCena(tip,w,d){
+  const W=pgQSnap(w,PG_QSIR),D=pgQSnap(d,PG_QPRO);
+  if(W===null||D===null)return null;
+  if(tip==='klasicna')return PG_CENE_KLAS[PG_QPRO.indexOf(D)][PG_QSIR.indexOf(W)];
+  const a=w*d;
+  for(let i=0;i<PG_BIO_M2.length;i++)if(a<=PG_BIO_M2[i][0]+1e-9)return Math.round(a*PG_BIO_M2[i][1]);
+  return null;
+}
+function pgQBr(v){return String(Math.round(v*10)/10).replace('.',',');}
+
+function pgQType(el){
+  document.querySelectorAll('#pg_qType .type-option').forEach(o=>o.classList.remove('active'));
+  el.classList.add('active');pgQRucno=false;pgQCalc();
+}
+function pgQRucnoSet(){pgQRucno=true;}
+
+function pgQCalc(){
+  if(!document.getElementById('pg_qPanel'))return;
+  const tip=pgQTip(),
+        w=parseFloat(document.getElementById('pg_qW').value)||0,
+        d=parseFloat(document.getElementById('pg_qD').value)||0,
+        cena=pgQCena(tip,w,d),
+        W=pgQSnap(w,PG_QSIR),D=pgQSnap(d,PG_QPRO);
+  pgQRucno=false;
+  document.getElementById('pg_qPrice').value=cena!==null?cena:'';
+  document.getElementById('pg_qCur').textContent=pgPrices.cur;
+
+  let nota;
+  if(w<=0||d<=0)nota='Unesite meru.';
+  else if(cena===null&&(W===null||D===null))
+    nota='Mera je van cenovnika (širina do 10 m, projekcija do 7 m) — upišite cenu ručno.';
+  else if(cena===null&&tip==='bioklimatska')
+    nota='Preko 30 m² nema cene u cenovniku — upišite je ručno.';
+  else if(cena===null)
+    nota='Ovu dimenziju ne radimo — upišite cenu ručno ili predložite manju meru.';
+  else{
+    nota=pgQBr(w*d)+' m²';
+    if(tip==='bioklimatska')nota+=' · '+Math.round(cena/(w*d))+' '+pgPrices.cur+'/m²';
+    if(W!==w||D!==d)nota+=' · cena po tarifi za '+pgQBr(W)+' × '+pgQBr(D)+' m';
+    nota+=' · cenu možete izmeniti.';
+  }
+  document.getElementById('pg_qNote').textContent=nota;
+
+  const v=pgQVisine(tip,d),st=pgQPosts(w),dim=tip==='klasicna'?'10×15':'15×15';
+  let vis=tip==='bioklimatska'
+    ? 'visina <b>250 cm</b>'
+    : 'prolazna <b>'+v.pass+' cm</b>, na zidu <b>'+v.wall+' cm</b> (pad '+Math.round(v.nag*100)+'%)';
+  document.getElementById('pg_qAuto').innerHTML=
+    'Program podešava: <b>'+st+' stuba</b> '+dim+' cm · '+vis+
+    ' · odvod u <b>oba ugaona stuba</b> · cev na zidu <b>80×40</b> · montaža <b>na zid</b>.';
+}
+
+/* Prebacuje brzi upit u pun formular (pgS + sva polja) */
+function pgQState(){
+  const tip=pgQTip(),
+        w=parseFloat(document.getElementById('pg_qW').value)||0,
+        d=parseFloat(document.getElementById('pg_qD').value)||0,
+        v=pgQVisine(tip,d),
+        cena=document.getElementById('pg_qPrice').value,
+        pw=tip==='klasicna'?'10':'15';
+  const st=Object.assign({},PG_DEF_S,{
+    type:tip,count:1,mount:'zid',samoTip:tip==='bioklimatska'?'stubovi':'celik',
+    drain:'both',hasWallTube:true,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,
+    showPrice:!!cena,priceMode:'fix',ral:pgS.ral,lang:pgS.lang,depth:1,model:pgS.model
+  });
+  const f=Object.assign({},PG_DEF_F,{
+    pg_projectName:document.getElementById('pg_qName').value.trim(),
+    pg_wallHeight:String(v.wall),pg_passHeight:String(v.pass),
+    pg_postsPerPergola:String(pgQPosts(w)),pg_postW:pw,pg_postD:'15',
+    pg_drain:'both',pg_tubeW:'40',pg_tubeH:'80',
+    pg_priceFix:String(cena||''),pg_rok:'20 dana',pg_ceradaBoja:'',
+    pw_0:String(Math.round(w*100)),pp_0:String(Math.round(d*100))
+  });
+  return{s:st,f:f};
+}
+function pgQApply(){
+  const w=parseFloat(document.getElementById('pg_qW').value)||0,
+        d=parseFloat(document.getElementById('pg_qD').value)||0;
+  if(w<2||d<2){alert('Unesite meru — najmanje 2 × 2 m.');return false;}
+  pgApply(pgQState());
+  document.getElementById('pg_customRalWrap').classList.toggle('visible',pgS.ral==='custom');
+  pgCeradaDefault();pgDrainNote();pgModelAuto();pgMountUI();pgLayRender();
+  pgGather();pgSaveState();
+  return true;
+}
+function pgQGo(sta){
+  if(!pgQApply())return;
+  if(sta==='detalji'){pgQMode(false);return;}
+  if(sta==='link'){generateLink();return;}
+  switchView('ponuda',document.getElementById('pg_tabPonuda'));
+  generatePonuda();
+}
+
+function pgQMode(on){
+  document.body.classList.toggle('qmode',!!on);
+  document.getElementById('pg_qmOn').classList.toggle('active',!!on);
+  document.getElementById('pg_qmOff').classList.toggle('active',!on);
+  try{localStorage.setItem('pg_qmode',on?'1':'0');}catch(e){}
+  if(on)pgQCalc();
+}
+function pgQInit(){
+  let on=true;
+  try{const v=localStorage.getItem('pg_qmode');if(v!==null)on=v==='1';}catch(e){}
+  pgQMode(on);
+}
+pgQInit();
 
 /* ═══ DATA HELPERS ═══ */
 function pgGather(){
