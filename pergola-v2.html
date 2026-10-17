@@ -221,7 +221,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v43</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v44</div>
 </header>
 
 <div class="view-bar">
@@ -1001,6 +1001,29 @@ function pgWarnings(){
     }
   });
   if(pgS.type==='klasicna'){const sl=parseFloat(pgSl());if(sl>0&&sl<5)w.push(`Pad krova ${sl}% je manji od preporučenih 5% za siguran odvod vode.`);}
+
+  /* ── Provera verodostojnosti unosa — hvata greške u jedinicama (mm umesto cm, 3500 umesto 350) ── */
+  pgS.pergs.forEach((pg,i)=>{
+    if(pg.w>1200)w.push(`Proverite širinu: ${pg.w} cm je ${(pg.w/100).toFixed(1)} m. Mere se unose u centimetrima.`);
+    if(pg.p>800)w.push(`Proverite projekciju: ${pg.p} cm je ${(pg.p/100).toFixed(1)} m. Mere se unose u centimetrima.`);
+  });
+  if(pgS.visineOK){
+    if(pgS.wallHeight>450)w.push(`Proverite visinu na zidu: ${pgS.wallHeight} cm je ${(pgS.wallHeight/100).toFixed(1)} m.`);
+    if(pgS.passHeight>350)w.push(`Proverite prolaznu visinu: ${pgS.passHeight} cm je ${(pgS.passHeight/100).toFixed(1)} m.`);
+    if(pgS.passHeight<180)w.push(`Prolazna visina ${pgS.passHeight} cm je niža od 180 cm — ispod pergole se ne može normalno proći.`);
+    if(pgS.type==='klasicna'){
+      if(pgS.passHeight>=pgS.wallHeight)w.push('Prolazna visina nije manja od visine na zidu — krov nema pad ka napred. Proverite obe visine.');
+      const sl2=parseFloat(pgSl());
+      if(sl2>25)w.push(`Pad krova ${sl2}% je nerealno velik (uobičajeno je 10–15%). Proverite visinu na zidu i prolaznu visinu.`);
+    }
+  }
+  if(pgS.hasWallBase){
+    const uk=pgS.wallBaseH+pgS.postHeight;
+    if(pgS.visineOK&&uk!==pgS.passHeight)
+      w.push(`Zidić ${pgS.wallBaseH} cm + stub ${pgS.postHeight} cm = ${uk} cm, a prolazna visina je ${pgS.passHeight} cm — ne poklapa se.`);
+    if(pgS.wallBaseH>=pgS.postHeight)
+      w.push(`Zidić (${pgS.wallBaseH} cm) je viši od stuba (${pgS.postHeight} cm) — proverite da nisu zamenjene vrednosti.`);
+  }
   if(pgSteel()){const n=pgS.steelPosts||2,span=n>1?(pgTW()-pgSteelP())/(n-1):pgTW();if(span>600)w.push(`Čelična konstrukcija: raspon grede između stubova ${Math.round(span)} cm prelazi 600 cm — preporučen treći stub ili jači profil grede.`);}
   return w;
 }
