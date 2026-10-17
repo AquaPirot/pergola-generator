@@ -221,7 +221,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v41</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v42</div>
 </header>
 
 <div class="view-bar">
@@ -2357,7 +2357,7 @@ async function generatePonuda(){
     [T('Montaža'),T(pgS.mount==='samostojeca'?(pgOwnBack()?'samostojeća — sopstveni stubovi':'samostojeća — čelična konstr.'):(pgS.mount==='uzobjekat'?'čelična konstr. uz objekat':'uz objekat (zid)'))]
   );
   if(pgS.type==='klasicna'&&V)rows.splice(4,0,[T('Pad krova'),`${sl} %`]);
-  else if(pgS.type!=='bioklimatska')rows.splice(2,0,[T('Pad krova'),T('oko 10%')]);
+  else if(pgS.type==='klasicna')rows.splice(2,0,[T('Pad krova'),T('oko 10%')]);
   if(pgSteel())rows.push([T('Čelična konstrukcija'),U(`${pgS.steelPosts}× cev ${pgS.steelProfile}×${pgS.steelProfile} mm`)]);
   rows.push([T('Odvod vode'),pgOdvodTxt()]);
   if(pgS.motorSides&&pgS.motorSides.some(m=>m!=='none'))rows.push([T('Motor'),pgS.motorSides.map((m,i)=>m!=='none'?`P${i+1}: ${T(m==='levo'?'leva':'desna')}`:'').filter(Boolean).join(', ')]);
@@ -2693,7 +2693,7 @@ async function generateLink(){
                    [T(pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina kod zida'),U(`${pgS.wallHeight} cm`)]);
     spec.push([T('Površina'),U(`${ta.toFixed(2)} m²`)]);
     if(pgS.type==='klasicna'&&V)spec.push([T('Pad krova'),`${sl} %`]);
-    else if(pgS.type!=='bioklimatska')spec.push([T('Pad krova'),T('oko 10%')]);
+    else if(pgS.type==='klasicna')spec.push([T('Pad krova'),T('oko 10%')]);
     spec.push([T('Pokrivač'),T(PG_POKRIVAC[pgS.type])],[T('Boja konstrukcije'),'RAL '+pgS.ralDisplay],
       [T('Boja krovnog pokrivača'),T(pgS.ceradaBoja||'po izboru')],
       [T('Stubovi'),U(`${tp} kom — ${pgS.postW}×${pgS.postD} cm`)],
