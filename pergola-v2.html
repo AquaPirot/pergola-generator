@@ -221,7 +221,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v44</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v45</div>
 </header>
 
 <div class="view-bar">
@@ -2625,6 +2625,9 @@ figure img{width:100%;display:block;border-radius:8px;cursor:zoom-in}
 .gal{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;display:block;cursor:zoom-in;background:#e8ebef}
 @media(min-width:620px){.gal{grid-template-columns:repeat(3,1fr)}}
+.demo{border:1px solid var(--bd);border-radius:14px;overflow:hidden;background:#0b0c0e}
+.demo iframe{display:block;width:100%;aspect-ratio:4/5;border:0}
+.demo p{font-size:11.5px;color:var(--mut);padding:9px 14px;background:var(--card);border-top:1px solid var(--bd);margin:0}
 .galwrap{display:none}
 .galwrap.on{display:block}
 .pred b{display:block;font-size:11.5px;font-weight:800;letter-spacing:.3px}
@@ -2654,6 +2657,9 @@ ${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div clas
           :`<div class="price"><div class="lbl">${esc(o.L.cenaUpit)}</div><div class="val">${esc(o.L.naUpit)}</div><div class="sub">${esc(o.L.upit2)}</div></div>`}
   <h3>${esc(o.L.spec)}</h3>
   <div class="card">${o.spec.map(r=>row(r[0],r[1])).join('')}</div>
+  ${o.demo?`<h3>${esc(o.L.kakoRadi)}</h3>
+  <div class="demo"><iframe src="${o.demo}animacija.html" loading="lazy" title="${esc(o.L.kakoRadi)}" scrolling="no"></iframe>
+  <p>${esc(o.L.demoNap)}</p></div>`:''}
   <h3>${esc(o.L.teh)}</h3>
   <div class="card">${o.crtezi.map(d=>draw(d[0],d[1])).join('')}</div>
   <h3>${esc(o.L.opisH)}</h3>
@@ -2666,6 +2672,8 @@ ${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div clas
   <div class="card"><ul class="usl">${o.uslovi.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>
   <h3>${esc(o.L.zasto)}</h3>
   <div class="pred">${o.prednosti.map(p=>`<div><b>${esc(p[0])}</b><span>${esc(p[1])}</span></div>`).join('')}</div>
+  ${o.demo?`<h3>${esc(o.L.gdeRadili)}</h3>
+  <div class="demo"><iframe src="${o.demo}mapa.html" loading="lazy" title="${esc(o.L.gdeRadili)}" scrolling="no"></iframe></div>`:''}
   <div class="galwrap" id="galwrap">
     <h3>${esc(o.L.radovi)}</h3>
     <div class="gal" id="gal"></div>
@@ -2759,10 +2767,12 @@ async function generateLink(){
       ukljuceno:pgUkljuceno().map(u=>typeof u==='string'?{t:T(u),zh:''}:{t:T(u.t),zh:u.z.map(flagSVG).join('')}),nije:PG_NIJE.map(T),
       prednosti:PG_PREDNOSTI.map(x=>[T(x[0]),T(x[1])]),
       traka:PG_TRAKA.map(x=>[T(x[0]),T(x[1])]),
+      demo:pgS.lang==='sr'?'../demo/':'',
       galBase:'../galerija/'+({bioklimatska:'bio',klasicna:'klas',ravna:'ravna'}[pgS.type]||'klas')+'/',
       broj:genId('PON'),datum:ds(),
       L:{spec:T('Specifikacija'),cena:T('UKUPNA CENA'),cenaUpit:T('CENA'),naUpit:T('Na upit'),
-         redovna:T('REDOVNA CENA'),
+         redovna:T('REDOVNA CENA'),kakoRadi:'Kako radi',gdeRadili:'Gde smo radili',
+         demoNap:'Prikaz rada sistema. Nisu prikazane vaše mere — one su u specifikaciji iznad.',
          upit2:T('Pozovite nas za ponudu'),placanje:T('Plaćanje: 50% avans  •  50% dan pre isporuke i montaže'),
          teh:T('TEHNIČKI PRIKAZI'),opisH:T('Opis modela'),uslH:T('Uslovi'),uklH:T('U cenu je uključeno'),
          nijeH:T('Nije uključeno'),zasto:T('Zašto AG GROUP'),radovi:T('Naši radovi'),

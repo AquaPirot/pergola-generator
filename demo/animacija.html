@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pergola Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#2f3134; --muted:#857e74; --beige:#b49b80; --bg:#efeeeb; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg);overflow:hidden;-webkit-tap-highlight-color:transparent}
+  body{display:flex;align-items:center;justify-content:center;font-family:Inter,"Helvetica Neue",Arial,sans-serif}
+  /* 4:5 okvir koji se uvek uklapa u ekran (telefon, desktop, iframe) */
+  #frame{position:relative;width:min(100vw, 80vh);aspect-ratio:4/5;overflow:hidden}
+  @supports not (aspect-ratio:4/5){ #frame{height:min(125vw,100vh)} }
+  #stage{position:absolute;left:0;top:0;width:1080px;height:1350px;transform-origin:0 0;
+    background:radial-gradient(120% 90% at 50% 45%,#f6f5f3 0%,#efeeeb 60%,#e4e2de 100%);overflow:hidden}
+  svg{position:absolute;inset:0;width:100%;height:100%}
+  .cap{position:absolute;left:0;right:0;text-align:center;color:var(--ink);opacity:0}
+  #capTop{top:92px}
+  .eyebrow{font-size:27px;letter-spacing:.3em;font-weight:500;color:var(--muted);text-transform:uppercase;min-height:34px}
+  .title{font-family:"Cormorant Garamond",Georgia,serif;font-weight:400;letter-spacing:.08em;margin-top:14px;color:var(--ink);white-space:nowrap}
+  .rule{width:64px;height:2px;background:var(--beige);margin:24px auto 0}
+  #brand{position:absolute;left:0;right:0;bottom:150px;text-align:center;opacity:0}
+  #brand .b1{font-size:38px;letter-spacing:.42em;font-weight:500;color:var(--ink);padding-left:.42em}
+  #brand .b2{font-size:28px;letter-spacing:.22em;color:var(--muted);margin-top:16px}
+  #replay{position:absolute;left:50%;transform:translateX(-50%);bottom:28px;border:2px solid rgba(47,49,52,.25);background:rgba(255,255,255,.7);
+    color:var(--ink);font:500 30px Inter,Arial,sans-serif;letter-spacing:.14em;padding:26px 40px;border-radius:70px;cursor:pointer;
+    opacity:0;pointer-events:none;transition:opacity .6s, background .3s}
+  #replay.show{opacity:1;pointer-events:auto}
+  #replay:hover{background:rgba(255,255,255,.95)}
+  body.capture #replay{display:none}
+</style>
+</head>
+<body>
+<div id="frame">
+<div id="stage">
+  <svg id="svg" viewBox="0 0 1080 1350" xmlns="http://www.w3.org/2000/svg" aria-label="Animacija montaže i rada pergole">
+    <defs>
+      <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#5b5e60"/><stop offset=".55" stop-color="#7d8082"/><stop offset="1" stop-color="#4c4f52"/>
+      </linearGradient>
+      <radialGradient id="ledPool" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#ffd9a0" stop-opacity=".55"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="ledDot" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#fff6e2"/><stop offset=".35" stop-color="#ffd38c" stop-opacity=".9"/><stop offset="1" stop-color="#ffb860" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop id="skyTop" offset="0" stop-color="#1d2638"/><stop id="skyBot" offset="1" stop-color="#3a4458"/>
+      </linearGradient>
+      <radialGradient id="ledPoolN" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#ffcf92" stop-opacity=".5"/><stop offset=".55" stop-color="#ffc283" stop-opacity=".18"/><stop offset="1" stop-color="#ffbe7a" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="puddle" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#8fd0ff" stop-opacity=".55"/><stop offset=".7" stop-color="#8fd0ff" stop-opacity=".25"/><stop offset="1" stop-color="#8fd0ff" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="soft3" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="2.5"/></filter>
+      <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
+    </defs>
+    <g id="world"></g>
+  </svg>
+  <div id="capTop" class="cap">
+    <div class="eyebrow" id="capEyebrow"></div>
+    <div class="title" id="capTitle"></div>
+    <div class="rule"></div>
+  </div>
+  <div id="brand"><div class="b1">PERGOLA.RS</div><div class="b2" id="brandUrl"></div></div>
+  <button id="replay" type="button" aria-label="Ponovi animaciju">↻ PONOVI</button>
+</div>
+</div>
+
+<script>
+/* ===== Podešavanja ===== */
+const BRAND_FINAL = "PERGOLA.RS";
+const DURATION    = 28.0;   // 0–16.1 montaža · sunce · hlad · kiša · veče · završni kadar
+const ASSEMBLY_END = 16.1;  // kraj montaže i demonstracije platna
+
+/* ===== Geometrija (metri) — x duž zida, y gore, z od zida ka napolje ===== */
+const W=5.0, D=3.6, H=2.55, BH=0.20, P=0.13, TOP=H+BH;
+const NPROF=7, NRAF=2;                     // profili platna sa LED, 2 bočna roga
+const WALLZ=0.16;                          // gde platno kreće od zidnog profila
+const SLOPE=0.08;                          // pad krova 8% — od zida ka olučnoj gredi
+const ZF=D-P;                              // unutrašnja ivica prednje grede
+const rise=z=>SLOPE*Math.max(0,ZF-z);      // koliko je krov viši na datoj udaljenosti od zida
+const C={alu:[56,59,62], wall:[244,243,240], floor:[228,224,218], sofa:[236,233,228], chair:[214,184,160],
+         chairLeg:[196,196,194], wood:[150,108,74], pot:[120,112,104], leaf:[70,98,64], fabric:[232,222,206]};
+
+/* ===== Vektori i easing ===== */
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]], add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const norm=a=>{const l=Math.hypot(...a)||1;return [a[0]/l,a[1]/l,a[2]/l]};
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const lerp3=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+const ease=t=>{t=clamp(t);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
+const easeOut=t=>{t=clamp(t);return 1-Math.pow(1-t,3)};
+const seg=(t,a,b)=>clamp((t-a)/(b-a));
+const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t);};
+
+/* ===== Vremenski raspored ===== */
+const T={ // montaža (0–16.1)
+  wall:[2.2,3.3], posts:[3.3,4.3], beam:[4.0,5.0], raf0:5.2, rafStep:0.7,
+  profIn:[7.0,7.7], extend:[7.8,9.6], led:[9.8,11.0], furn:[10.0,11.6],
+  retract:[13.2,14.4], reExtend:[14.9,16.1]
+};
+const N={ // uslovi (16.1–28)
+  out:[16.1,16.9],                       // gase se LED iz montaže
+  sunIn:[16.2,17.2], dayOpen:[16.4,17.5], // sunce + platno delimično otvoreno
+  dayClose:[18.9,20.5],                  // platno se zatvara — hlad raste
+  sunOut:[20.8,21.6], rain:[21.0,21.8],  // naoblačenje i kiša
+  water:[21.5,22.3], camPost:[21.9,22.9],
+  rainOut:[23.9,24.7], waterOut:[23.9,24.9], camBack:[23.7,24.6],
+  night:[24.0,25.6], ledOn:[24.9,25.9],
+  hero:[26.4,28.0], brand:[27.0,27.7]
+};
+
+/* ===== Kamera ===== */
+let cam;
+function setCamera(t){
+  const k=ease(Math.min(t,ASSEMBLY_END)/19.5);   // putanja iz montaže, zamrznuta posle 16.1 s
+  let eye=[lerp(W+1.55,W+1.35,k), lerp(1.12,1.10,k), lerp(D+3.7,D+3.35,k)];
+  let target=[W*0.36,1.55,D*0.30];
+  // kiša: kamera blago prilazi desnom stubu da se vidi izlaz vode, pa se vraća
+  const cp=ease(seg(t,...N.camPost))*(1-ease(seg(t,...N.camBack)));
+  if(cp>0){ target=lerp3(target,[W-0.7,1.35,D-0.3],cp*0.75); eye=lerp3(eye,[W+1.0,1.0,D+2.3],cp); }
+  const push=ease(seg(t,...N.hero))*0.035;       // vrlo blag push-in u završnom kadru
+  if(push>0) eye=lerp3(eye,target,push);
+  const f=norm(sub(target,eye)), r=norm(cross(f,[0,1,0])), u=cross(r,f);
+  cam={eye,f,r,u,focal:760,cx:540,cy:765};
+}
+function proj(p){const d=sub(p,cam.eye),z=dot(d,cam.f);return [cam.cx+cam.focal*dot(d,cam.r)/z, cam.cy-cam.focal*dot(d,cam.u)/z, z];}
+const LIGHT=norm([0.35,0.85,0.55]);
+function shade(col,n,amb=0.62){const l=amb+(1-amb)*Math.max(0,dot(n,LIGHT));return `rgb(${Math.round(col[0]*l)},${Math.round(col[1]*l)},${Math.round(col[2]*l)})`;}
+
+/* ===== Osvetljenje (aktivno posle montaže) =====
+   SVG aproksimacija: sunce kao usmereno svetlo, senke projektovane iz stvarne geometrije
+   na pod i fasadu, LED kao niz tačkastih izvora sa opadanjem. Nije ray tracing. */
+const ENV={on:false};
+function setEnv(t,pg){
+  const dayMix=ease(seg(t,ASSEMBLY_END,N.sunIn[1]));
+  ENV.on=t>ASSEMBLY_END&&dayMix>0;
+  if(!ENV.on) return;
+  const rain=ease(seg(t,...N.rain))*(1-ease(seg(t,...N.rainOut)));
+  const cloud=ease(seg(t,...N.sunOut));          // oblačno od kiše do noći
+  const night=ease(seg(t,...N.night));
+  const el=lerp(66,58,ease(seg(t,16.1,21.6)))*Math.PI/180, az=lerp(24,32,ease(seg(t,16.1,21.6)))*Math.PI/180;
+  ENV.sun=norm([Math.cos(el)*Math.cos(az),Math.sin(el),Math.cos(el)*Math.sin(az)]);
+  ENV.sunI=ease(seg(t,...N.sunIn))*(1-cloud);
+  ENV.sunCol=[1.0,0.97,0.90];
+  ENV.sky=lerp3(lerp3([0.97,0.97,0.98],[0.70,0.74,0.82],cloud),[0.30,0.35,0.50],night);
+  ENV.dayMix=dayMix; ENV.night=night; ENV.cloud=cloud*(1-night); ENV.rain=rain;
+  ENV.water=ease(seg(t,...N.water))*(1-ease(seg(t,...N.waterOut)));
+  ENV.ledN=ease(seg(t,...N.ledOn));
+  ENV.fabZ1=(pg.zs.length?pg.zs[pg.zs.length-1]:WALLZ)+0.035;
+  ENV.leds=[];
+  if(ENV.ledN>0) pg.zs.forEach(z=>LEDX.forEach(fx=>ENV.leds.push([lerp(P+0.2,W-P-0.2,fx),H+0.085+rise(z),z])));
+}
+const LEDX=[0.12,0.37,0.63,0.88];
+// zaklonjenost tačke platnom od sunca (0 = sunce, 1 = hlad) — presek zraka sa kosom ravni platna
+function roofShade(p){
+  const s=ENV.sun, Yb=H+0.11;
+  const den=s[1]+SLOPE*s[2]; if(den<=0.01) return 0;
+  const k=(Yb+SLOPE*(ZF-p[2])-p[1])/den; if(k<=0) return 0;
+  const x=p[0]+s[0]*k, z=p[2]+s[2]*k;
+  const d=Math.max(P-x,x-(W-P),WALLZ-z,z-ENV.fabZ1);
+  return 1-smooth(-0.12,0.12,d);
+}
+function ledAt(p,n){
+  let sum=0;
+  for(const L of ENV.leds){
+    const v=[L[0]-p[0],L[1]-p[1],L[2]-p[2]]; if(v[1]<=0.02) continue;
+    const d=Math.hypot(v[0],v[1],v[2]), cosN=(n[0]*v[0]+n[1]*v[1]+n[2]*v[2])/d;
+    if(cosN<=0) continue;
+    sum+=cosN*(v[1]/d)/(1+d*d*1.6);
+  }
+  return sum*0.11;
+}
+const W3=[1.0,0.74,0.47];  // ~3000K
+function light(col,n,amb=0.62,p=null,opt={}){
+  if(!ENV.on) return shade(col,n,amb);
+  const ndl=Math.max(0,dot(n,LIGHT)), base=amb+(1-amb)*ndl;
+  const vis=(p&&!opt.noShadow)?1-roofShade(p):1, nds=Math.max(0,dot(n,ENV.sun));
+  const ka=amb*0.95, kd=(1-amb)*1.15+0.12;
+  const led=(p&&ENV.ledN>0)?(ledAt(p,n)+(opt.glow||0))*ENV.ledN:0;
+  const trans=(opt.trans||0)*ENV.sunI;
+  const out=[0,1,2].map(i=>{
+    const day=ENV.sky[i]*ka + ENV.sunCol[i]*ENV.sunI*(kd*nds*vis+trans) + W3[i]*led;
+    return clamp(lerp(base,day,ENV.dayMix)*col[i],0,255);
+  });
+  return `rgb(${Math.round(out[0])},${Math.round(out[1])},${Math.round(out[2])})`;
+}
+
+/* ===== Tela ===== */
+function prism(base,y0,y1,col,opt={}){return {base,y0,y1,col,...opt};}
+function box(x0,x1,y0,y1,z0,z1,col,opt={}){return prism([[x0,z0],[x1,z0],[x1,z1],[x0,z1]],y0,y1,col,opt);}
+function cyl(cx,cz,r,y0,y1,col,n=20,opt={}){const b=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2;b.push([cx+Math.cos(a)*r,cz+Math.sin(a)*r]);}return prism(b,y0,y1,col,opt);}
+// sh:true → telo prati pad krova (y raste ka zidu)
+function P3of(o){const off=o.off||[0,0,0];return (b,y)=>[b[0]+off[0], y+off[1]+(o.sh?rise(b[1]):0), b[1]+off[2]];}
+function facesOf(o){
+  const {base,y0,y1}=o, P3=P3of(o), f=[];
+  const orient=(pts,n0)=>{ if(!o.sh) return n0; const n=norm(cross(sub(pts[1],pts[0]),sub(pts[2],pts[0]))); return dot(n,n0)<0?[-n[0],-n[1],-n[2]]:n; };
+  let pts=base.map(b=>P3(b,y1)); f.push({pts,n:orient(pts,[0,1,0])});
+  pts=base.map(b=>P3(b,y0)).reverse(); f.push({pts,n:orient(pts,[0,-1,0])});
+  for(let i=0;i<base.length;i++){
+    const a=base[i],b=base[(i+1)%base.length], n=norm([b[1]-a[1],0,-(b[0]-a[0])]);
+    f.push({pts:[P3(a,y0),P3(b,y0),P3(b,y1),P3(a,y1)],n});
+  }
+  return f;
+}
+function center(o){let sx=0,sz=0;o.base.forEach(b=>{sx+=b[0];sz+=b[1]});const n=o.base.length,off=o.off||[0,0,0],zc=sz/n;
+  return [sx/n+off[0],(o.y0+o.y1)/2+off[1]+(o.sh?rise(zc):0),zc+off[2]];}
+function vertsOf(o){const P3=P3of(o),v=[];o.base.forEach(b=>{v.push(P3(b,o.y0));v.push(P3(b,o.y1));});return v;}
+const distTo=p=>Math.hypot(...sub(p,cam.eye));
+
+/* ===== Statična scena ===== */
+const WALL_X0=-1.7, WALL_X1=W+0.25, WALL_H=3.75;
+const floorSlab=box(WALL_X0,W+0.85,-0.14,0,0,D+0.95,C.floor,{amb:0.8,noShadow:true});
+const wall=box(WALL_X0,WALL_X1,-0.14,WALL_H,-0.35,0,C.wall,{amb:0.86,noShadow:true});
+function arc(cx,cz,r1,r0,a0,a1,n){const o=[],i=[];for(let k=0;k<=n;k++){const a=lerp(a0,a1,k/n);o.push([cx+Math.cos(a)*r1,cz+Math.sin(a)*r1]);i.push([cx+Math.cos(a)*r0,cz+Math.sin(a)*r0]);}return o.concat(i.reverse()).reverse();}
+function star(cx,cz,r1,r0,n){const b=[];for(let k=0;k<n*2;k++){const a=k/(n*2)*Math.PI*2,r=k%2?r0:r1;b.push([cx+Math.cos(a)*r,cz+Math.sin(a)*r]);}return b;}
+const FURN=(()=>{
+  const F=[];
+  F.push(box(3.05,4.75,0.10,0.44,0.30,1.15,C.sofa)); F.push(box(3.05,4.75,0.44,0.86,0.30,0.52,C.sofa));
+  F.push(box(4.55,4.75,0.44,0.66,0.52,1.15,C.sofa)); F.push(box(3.90,4.75,0.10,0.44,1.15,2.15,C.sofa));
+  F.push(box(4.55,4.75,0.44,0.66,1.15,2.15,C.sofa)); F.push(box(3.15,3.55,0.44,0.78,0.55,0.66,[214,196,172]));
+  F.push(box(3.15,4.75,0.0,0.10,0.34,1.10,[90,88,86]));
+  const chair=(x,z)=>{F.push(cyl(x,z,0.07,0,0.30,C.chairLeg,10));F.push(cyl(x,z,0.40,0.30,0.48,C.chair,22));
+    F.push(prism(arc(x,z,0.44,0.30,Math.PI*0.95,Math.PI*2.05,14),0.48,0.92,C.chair));};
+  chair(1.35,1.45); chair(2.75,1.95);
+  F.push(cyl(2.15,1.05,0.38,0,0.38,C.wood,24));
+  const plant=(x,z,h)=>{F.push(cyl(x,z,0.16,0,0.32,C.pot,14));F.push(prism(star(x,z,0.34,0.10,7),0.32,0.32+h,C.leaf));};
+  plant(1.7,0.45,0.55); plant(2.85,0.45,0.48);
+  return F;
+})();
+
+/* ===== Pergola u trenutku t ===== */
+const Z_EXT=i=>lerp(WALLZ+0.48, D-P-0.06, i/(NPROF-1));
+const Z_STK=i=>WALLZ+0.10+i*0.085;
+function extension(t){
+  const base=ease(seg(t,...T.extend))*(1-ease(seg(t,...T.retract))+ease(seg(t,...T.reExtend)));
+  return base*(1-0.65*ease(seg(t,...N.dayOpen))+0.65*ease(seg(t,...N.dayClose)));
+}
+const POSTS=[[0,P],[W-P,W]];
+function pergola(t){
+  const L={wallBeam:[],rafBack:[],rafFront:[],profiles:[],front:[]};
+  // 1) zidni profil (na višoj strani zbog pada)
+  let p=easeOut(seg(t,...T.wall));
+  if(p>0){const o=[0,0.25*(1-p),0.9*(1-p)];
+    L.wallBeam.push(box(-0.05,W+0.05,H,TOP,0,WALLZ,C.alu,{off:o,op:p,sh:true}));
+    L.wallBeam.push(box(-0.05,W+0.05,TOP,TOP+0.05,-0.02,WALLZ+0.04,C.alu,{off:o,op:p,sh:true}));}
+  // 2) prednji stubovi + greda sa olukom
+  POSTS.forEach(([x0,x1],i)=>{
+    const d=i*0.25, q=easeOut(seg(t,T.posts[0]+d,T.posts[1]+d));
+    if(q>0) L.front.push(box(x0,x1,0,TOP,D-P,D,C.alu,{off:[0,(1-q)*1.6,0],op:q,post:i}));
+  });
+  p=easeOut(seg(t,...T.beam));
+  if(p>0){const o=[0,1.0*(1-p),0];
+    L.front.push(box(-0.04,W+0.04,H-0.02,TOP,D-P-0.01,D+0.01,C.alu,{off:o,op:p}));          // greda
+    L.front.push(box(-0.06,W+0.06,TOP-0.06,TOP+0.06,D+0.01,D+0.09,C.alu,{off:o,op:p}));       // oluk
+  }
+  // 3) bočni rogovi u padu, od zida do grede
+  for(let i=0;i<NRAF;i++){
+    const xc=i===0?P/2:W-P/2, hw=P/2;
+    const s=T.raf0+i*T.rafStep, q=easeOut(seg(t,s,s+0.6));
+    if(q<=0) continue;
+    (i===NRAF-1?L.rafFront:L.rafBack).push(box(xc-hw,xc+hw,H+0.01,TOP,WALLZ,D-P,C.alu,{off:[0,0.7*(1-q),0],op:q,sh:true}));
+  }
+  // 4) profili sa LED, nose platno
+  const pin=easeOut(seg(t,...T.profIn)), ext=extension(t), zs=[];
+  if(pin>0){
+    for(let i=0;i<NPROF;i++){
+      const z=lerp(Z_STK(i),Z_EXT(i),ext); zs.push(z);
+      L.profiles.push(box(P,W-P,H+0.11,TOP-0.03,z-0.035,z+0.035,C.alu,{off:[0,0.45*(1-pin),0],op:pin,sh:true}));
+    }
+  }
+  return {L,zs,pin,ext};
+}
+
+/* ===== Platno: talasi između profila, prati pad ===== */
+const MAXGAP=(Z_EXT(NPROF-1)-Z_EXT(0))/(NPROF-1);
+function fabricStrips(zs,lift){
+  const out=[], ya=H+0.11+lift, pts=[WALLZ].concat(zs);
+  const L0=Math.max(MAXGAP,Z_EXT(0)-WALLZ)*1.05;
+  for(let b=0;b<pts.length-1;b++){
+    const za=pts[b]+(b?0.035:0), zb=pts[b+1]-0.035, g=Math.max(0.001,zb-za);
+    const sag=Math.min(0.30,Math.sqrt(Math.max(0,L0*L0-g*g))/2)*0.9+0.015;
+    for(let k=0;k<6;k++){
+      const s0=k/6,s1=(k+1)/6, z0=lerp(za,zb,s0), z1=lerp(za,zb,s1);
+      const y0=ya-sag*4*s0*(1-s0)+rise(z0), y1=ya-sag*4*s1*(1-s1)+rise(z1);
+      const q=[[P,y0,z0],[W-P,y0,z0],[W-P,y1,z1],[P,y1,z1]];
+      const n=norm(cross(sub(q[1],q[0]),sub(q[3],q[0])));
+      out.push({pts:q,n:dot(n,sub(cam.eye,q[0]))<0?[-n[0],-n[1],-n[2]]:n,c:[W/2,(y0+y1)/2,(z0+z1)/2]});
+    }
+  }
+  return out;
+}
+
+/* ===== Geometrija senki ===== */
+function hull(pts){
+  pts=pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+  const lo=[],up=[];
+  for(const p of pts){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p);}
+  for(let i=pts.length-1;i>=0;i--){const p=pts[i];while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p);}
+  return lo.slice(0,-1).concat(up.slice(0,-1));
+}
+function clipAxis(poly,ax,v,g){
+  const out=[];
+  for(let i=0;i<poly.length;i++){
+    const a=poly[i],b=poly[(i+1)%poly.length], ia=g?a[ax]>=v:a[ax]<=v, ib=g?b[ax]>=v:b[ax]<=v;
+    if(ia) out.push(a);
+    if(ia!==ib){const k=(v-a[ax])/(b[ax]-a[ax]);out.push([lerp(a[0],b[0],k),lerp(a[1],b[1],k)]);}
+  }
+  return out;
+}
+function clipRect(poly,x0,x1,y0,y1){
+  for(const [ax,v,g] of [[0,x0,true],[0,x1,false],[1,y0,true],[1,y1,false]]){poly=clipAxis(poly,ax,v,g);if(poly.length<3) return [];}
+  return poly;
+}
+function castShadow(verts){ // deo senke na podu (y=0) i deo na fasadi (z=0)
+  const s=ENV.sun, floor=[], wall=[];
+  for(const p of verts){
+    floor.push([p[0]-s[0]*p[1]/s[1], p[2]-s[2]*p[1]/s[1]]);
+    if(s[2]>0.01) wall.push([p[0]-s[0]*p[2]/s[2], p[1]-s[1]*p[2]/s[2]]);
+  }
+  return {floor:clipRect(hull(floor),WALL_X0,W+0.85,0,D+0.95), wall:wall.length?clipRect(hull(wall),WALL_X0,WALL_X1,0,WALL_H):[]};
+}
+
+/* ===== Kiša: kapi u prostoru, ne padaju ispod pergole ===== */
+const RAIN=Array.from({length:280},(_,i)=>{
+  const r=k=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+  return {x:lerp(WALL_X0+0.1,W+1.7,r(1)), z:lerp(0.05,D+2.6,r(2)), ph:r(3), sp:lerp(6.5,8.5,r(4))};
+});
+const SPL=Array.from({length:36},(_,i)=>{
+  const r=k=>{const x=Math.sin(i*91.7+k*57.3)*24634.6345;return x-Math.floor(x);};
+  let x,z,n=0; do{ x=lerp(WALL_X0+0.2,W+0.75,r(1+n)); z=lerp(0.1,D+0.85,r(2+n)); n+=2; }
+  while(x>-0.15&&x<W+0.15&&z<D+0.15&&n<20);
+  return {x,z,ph:r(9)};
+});
+const underRoof=(x,z)=>x>-0.12&&x<W+0.12&&z>-0.05&&z<D+0.12;
+
+/* ===== Crtanje ===== */
+const NS="http://www.w3.org/2000/svg", world=document.getElementById('world');
+function el(tag,attrs,parent=world){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e;}
+const ptsStr=a=>a.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+function drawObj(o,g){
+  for(const f of facesOf(o)){
+    const c=f.pts.reduce((a,p)=>add(a,p),[0,0,0]).map(v=>v/f.pts.length);
+    if(dot(f.n,sub(cam.eye,c))<=0) continue;
+    const col=light(o.col,f.n,o.amb||0.62,c,{noShadow:o.noShadow});
+    el('polygon',{points:ptsStr(f.pts.map(proj)),fill:col,stroke:col,'stroke-width':0.6,'stroke-linejoin':'round'},g);
+  }
+}
+function drawSorted(list,parent){
+  list.map(o=>({o,d:distTo(center(o))})).sort((a,b)=>b.d-a.d)
+      .forEach(({o})=>drawObj(o,el('g',{opacity:(o.op??1).toFixed(3)},parent)));
+}
+function quad(pts,attrs,g=world){return el('polygon',{points:ptsStr(pts.map(proj)),...attrs},g);}
+function line3(pts,attrs,g){return el('polyline',{points:ptsStr(pts.map(proj)),fill:'none','stroke-linecap':'round','stroke-linejoin':'round',...attrs},g);}
+function ellipseOn(c,ax,ay,attrs,g){ // elipsa na ravni (ax, ay su poluose u svetu)
+  const a=proj(c), b=proj(add(c,ax)), d=proj(add(c,ay));
+  return el('ellipse',{cx:a[0].toFixed(1),cy:a[1].toFixed(1),rx:Math.max(0.5,Math.hypot(b[0]-a[0],b[1]-a[1])).toFixed(1),ry:Math.max(0.5,Math.hypot(d[0]-a[0],d[1]-a[1])).toFixed(1),...attrs},g);
+}
+const px=(p,w)=>cam.focal*w/Math.max(0.3,proj(p)[2]);
+
+function render(t){
+  setCamera(t);
+  world.textContent='';
+  const pg=pergola(t);
+  setEnv(t,pg);
+
+  // nebo: oblačno, pa plavi sat
+  if(ENV.on&&(ENV.cloud>0||ENV.night>0)){
+    const hex=c=>'#'+c.map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
+    const top=lerp3(lerp3([239,238,235],[112,122,138],ENV.cloud/(1-ENV.night||1)),[24,32,50],ENV.night);
+    const bot=lerp3(lerp3([239,238,235],[168,176,188],ENV.cloud/(1-ENV.night||1)),[52,62,82],ENV.night);
+    document.getElementById('skyTop').setAttribute('stop-color',hex(top));
+    document.getElementById('skyBot').setAttribute('stop-color',hex(bot));
+    el('rect',{x:0,y:0,width:1080,height:1350,fill:'url(#sky)',opacity:Math.max(ease(seg(t,...N.sunOut)),ENV.night).toFixed(3)});
+  }
+  const root=el('g',{opacity:easeOut(seg(t,0,1.2)).toFixed(3)});
+
+  quad([[WALL_X0+0.1,-0.14,-0.2],[W+0.95,-0.14,-0.2],[W+0.95,-0.14,D+1.05],[WALL_X0+0.1,-0.14,D+1.05]],
+       {fill:'rgba(60,55,50,.18)',filter:'url(#soft)',transform:'translate(0,10)'},root);
+  drawObj(floorSlab,root); drawObj(wall,root);
+
+  // mokar pod van pergole tokom kiše (blago tamniji, hladniji)
+  if(ENV.on&&ENV.rain>0){
+    const wet=el('g',{opacity:(0.22*ENV.rain).toFixed(3)},root), c='#5d6878';
+    quad([[WALL_X0,0.001,0],[-0.12,0.001,0],[-0.12,0.001,D+0.95],[WALL_X0,0.001,D+0.95]],{fill:c},wet);
+    quad([[-0.12,0.001,D+0.12],[W+0.85,0.001,D+0.12],[W+0.85,0.001,D+0.95],[-0.12,0.001,D+0.95]],{fill:c},wet);
+    quad([[W+0.12,0.001,0],[W+0.85,0.001,0],[W+0.85,0.001,D+0.12],[W+0.12,0.001,D+0.12]],{fill:c},wet);
+  }
+
+  // klizna vrata
+  const dz=0.004,dx0=0.25,dx1=3.55,dh=2.25;
+  quad([[dx0,0,dz],[dx1,0,dz],[dx1,dh,dz],[dx0,dh,dz]],{fill:'#2a2c2e'},root);
+  quad([[dx0+.05,.05,dz+.001],[dx1-.05,.05,dz+.001],[dx1-.05,dh-.05,dz+.001],[dx0+.05,dh-.05,dz+.001]],{fill:'url(#glass)'},root);
+  for(let i=1;i<4;i++){const x=lerp(dx0,dx1,i/4);quad([[x-.025,.05,dz+.002],[x+.025,.05,dz+.002],[x+.025,dh-.05,dz+.002],[x-.025,dh-.05,dz+.002]],{fill:'#2a2c2e'},root);}
+  quad([[dx0+.3,.05,dz+.003],[dx0+.9,.05,dz+.003],[dx0+1.5,dh-.05,dz+.003],[dx0+.9,dh-.05,dz+.003]],{fill:'rgba(255,255,255,.07)'},root);
+  if(ENV.on){const dk=Math.max(ENV.night*0.62,ENV.cloud*0.18);
+    if(dk>0) quad([[dx0,0,dz+.004],[dx1,0,dz+.004],[dx1,dh,dz+.004],[dx0,dh,dz+.004]],{fill:'#0d1220',opacity:dk.toFixed(3)},root);}
+
+  const furnOp=lerp(0.28,1,ease(seg(t,...T.furn)));
+
+  // sunčeve senke iz stvarne geometrije
+  if(ENV.on&&ENV.sunI>0.001){
+    const sg=el('g',{opacity:(0.52*ENV.sunI).toFixed(3),filter:'url(#soft3)'},root);
+    const casters=[];
+    for(const k in pg.L) pg.L[k].forEach(o=>casters.push(vertsOf(o)));
+    if(pg.pin>0){const y=H+0.11, z1=ENV.fabZ1;
+      casters.push([[P,y+rise(WALLZ),WALLZ],[W-P,y+rise(WALLZ),WALLZ],[W-P,y+rise(z1),z1],[P,y+rise(z1),z1],[P,y-0.06+rise(WALLZ),WALLZ],[W-P,y-0.06+rise(z1),z1]]);}
+    FURN.forEach(o=>casters.push(vertsOf(o)));
+    const fill='rgb(70,74,92)';
+    casters.forEach(v=>{
+      const s=castShadow(v);
+      if(s.floor.length>2) quad(s.floor.map(q=>[q[0],0.003,q[1]]),{fill},sg);
+      if(s.wall.length>2) quad(s.wall.map(q=>[q[0],q[1],0.006]),{fill},sg);
+    });
+  }
+
+  // kontaktne senke nameštaja + senka platna iz montaže
+  const sh=el('g',{opacity:'.5'},root);
+  const fShadow=(x0,x1,z0,z1,a)=>quad([[x0,0.002,z0],[x1,0.002,z0],[x1,0.002,z1],[x0,0.002,z1]],{fill:`rgba(40,36,32,${a.toFixed(3)})`},sh);
+  fShadow(3.0,4.85,0.25,2.25,0.22*furnOp); fShadow(1.0,3.2,0.95,2.4,0.15*furnOp); fShadow(1.75,2.55,0.7,1.45,.18*furnOp);
+  const fake=1-(ENV.on?ENV.dayMix:0);
+  if(pg.pin>0&&fake>0){const zEnd=pg.zs[NPROF-1]||WALLZ; fShadow(P-0.6,W-P-0.6,WALLZ+0.4,zEnd+0.45,0.16*pg.pin*fake);}
+
+  // topli bazen svetla iz montaže
+  const led=ease(seg(t,...T.led))*(1-ease(seg(t,...N.out)));
+  if(led>0) quad([[0.3,0.004,0.3],[W-0.3,0.004,0.3],[W-0.3,0.004,D-0.3],[0.3,0.004,D-0.3]],{fill:'url(#ledPool)',opacity:(0.85*led).toFixed(3)},root);
+
+  // noćno LED osvetljenje: lokalni topli krugovi na podu i trag svetla na fasadi
+  if(ENV.on&&ENV.ledN>0){
+    const ng=el('g',{opacity:ENV.ledN.toFixed(3)},root);
+    ENV.leds.forEach(L=>ellipseOn([L[0],0.004,L[2]],[0.95,0,0],[0,0,0.95],{fill:'url(#ledPoolN)',opacity:'.55'},ng));
+    pg.zs.slice(0,2).forEach((z,i)=>LEDX.forEach(fx=>{
+      const x=lerp(P+0.2,W-P-0.2,fx);
+      ellipseOn([x,H-0.45+rise(z),0.004],[0.7,0,0],[0,0.95,0],{fill:'url(#ledPoolN)',opacity:((i?0.35:0.7)*Math.exp(-z*0.9)).toFixed(3)},ng);
+    }));
+  }
+
+  // nameštaj
+  drawSorted(FURN,el('g',{opacity:furnOp.toFixed(3)},root));
+
+  // krov, od daljeg ka bližem (kamera je ispod krova)
+  drawSorted(pg.L.wallBeam,root);
+  drawSorted(pg.L.rafBack,root);
+  if(pg.pin>0){
+    const fab=el('g',{opacity:pg.pin.toFixed(3)},root), lift=0.45*(1-pg.pin);
+    fabricStrips(pg.zs,lift).sort((a,b)=>distTo(b.c)-distTo(a.c)).forEach(s=>{
+      const col=light(C.fabric,s.n,0.72,s.c,{noShadow:true,glow:0.22,trans:0.32});
+      el('polygon',{points:ptsStr(s.pts.map(proj)),fill:col,stroke:col,'stroke-width':0.8,'stroke-linejoin':'round'},fab);
+    });
+  }
+  drawSorted(pg.L.profiles,root);
+
+  // LED tačke na profilima — kreću se zajedno sa platnom
+  const dots=Math.max(led,ENV.on?ENV.ledN:0);
+  if(dots>0){
+    const lg=el('g',{opacity:dots.toFixed(3)},root);
+    pg.zs.forEach(z=>LEDX.forEach(fx=>{
+      const x=lerp(P+0.2,W-P-0.2,fx), p=proj([x,H+0.105+rise(z),z]), s=cam.focal/p[2];
+      el('ellipse',{cx:p[0].toFixed(1),cy:p[1].toFixed(1),rx:(s*0.16).toFixed(1),ry:(s*0.07).toFixed(1),fill:'url(#ledDot)'},lg);
+      el('ellipse',{cx:p[0].toFixed(1),cy:p[1].toFixed(1),rx:(s*0.025).toFixed(1),ry:(s*0.012).toFixed(1),fill:'#fff8ea'},lg);
+    }));
+  }
+  drawSorted(pg.L.rafFront,root);
+  drawSorted(pg.L.front,root);
+
+  // otvori za vodu na dnu oba stuba (stvarni detalj — vidljivi od trenutka montaže stubova)
+  pg.L.front.filter(o=>o.post!==undefined).forEach(o=>{
+    const xc=(o.base[0][0]+o.base[1][0])/2, oy=(o.off||[0,0,0])[1];
+    const g=el('g',{opacity:o.op.toFixed(3)},root);
+    ellipseOn([xc,0.085+oy,D+0.002],[0.042,0,0],[0,0.042,0],{fill:'#101113'},g);
+    ellipseOn([xc,0.085+oy,D+0.002],[0.042,0,0],[0,0.042,0],{fill:'none',stroke:'#55595e','stroke-width':px([xc,0.08,D],0.008).toFixed(1)},g);
+  });
+
+  // voda: platno → oluk → oba stuba → otvor na dnu (svetloplavo, „rendgenski“ prikaz)
+  if(ENV.on&&ENV.water>0){
+    const wg=el('g',{opacity:ENV.water.toFixed(3)},root), blue='#6cc4ff', flow=t*90;
+    const dash=(p,w,dl)=>({stroke:blue,'stroke-width':px(p,w).toFixed(1),'stroke-dasharray':dl,'stroke-dashoffset':(-flow).toFixed(1)});
+    // tokovi po platnu, niz pad ka oluku
+    [0.9,1.9,2.9,3.9].forEach(x=>{
+      const pts=[];for(let k=0;k<=8;k++){const z=lerp(WALLZ+0.1,ENV.fabZ1,k/8);pts.push([x,H+0.09+rise(z),z]);}
+      line3(pts,{...dash(pts[4],0.012,'10 16'),opacity:'.55'},wg);
+    });
+    // oluk: od sredine ka oba stuba
+    const gy=TOP, gz=D+0.092;
+    [[W/2,P/2],[W/2,W-P/2]].forEach(([a,b])=>{
+      const pts=[[a,gy,gz],[lerp(a,b,.5),gy,gz],[b,gy,gz]];
+      line3(pts,{stroke:blue,'stroke-width':px(pts[1],0.05).toFixed(1),opacity:'.25'},wg);
+      line3(pts,dash(pts[1],0.02,'16 12'),wg);
+    });
+    // kroz stubove na dole
+    POSTS.forEach(([x0,x1])=>{
+      const xc=(x0+x1)/2, pts=[[xc,TOP-0.02,D+0.003],[xc,1.3,D+0.003],[xc,0.13,D+0.003]];
+      line3(pts,{stroke:blue,'stroke-width':px(pts[1],0.055).toFixed(1),opacity:'.28'},wg);
+      line3(pts,dash(pts[1],0.022,'14 12'),wg);
+      // mlaz iz otvora na pod
+      const out=[[xc,0.085,D+0.01],[xc,0.06,D+0.09],[xc,0.02,D+0.16],[xc,0.003,D+0.2]];
+      line3(out,{stroke:blue,'stroke-width':px(out[1],0.03).toFixed(1),opacity:'.9'},wg);
+      // barica i talasići
+      const pr=0.12+0.26*ease(seg(t,N.water[0]+0.3,N.water[0]+1.6));
+      ellipseOn([xc,0.003,D+0.32],[pr,0,0],[0,0,pr*0.9],{fill:'url(#puddle)'},wg);
+      for(let i=0;i<3;i++){const ph=((t*1.1+i/3)%1), r=0.05+0.3*ph;
+        ellipseOn([xc,0.004,D+0.25],[r,0,0],[0,0,r*0.85],{fill:'none',stroke:blue,'stroke-width':px([xc,0,D+0.3],0.006).toFixed(1),opacity:(0.6*(1-ph)).toFixed(3)},wg);}
+    });
+  }
+
+  // kiša — samo van pergole; ispod je suvo
+  if(ENV.on&&ENV.rain>0){
+    const rg=el('g',{opacity:ENV.rain.toFixed(3),stroke:'#f4f8fc','stroke-linecap':'round'},world);
+    const YT=4.8, wind=[0.10,-1,0.04];
+    RAIN.forEach(d=>{
+      if(underRoof(d.x,d.z)) return;
+      const y=YT-((d.ph*YT+t*d.sp)%YT);
+      const a=[d.x+wind[0]*(YT-y)*0.1,y,d.z+wind[2]*(YT-y)*0.1], b=add(a,[wind[0]*0.42,wind[1]*0.42,wind[2]*0.42]);
+      if(b[1]<0) return;
+      const pa=proj(a), pb=proj(b); if(pa[2]<1.6) return;
+      el('line',{x1:pa[0].toFixed(1),y1:pa[1].toFixed(1),x2:pb[0].toFixed(1),y2:pb[1].toFixed(1),'stroke-width':clamp(cam.focal*0.006/pa[2],1.0,2.8).toFixed(2),'stroke-opacity':'.8'},rg);
+    });
+    const sp=el('g',{opacity:(0.7*ENV.rain).toFixed(3)},root);
+    SPL.forEach(s=>{const ph=(s.ph+t*1.7)%1, r=0.015+0.07*ph;
+      ellipseOn([s.x,0.003,s.z],[r,0,0],[0,0,r],{fill:'none',stroke:'#e9f0f7','stroke-width':'1.2',opacity:(1-ph).toFixed(3)},sp);});
+  }
+
+  if(led>0) el('rect',{x:0,y:0,width:1080,height:1350,fill:'#ffcf8a',opacity:(0.035*led).toFixed(3)},world);
+  captions(t);
+}
+
+/* ===== Tekst ===== */
+const CAPS=[
+  {a:0.3, b:2.2,  t:"PERGOLA SYSTEMS", big:true, e:[[0,""]]},
+  {a:2.3, b:9.8,  t:"SKLAPANJE KORAK PO KORAK", e:[[2.3,"01 · Zidni profil"],[3.3,"02 · Stubovi i oluk"],[5.1,"03 · Rogovi"],[7.0,"04 · Profili sa platnom i LED"]]},
+  {a:10.0,b:13.0, t:"INTEGRISANA LED RASVETA", e:[[0,"U profilima platna"]]},
+  {a:13.2,b:16.4, t:"ALUMINIJUMSKA PERGOLA PO MERI", e:[[0,"Platno se uvlači i izvlači"]]},
+  {a:16.6,b:18.8, t:"KONTROLA SUNČEVE SVETLOSTI", e:[[0,"Platno po želji otvoreno"]]},
+  {a:19.0,b:21.0, t:"PRIJATAN HLAD TOKOM DANA", e:[[0,"Platno zatvoreno"]]},
+  {a:21.2,b:24.3, t:"ZAŠTITA OD KIŠE", e:[[0,"Pad 8% · oluk · odvod kroz stubove"]]},
+  {a:24.5,b:26.5, t:"SAVRŠENA ATMOSFERA UVEČE", e:[[0,"Topla LED rasveta"]]},
+  {a:26.7,b:99,   t:"PROIZVEDENO U PIROTU", e:[[0,""]]},
+];
+const capTop=document.getElementById('capTop'),capT=document.getElementById('capTitle'),capE=document.getElementById('capEyebrow'),brand=document.getElementById('brand');
+const brandB1=brand.querySelector('.b1'), brandB2=document.getElementById('brandUrl');
+brandB1.textContent=BRAND_FINAL;
+function captions(t){
+  const idx=CAPS.findIndex(c=>t>=c.a-0.01&&t<c.b);
+  if(idx<0){capTop.style.opacity=0;}
+  else{
+    const c=CAPS[idx];
+    if(capT.textContent!==c.t){capT.textContent=c.t;capT.style.fontSize=c.big?'84px':(c.t.length>26?'48px':'56px');}
+    let ei=0;for(let i=0;i<c.e.length;i++) if(t>=c.e[i][0]) ei=i;
+    if(capE.textContent!==c.e[ei][1]) capE.textContent=c.e[ei][1];
+    const sw=c.e[ei][0], eo=(sw>c.a)?easeOut(seg(t,sw,sw+0.45)):1;
+    capE.style.opacity=eo.toFixed(3);
+    const fin=easeOut(seg(t,c.a,c.a+0.7)), fout=c.b>50?1:1-ease(seg(t,c.b-0.6,c.b));
+    capTop.style.opacity=Math.min(fin,fout).toFixed(3);
+    capTop.style.transform=`translateY(${((1-fin)*14).toFixed(1)}px)`;
+  }
+  const bo=easeOut(seg(t,...N.brand));
+  brand.style.opacity=bo.toFixed(3);brand.style.transform=`translateY(${((1-bo)*10).toFixed(1)}px)`;
+  // boja teksta: tamna danju i po kiši, svetla noću
+  const nt=ENV.on?ENV.night:0, cl=ENV.on?ENV.cloud:0;
+  const ink=nt>0?`rgb(${Math.round(lerp(47,242,nt))},${Math.round(lerp(49,238,nt))},${Math.round(lerp(52,230,nt))})`:'';
+  const m0=lerp3([133,126,116],[58,63,72],cl), m=lerp3(m0,[214,200,182],nt);   // po kiši tamniji podnaslov
+  const mut=(nt>0||cl>0)?`rgb(${Math.round(m[0])},${Math.round(m[1])},${Math.round(m[2])})`:'';
+  capT.style.color=ink;brandB1.style.color=ink;capE.style.color=mut;brandB2.style.color=mut;
+}
+
+/* ===== Prikaz, skaliranje, reprodukcija ===== */
+const frame=document.getElementById('frame'), stage=document.getElementById('stage'), replay=document.getElementById('replay');
+function fit(){stage.style.transform=`scale(${frame.clientWidth/1080})`;}
+(window.ResizeObserver?new ResizeObserver(fit).observe(frame):addEventListener('resize',fit)); fit();
+
+let start=null, running=false, done=false, played=false;
+function loop(now){
+  if(start===null) start=now;
+  const t=(now-start)/1000;
+  render(Math.min(t,DURATION));
+  if(t<DURATION) requestAnimationFrame(loop); else {running=false;done=true;replay.classList.add('show');}
+}
+function play(){done=false;replay.classList.remove('show');start=null;if(!running){running=true;requestAnimationFrame(loop);}}
+replay.addEventListener('click',e=>{e.stopPropagation();play();});
+stage.addEventListener('click',()=>{if(done) play();});
+window.__render=render;   // za snimanje videa
+
+const reduced=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(/capture/.test(location.hash)){document.body.classList.add('capture');}
+else{
+  render(0);
+  const go=()=>{if(played) return; played=true;
+    if(reduced){render(DURATION);done=true;replay.classList.add('show');} else play();};
+  const ready=document.fonts?document.fonts.ready:Promise.resolve();
+  ready.then(()=>{
+    if('IntersectionObserver' in window){
+      new IntersectionObserver((es,o)=>{if(es.some(e=>e.isIntersecting)){o.disconnect();go();}},{threshold:0.4}).observe(frame);
+    } else go();
+  });
+}
+</script>
+</body>
+</html>
