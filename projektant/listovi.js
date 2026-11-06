@@ -442,7 +442,7 @@ function crtajNosac(A, R, P, pun, bezRoga) {
   A.rect(isp - b - 8, Hz - b, isp - b, Hz, { w: DEB.t }); A.rect(isp, Hz - b, isp + 8, Hz, { w: DEB.t });
   // početak roga
   const nag = (R.nag || 10) / 100;                   // pad roga — ka napred, naniže
-  const x2 = isp + (pun ? 700 : 450);
+  const x2 = isp + (pun ? 700 : 220);
   if (!bezRoga) A.poly([[isp + 8, Hz], [x2, Hz - (x2 - isp) * nag], [x2, Hz - (x2 - isp) * nag - 150], [isp + 8, Hz - 150]], { w: DEB.t, d: SKR });
 }
 
