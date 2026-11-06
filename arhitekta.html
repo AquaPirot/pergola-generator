@@ -97,6 +97,38 @@ html,body{height:100%;overflow:hidden;background:#e9ecef;font-family:var(--font)
   .info{bottom:auto;top:78px;font-size:11.5px}
   .cams{bottom:14px;left:14px;right:14px;justify-content:center}
 }
+
+/* video za kupca */
+#vidDlg{position:fixed;inset:0;z-index:50;background:rgba(10,16,30,.88);display:flex;align-items:center;justify-content:center;padding:16px}
+#vidDlg[hidden]{display:none}
+#vidDlg .box{background:#fff;border-radius:16px;padding:18px;width:min(440px,100%);max-height:100%;overflow:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+#vidDlg h3{font:800 15px var(--font);color:var(--navy);letter-spacing:.3px;margin-bottom:10px}
+#vidDlg .pv{display:flex;justify-content:center;background:#0b1120;border-radius:10px;overflow:hidden;margin-bottom:12px}
+#vidDlg .pv canvas,#vidDlg .pv video{display:block;max-width:100%;max-height:52vh;width:auto;height:auto}
+#vidDlg .bar{height:8px;border-radius:99px;background:var(--wash);overflow:hidden;margin:4px 0 6px}
+#vidDlg .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .15s}
+#vidDlg .st{font-size:12px;color:var(--mut);line-height:1.45}
+#vidDlg .btn{margin-top:8px}
+.btn.sec{background:#fff;color:var(--navy);border:1px solid var(--bd)}
+#linkOut{display:none;margin-top:8px;font:500 11px var(--font);width:100%;padding:7px 8px;border:1px solid var(--bd);border-radius:8px;color:var(--mut);background:var(--wash)}
+
+/* pogled za kupca (link) */
+.kupac #panel,.kupac #mob{display:none!important}
+.kupac .hdr input{background:transparent!important;border:0!important;padding:2px 0 0;pointer-events:none;font-weight:600;color:var(--ink)}
+.kupac.noc .hdr input{color:#fff}
+.kupac .hdr .t1 span{display:none}
+#kbar{display:none;position:absolute;right:16px;top:16px;z-index:7;gap:6px}
+.kupac #kbar{display:flex}
+#kbar button{font:700 13px var(--font);border:0;border-radius:999px;padding:10px 16px;cursor:pointer;box-shadow:0 6px 18px rgba(20,33,61,.25)}
+#kbar .a{background:var(--navy);color:#fff}
+#kbar .b{background:#fff;color:var(--navy)}
+#khint{position:absolute;left:50%;bottom:78px;transform:translateX(-50%);z-index:6;background:rgba(20,33,61,.82);color:#fff;font:600 12px var(--font);padding:8px 14px;border-radius:999px;white-space:nowrap;pointer-events:none;transition:opacity .6s;display:none}
+.kupac #khint{display:block}
+@media (max-width:820px){
+  #kbar{right:12px;top:14px}#kbar button{padding:9px 13px;font-size:12px}
+  .kupac .hdr{right:178px}
+  #khint{bottom:128px}
+}
 </style>
 <script type="importmap">
 {"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/addons/"}}
@@ -121,6 +153,8 @@ html,body{height:100%;overflow:hidden;background:#e9ecef;font-family:var(--font)
       <button type="button" data-cam="in">Iznutra</button>
     </div>
     <button id="mob" type="button">Podešavanja</button>
+    <div id="kbar"><button type="button" class="a" id="kOtv">Otvori</button><button type="button" class="b" id="kNoc">Veče</button></div>
+    <div id="khint">Prevucite prstom da okrenete pergolu</div>
     <div id="css2d"></div>
   </div>
 
@@ -213,6 +247,16 @@ html,body{height:100%;overflow:hidden;background:#e9ecef;font-family:var(--font)
 
     <!-- ───────── PRIKAZ ───────── -->
     <div class="pane" id="p3">
+      <div class="grp"><h4>Za kupca</h4>
+        <div class="seg sm" id="vidFmt">
+          <button type="button" data-f="v" class="on">Video za telefon 9:16</button>
+          <button type="button" data-f="h">Video za računar 16:9</button>
+        </div>
+        <button type="button" class="btn gold" id="bVideo">Napravi video (MP4)</button>
+        <button type="button" class="btn ghost" id="bLink">Link za kupca — 3D projekat</button>
+        <input id="linkOut" readonly aria-label="Link za kupca">
+        <p class="note" id="vidNote">Video traje oko 13 sekundi: kamera kruži oko pergole, a za to vreme se dižu ZIP zavese, otvaraju stakla i krov, pada veče i pali se LED rasveta. Na kraju je logo AG GROUP. Link otvara ovaj 3D projekat na telefonu kupca — kupac ga sam okreće, otvara i pali svetla.</p>
+      </div>
       <div class="grp"><h4 id="lblKrov">Krov</h4>
         <div class="rng"><input type="range" id="r_krov" data-k="otvKrov" min="0" max="100" step="1" aria-labelledby="lblKrov"><output id="o_krov"></output></div>
         <p class="note" id="krovNote"></p>
@@ -261,9 +305,15 @@ const DEF={
   led:true, noc:'0', namestaj:true, kote:true, pod:'plocice', naziv:''
 };
 const LS='ag_arh_v1';
+/* link za kupca: 3d.html#p=… — samo pregled, bez podešavanja i bez čuvanja */
+const b64e=t=>{let r='';new TextEncoder().encode(t).forEach(c=>r+=String.fromCharCode(c));return btoa(r).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
+const b64d=t=>new TextDecoder().decode(Uint8Array.from(atob(t.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)));
+const KUPAC=/[?&]kupac\b/.test(location.search)||location.hash.startsWith('#p=');
 let S=JSON.parse(JSON.stringify(DEF));
-try{const z=JSON.parse(localStorage.getItem(LS));if(z)S=Object.assign(S,z,{staklo:Object.assign({},DEF.staklo,z.staklo),zip:Object.assign({},DEF.zip,z.zip)});}catch(e){}
-function save(){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
+const spoji=z=>{if(z)S=Object.assign(S,z,{staklo:Object.assign({},DEF.staklo,z.staklo),zip:Object.assign({},DEF.zip,z.zip)});};
+if(KUPAC){try{spoji(JSON.parse(b64d(location.hash.slice(3))));}catch(e){}document.body.classList.add('kupac');}
+else{try{spoji(JSON.parse(localStorage.getItem(LS)));}catch(e){}}
+function save(){if(KUPAC)return;try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
 
 const RAL={'7016':['#383e42','Antracit'],'9005':['#121314','Crna'],'7021':['#2f3234','Crnosiva'],'9007':['#8a8986','Siva alu'],
   '7035':['#cbd0cc','Svetlosiva'],'9016':['#f1f0ea','Bela'],'8017':['#45322e','Braon'],'8014':['#4a3b2f','Sepija']};
@@ -743,6 +793,11 @@ function bindAll(){
   // mobilni panel
   document.getElementById('mob').addEventListener('click',()=>document.getElementById('panel').classList.toggle('open'));
   document.getElementById('bSnimi').addEventListener('click',snimi);
+  let vf='v';
+  document.getElementById('vidFmt').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;vf=b.dataset.f;
+    document.querySelectorAll('#vidFmt button').forEach(x=>x.classList.toggle('on',x===b));});
+  document.getElementById('bVideo').addEventListener('click',()=>napraviVideo(vf));
+  document.getElementById('bLink').addEventListener('click',linkKupac);
   document.getElementById('bPro').addEventListener('click',izPro);
   document.getElementById('bReset').addEventListener('click',()=>{const n=S.naziv;S=JSON.parse(JSON.stringify(DEF));S.naziv=n;changed(true);});
 }
@@ -834,6 +889,190 @@ function snimi(){
   c.toBlob(bl=>{const u=URL.createObjectURL(bl);a.href=u;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);},'image/png');
 }
 
+/* ═══════════════════ VIDEO ZA KUPCA ═══════════════════ */
+const FPS=30;
+let VID=null;
+const LOGO=new Image();let LOGO_BG='#fbfbfa';
+LOGO.onload=()=>{try{const c=document.createElement('canvas');c.width=c.height=4;const x=c.getContext('2d');x.drawImage(LOGO,0,0,8,8,0,0,4,4);
+  const d=x.getImageData(0,0,1,1).data;LOGO_BG=`rgb(${d[0]},${d[1]},${d[2]})`;}catch(e){}};
+LOGO.src='img/ag-znak.webp';
+const ease=v=>{v=Math.min(1,Math.max(0,v));return v*v*(3-2*v);};
+const slug=()=>{const LAT={č:'c',ć:'c',š:'s',đ:'dj',ž:'z',Č:'C',Ć:'C',Š:'S',Đ:'Dj',Ž:'Z'};
+  return (S.naziv||'projekat').replace(/[čćšđžČĆŠĐŽ]/g,ch=>LAT[ch]).replace(/[^\w -]+/g,'').trim().replace(/\s+/g,'-')||'projekat';};
+
+/* scenario: prikazuje se samo ono što pergola ima */
+function vidPlan(){
+  const g=GEO, strane=['front','left','right'].concat(g.zid?[]:['back']);
+  const zipS=strane.filter(k=>S.zip[k]), mov=strane.filter(k=>S.staklo[k]==='klizno'||S.staklo[k]==='giljotina');
+  const P=[];let t=0;const ph=(k,d,cap)=>{P.push({k,t0:t,t1:t+d,cap});t+=d;};
+  ph('uvod',1.6,S.naziv||'Vaša nova pergola');
+  if(zipS.length)ph('zip',2.3,'ZIP zavese');
+  if(mov.length){const v=new Set(mov.map(k=>S.staklo[k]));
+    ph('staklo',2.5,v.size>1?'Klizna stakla i giljotina':v.has('klizno')?'Klizna stakla':'Giljotina stakla');}
+  ph('krov',2.5,g.klas?'Krovno platno se povlači':'Lamele se otvaraju');
+  ph('noc',3.0,'LED rasveta');
+  ph('kraj',2.6,'');
+  return {P,T:t,zip:zipS.length>0,sub:`${g.klas?'Klasična pergola':'Bioklimatska pergola'} · ${S.W} × ${S.D} cm`};
+}
+function vidState(pl,t){
+  const f=k=>{const q=pl.P.find(p=>p.k===k);return q?ease((t-q.t0)/(q.t1-q.t0)):1;};
+  const n=pl.P.find(p=>p.k==='noc'), k=pl.P.find(p=>p.k==='kraj');
+  const zatv=ease((t-n.t0-1.1)/1.7);                  // uveče se krov ponovo zatvara, pale se LED
+  const r=v=>Math.round(v*10)/10;
+  return {s:{zipSpust:pl.zip?r(100*(1-f('zip'))):S.zipSpust, otvStaklo:r(100*f('staklo')), otvKrov:r(100*(f('krov')-zatv))},
+          m:ease((t-n.t0)/1.0), e:ease((t-k.t0)/.45), l:ease((t-k.t0-.35)/.55)};
+}
+function vidCam(u,asp){
+  const g=GEO, W=g.W, D=g.D, H=g.klas?g.Hb:g.Hf+.3, R=Math.max(W,D*1.3,H*1.6,g.zid?0:Math.hypot(W,D)*.95);
+  const c=new THREE.Vector3(W/2,H*.55,D/2), f=asp<1.2?Math.pow(1.2/asp,.9):1;
+  const dist=R*1.38*f*(1.07-.12*ease(u));
+  const az=THREE.MathUtils.degToRad(g.zid?-50+100*u:-35+360*u);   // uz zid luk ispred kuće, samostojeća pun krug
+  camera.position.set(c.x+dist*Math.sin(az),c.y+dist*.3,c.z+dist*Math.cos(az));camera.lookAt(c);
+}
+function rr(x,X,Y,w,h,r){x.beginPath();x.roundRect?x.roundRect(X,Y,w,h,r):x.rect(X,Y,w,h);}
+function vidOverlay(x,VW,VH,pl,t,st){
+  const m=Math.min(VW,VH), fam=getComputedStyle(document.body).fontFamily;
+  // znak u uglu
+  if(LOGO.complete&&LOGO.naturalWidth){
+    const lh=m*.062, lw=lh*740/490, pad=m*.018, X=m*.04, Y=m*.04, tw=m*.2;
+    x.fillStyle='rgba(255,255,255,.9)';rr(x,X,Y,lw+tw+pad*3,lh+pad*2,m*.02);x.fill();
+    x.drawImage(LOGO,245,205,740,490,X+pad,Y+pad,lw,lh);
+    x.textAlign='left';x.textBaseline='alphabetic';x.fillStyle='#0b1526';x.font=`800 ${m*.03}px ${fam}`;
+    x.fillText('AG GROUP',X+pad*2+lw,Y+pad+lh*.55);
+    x.fillStyle='#8a6a3a';x.font=`700 ${m*.019}px ${fam}`;x.fillText('PERGOLA.RS',X+pad*2+lw,Y+pad+lh*.98);
+  }
+  // natpis faze
+  const q=pl.P.find(p=>t>=p.t0&&t<p.t1&&p.cap);
+  if(q){
+    const a=Math.min(1,(t-q.t0)/.35,(q.t1-t)/.35);
+    if(a>0){
+      x.globalAlpha=a;const fs=m*.048, sub=q.k==='uvod'?pl.sub:'';
+      x.font=`800 ${fs}px ${fam}`;let w=x.measureText(q.cap).width;
+      if(sub){x.font=`600 ${fs*.6}px ${fam}`;w=Math.max(w,x.measureText(sub).width);}
+      const bw=w+m*.1, bh=sub?fs*2.5:fs*1.75, X=(VW-bw)/2, Y=VH-m*.1-bh;
+      x.fillStyle='rgba(20,33,61,.88)';rr(x,X,Y,bw,bh,bh*.28);x.fill();
+      x.fillStyle='#c8944e';x.fillRect(X+m*.035,Y+bh*.3,m*.006,bh*.4);
+      x.textAlign='center';x.fillStyle='#fff';x.font=`800 ${fs}px ${fam}`;
+      x.fillText(q.cap,VW/2+m*.008,Y+(sub?fs*1.15:bh*.5+fs*.36));
+      if(sub){x.fillStyle='rgba(255,255,255,.72)';x.font=`600 ${fs*.6}px ${fam}`;x.fillText(sub,VW/2+m*.008,Y+fs*1.98);}
+      x.globalAlpha=1;
+    }
+  }
+  // završni kadar — logo
+  if(st.e>0){
+    x.globalAlpha=st.e;x.fillStyle=LOGO_BG;x.fillRect(0,0,VW,VH);
+    if(LOGO.naturalWidth&&st.l>0){const lw=m*.78;x.globalAlpha=st.l;x.drawImage(LOGO,(VW-lw)/2,(VH-lw)/2,lw,lw);}
+    x.globalAlpha=1;
+  }
+}
+function dlg(html){const d=document.getElementById('vidDlg');d.querySelector('.box').innerHTML=html;d.hidden=false;return d;}
+function dlgClose(){const d=document.getElementById('vidDlg');d.hidden=true;d.querySelector('.box').innerHTML='';}
+
+async function napraviVideo(fmt,test){
+  if(VID)return;
+  const [VW,VH]=test||(fmt==='h'?[1920,1080]:[1080,1920]);
+  if(!('VideoEncoder' in window)){dlg(`<h3 id="vidT">Video ne može ovde</h3><p class="st">Ovaj pregledač ne zna da pravi video. Otvorite ARHITEKTU u Chrome-u ili Edge-u na računaru.</p><button class="btn" id="vX">U redu</button>`);document.getElementById('vX').onclick=dlgClose;return;}
+  let codec=null, kind='avc';
+  for(const c of ['avc1.640028','avc1.4d0028','avc1.42e028'])
+    try{if((await VideoEncoder.isConfigSupported({codec:c,width:VW,height:VH,bitrate:7e6,framerate:FPS})).supported){codec=c;break;}}catch(e){}
+  if(!codec)for(const c of ['vp09.00.40.08'])
+    try{if((await VideoEncoder.isConfigSupported({codec:c,width:VW,height:VH,bitrate:7e6,framerate:FPS})).supported){codec=c;kind='vp9';break;}}catch(e){}
+  if(!codec){dlg(`<h3 id="vidT">Video ne može ovde</h3><p class="st">Ovaj uređaj ne može da napravi MP4. Otvorite ARHITEKTU u Chrome-u ili Edge-u na računaru.</p><button class="btn" id="vX">U redu</button>`);document.getElementById('vX').onclick=dlgClose;return;}
+  const {Muxer,ArrayBufferTarget}=await import('./vendor/mp4-muxer/mp4-muxer.mjs');
+  await new Promise(r=>LOGO.complete?r():(LOGO.onloadend=r,setTimeout(r,3000)));
+
+  const S0=JSON.parse(JSON.stringify(S)), pr=renderer.getPixelRatio();
+  VID={stop:false,err:null};
+  const d=dlg(`<h3 id="vidT">Pravim video…</h3><div class="pv" id="vPv"></div><div class="bar"><i id="vBar"></i></div>
+    <p class="st" id="vSt">Ne zatvarajte stranicu. Obično traje 20–40 sekundi.</p><button class="btn sec" id="vStop">Otkaži</button>`);
+  document.getElementById('vStop').onclick=()=>{VID.stop=true;};
+  const cv=document.createElement('canvas');cv.width=VW;cv.height=VH;document.getElementById('vPv').appendChild(cv);
+  const x=cv.getContext('2d');
+
+  const mux=new Muxer({target:new ArrayBufferTarget(),video:{codec:kind,width:VW,height:VH,frameRate:FPS},fastStart:'in-memory'});
+  const enc=new VideoEncoder({output:(ch,meta)=>mux.addVideoChunk(ch,meta),error:e=>{VID.err=e;}});
+  enc.configure(Object.assign({codec,width:VW,height:VH,bitrate:VW*VH>2e6?7e6:4e6,framerate:FPS},kind==='avc'?{avc:{format:'avc'}}:{}));
+
+  S.kote=false;S.led=true;rebuild();
+  renderer.setPixelRatio(1);renderer.setSize(VW,VH,false);camera.aspect=VW/VH;camera.updateProjectionMatrix();
+  const pl=vidPlan(), N=Math.round(pl.T*FPS);
+  let last='';
+  const put=st=>{const k=JSON.stringify(st);if(k===last)return;last=k;Object.assign(S,st);rebuild();};
+  try{
+    for(let i=0;i<N&&!VID.stop&&!VID.err;i++){
+      const t=i/FPS, st=vidState(pl,t);
+      vidCam(t/pl.T,VW/VH);
+      if(st.e<1){
+        if(st.m<1){put(Object.assign({},st.s,{noc:'0'}));renderer.render(scene,camera);x.drawImage(renderer.domElement,0,0);}
+        if(st.m>0){put(Object.assign({},st.s,{noc:'1'}));renderer.render(scene,camera);x.globalAlpha=st.m;x.drawImage(renderer.domElement,0,0);x.globalAlpha=1;}
+      }
+      vidOverlay(x,VW,VH,pl,t,st);
+      const fr=new VideoFrame(cv,{timestamp:Math.round(i*1e6/FPS),duration:Math.round(1e6/FPS)});
+      enc.encode(fr,{keyFrame:i%(FPS*2)===0});fr.close();
+      while(enc.encodeQueueSize>3)await new Promise(r=>setTimeout(r,4));
+      document.getElementById('vBar').style.width=Math.round((i+1)/N*100)+'%';
+      if(i%2===0)await new Promise(r=>setTimeout(r,0));
+    }
+    if(!VID.stop&&!VID.err){await enc.flush();mux.finalize();}
+  }catch(e){VID.err=e;}
+  try{enc.close();}catch(e){}
+  // vraćanje prikaza
+  for(const k in S0)S[k]=S0[k];
+  renderer.setPixelRatio(pr);resize();rebuild();setCam(curCam,true);
+  const stop=VID.stop, err=VID.err;VID=null;
+  if(stop){dlgClose();return;}
+  if(err){dlg(`<h3 id="vidT">Video nije uspeo</h3><p class="st">${String(err.message||err)}</p><button class="btn" id="vX">Zatvori</button>`);document.getElementById('vX').onclick=dlgClose;return;}
+
+  const blob=new Blob([mux.target.buffer],{type:'video/mp4'}), url=URL.createObjectURL(blob), ime=slug()+'-3D-video.mp4';
+  const file=new File([blob],ime,{type:'video/mp4'}), moze=!!(navigator.canShare&&navigator.canShare({files:[file]}));
+  window.__arhVideo={blob,kind,codec};
+  dlg(`<h3 id="vidT">Video je spreman</h3><div class="pv"><video src="${url}" autoplay muted loop playsinline controls></video></div>
+    <p class="st">${(blob.size/1048576).toFixed(1)} MB · ${Math.round(pl.T)} s · ${VW}×${VH}${kind!=='avc'?'<br><b>Napomena:</b> ovaj pregledač je napravio VP9 video — na iPhone-u možda neće raditi. Za Viber i WhatsApp napravite video u Chrome-u na računaru.':''}</p>
+    ${moze?'<button class="btn gold" id="vSh">Pošalji (Viber, WhatsApp…)</button>':''}
+    <button class="btn ${moze?'sec':'gold'}" id="vDl">Sačuvaj video</button><button class="btn sec" id="vX">Zatvori</button>`);
+  document.getElementById('vDl').onclick=()=>{const a=document.createElement('a');a.href=url;a.download=ime;document.body.appendChild(a);a.click();a.remove();};
+  if(moze)document.getElementById('vSh').onclick=()=>navigator.share({files:[file],title:'3D projekat pergole'}).catch(()=>{});
+  document.getElementById('vX').onclick=()=>{dlgClose();URL.revokeObjectURL(url);};
+}
+
+/* link za kupca — šalju se samo podešavanja koja se razlikuju od početnih */
+function linkKupac(){
+  const o={};
+  for(const k in DEF){if(k==='kote'&&S.kote)continue;if(JSON.stringify(S[k])!==JSON.stringify(DEF[k]))o[k]=S[k];}
+  const url=new URL('3d.html',location.href).href+'#p='+b64e(JSON.stringify(o));
+  const out=document.getElementById('linkOut');out.style.display='block';out.value=url;out.select();
+  const note=document.getElementById('vidNote'), ok=t=>{note.innerHTML=t;};
+  const kopiraj=()=>(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(
+    ()=>ok('<b>Link je kopiran.</b> Nalepite ga kupcu u Viber ili WhatsApp — otvara se njegov 3D projekat.'),
+    ()=>ok('Označite link iznad i kopirajte ga.'));
+  if(navigator.share&&matchMedia('(pointer:coarse)').matches)
+    navigator.share({title:'3D projekat pergole — AG GROUP',url}).catch(kopiraj);
+  else kopiraj();
+}
+
+/* pogled za kupca: otvori / zatvori, dan / veče */
+let TW=null;
+function kupacUI(){
+  document.getElementById('kOtv').textContent=S.otvKrov>=50?'Zatvori':'Otvori';
+  document.getElementById('kNoc').textContent=S.noc==='1'?'Dan':'Veče';
+}
+function kupacInit(){
+  const nz=document.getElementById('naziv');nz.readOnly=true;nz.tabIndex=-1;if(!S.naziv)nz.value='3D projekat pergole';
+  const mk=document.querySelector('.hdr .mk');mk.href='https://pergola.rs';mk.target='_blank';mk.rel='noopener';mk.title='PERGOLA.RS';
+  document.title=(S.naziv?S.naziv+' — ':'')+'3D projekat pergole · AG GROUP';
+  const g=GEO, ima=['front','left','right','back'].some(k=>S.zip[k]);
+  document.getElementById('kOtv').addEventListener('click',()=>{
+    const otv=S.otvKrov<50;
+    TW={from:{otvKrov:S.otvKrov,otvStaklo:S.otvStaklo,zipSpust:S.zipSpust},
+        to:otv?{otvKrov:100,otvStaklo:100,zipSpust:0}:{otvKrov:0,otvStaklo:0,zipSpust:ima?100:S.zipSpust},s:performance.now(),dur:2600};
+    document.getElementById('kOtv').textContent=otv?'Zatvori':'Otvori';
+  });
+  document.getElementById('kNoc').addEventListener('click',()=>{S.noc=S.noc==='1'?'0':'1';S.led=true;rebuild();kupacUI();});
+  kupacUI();
+  const h=document.getElementById('khint');setTimeout(()=>{h.style.opacity=0;},5000);
+  renderer.domElement.addEventListener('pointerdown',()=>{h.style.opacity=0;},{once:true});
+}
+
 /* ═══════════════════ PETLJA ═══════════════════ */
 function resize(){
   const w=view.clientWidth,h=view.clientHeight;
@@ -844,12 +1083,16 @@ function resize(){
 }
 new ResizeObserver(resize).observe(view);
 function loop(now){
+  if(VID){requestAnimationFrame(loop);return;}
+  if(TW){const u=ease((now-TW.s)/TW.dur);for(const k in TW.to)S[k]=Math.round((TW.from[k]+(TW.to[k]-TW.from[k])*u)*10)/10;rebuild();if(u>=1)TW=null;}
   if(camAnim){const t=Math.min(1,(now-camAnim.s)/700),e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
     camera.position.lerpVectors(camAnim.p0,camAnim.p1,e);controls.target.lerpVectors(camAnim.t0,camAnim.t1,e);if(t>=1)camAnim=null;}
   controls.update();renderer.render(scene,camera);css2d.render(scene,camera);requestAnimationFrame(loop);
 }
 bindAll();rebuild();resize();setCam('persp',true);requestAnimationFrame(loop);
-window.__arh={S,rebuild:()=>changed(true),setCam,renderer,sun,scene,THREE};
+if(KUPAC)kupacInit();
+window.__arh={S,rebuild:()=>changed(true),setCam,renderer,sun,scene,THREE,napraviVideo,linkKupac};
 </script>
+<div id="vidDlg" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="vidT"></div></div>
 </body>
 </html>

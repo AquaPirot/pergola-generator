@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vaš 3D projekat pergole — AG GROUP</title>
+<meta name="description" content="Pogledajte svoju pergolu iz svih uglova: otvorite krov i stakla, upalite LED rasvetu.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Vaš 3D projekat pergole — AG GROUP">
+<meta property="og:description" content="Pogledajte svoju pergolu iz svih uglova: otvorite krov i stakla, upalite LED rasvetu.">
+<meta property="og:site_name" content="PERGOLA.RS">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#14213d">
+<style>
+  html,body{height:100%;margin:0;background:#e9ecef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#14213d}
+  body{display:flex;align-items:center;justify-content:center;text-align:center}
+  a{color:#a97a37;font-weight:700}
+</style>
+</head>
+<body>
+<!-- Link za kupca: prosleđuje na 3D prikaz (ARHITEKTA u režimu samo za pregled). Podešavanja su u delu adrese iza #. -->
+<p>Otvaram 3D projekat…<br><a id="go" href="arhitekta.html?kupac">Kliknite ovde ako se ne otvori</a></p>
+<script>
+  var u='arhitekta.html?kupac'+location.hash;
+  document.getElementById('go').href=u;
+  location.replace(u);
+</script>
+</body>
+</html>
