@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<script src="pin.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AG GROUP — Projektant</title>
+<meta name="theme-color" content="#14213d">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="icons/icon-192.svg">
+<style>
+@font-face{font-family:DJ;src:url(projektant/fonts/DejaVuSans.ttf) format('truetype');font-weight:400}
+@font-face{font-family:DJ;src:url(projektant/fonts/DejaVuSans-Bold.ttf) format('truetype');font-weight:700}
+:root{--navy:#14213d;--navy2:#1c2d4f;--gold:#c8944e;--gold2:#a97a37;--ink:#16213a;--mut:#6b7280;--bd:#e3e6eb;--wash:#f4f5f7;--warn:#b45309;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);color:var(--ink);background:#dfe3e8;display:flex;flex-direction:column}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:12px;padding:10px 16px;flex:0 0 auto}
+header a.mk{width:38px;height:38px;border-radius:9px;background:#fff;color:var(--navy);font:800 14px var(--font);display:flex;align-items:center;justify-content:center;text-decoration:none}
+header .t1{font:800 15px var(--font);letter-spacing:1.4px}
+header .t1 span{color:var(--gold);font-size:11px;letter-spacing:2px;margin-left:6px}
+header .t2{font-size:11.5px;color:rgba(255,255,255,.6)}
+header .sp{flex:1}
+header button{font:700 13px var(--font);border:0;border-radius:999px;padding:10px 16px;cursor:pointer;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#fff}
+header button:disabled{opacity:.6;cursor:wait}
+main{flex:1;display:flex;min-height:0}
+#panel{width:360px;flex:0 0 360px;background:#fff;overflow:auto;border-right:1px solid var(--bd);padding:4px 16px 24px}
+.grp{padding:14px 0;border-bottom:1px solid var(--bd)}
+.grp:last-child{border-bottom:0}
+.grp h4{font:800 11px var(--font);letter-spacing:1.5px;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.grp h4::before{content:'';width:3px;height:12px;background:var(--gold);border-radius:2px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.row.c3{grid-template-columns:1fr 1fr 1fr}
+.f label{display:block;font-size:11.5px;color:var(--mut);margin-bottom:3px}
+.f input,.f select{width:100%;font:500 14px var(--font);padding:8px 9px;border:1px solid var(--bd);border-radius:8px;background:#fff;color:var(--ink)}
+.f input:focus,.f select:focus{outline:2px solid var(--gold);outline-offset:0;border-color:var(--gold)}
+.f.full{grid-column:1/-1}
+.tips{display:grid;gap:6px}
+.tips button{text-align:left;font:600 12.5px var(--font);padding:9px 11px;border:1px solid var(--bd);border-radius:9px;background:#fff;color:var(--ink);cursor:pointer;display:flex;gap:9px;align-items:center}
+.tips button b{font:800 10px var(--font);color:var(--mut);background:var(--wash);border-radius:5px;padding:3px 5px;min-width:44px;text-align:center}
+.tips button.on{border-color:var(--navy);background:var(--navy);color:#fff}
+.tips button.on b{background:rgba(255,255,255,.15);color:#fff}
+.note{font-size:11.5px;color:var(--mut);line-height:1.45;margin-top:8px}
+.info{font-size:12.5px;background:var(--wash);border-radius:9px;padding:9px 11px;margin-top:10px;line-height:1.5}
+.info b{color:var(--navy)}
+#upoz{display:none;margin-top:10px;background:#fff7ed;border:1px solid #fed7aa;color:var(--warn);border-radius:9px;padding:9px 11px;font-size:12.5px;line-height:1.45}
+#upoz li{margin-left:16px}
+#view{flex:1;overflow:auto;padding:16px;min-width:0}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
+.tabs button{font:700 12.5px var(--font);padding:8px 13px;border-radius:999px;border:1px solid #c9ced6;background:#fff;color:var(--navy);cursor:pointer}
+.tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.tabs .z{margin-left:auto}
+.sheet{background:#fff;box-shadow:0 8px 28px rgba(20,33,61,.18);margin:0 auto 18px;max-width:1500px}
+.sheet svg{display:block;width:100%;height:auto}
+.sheet.big{max-width:none;width:240%}
+.btn2{font:700 12.5px var(--font);padding:9px 12px;border-radius:9px;border:1px solid var(--bd);background:#fff;color:var(--navy);cursor:pointer;width:100%;margin-top:8px}
+@media (max-width:860px){
+  main{flex-direction:column;overflow:auto}
+  #panel{width:auto;flex:0 0 auto;border-right:0;overflow:visible}
+  #view{overflow:visible}
+  header .t2{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <a class="mk" href="alat.html" title="Nazad na meni">AG</a>
+  <div><div class="t1">AG GROUP<span>PROJEKTANT</span></div><div class="t2">Radionički crteži sklopa — A3, PDF</div></div>
+  <div class="sp"></div>
+  <button type="button" id="bPdf">Preuzmi PDF</button>
+</header>
+<main>
+  <aside id="panel">
+    <div class="grp"><h4>RASPORED</h4><div class="tips" id="tips"></div></div>
+    <div class="grp"><h4>MERE (mm)</h4>
+      <div class="row">
+        <div class="f"><label for="L">Dužina (ose 1…n)</label><input type="number" id="L" data-k="L" step="10" min="1000"></div>
+        <div class="f"><label for="D" id="lD">Projekcija</label><input type="number" id="D" data-k="D" step="10" min="1000"></div>
+        <div class="f"><label for="nB">Broj polja (razmak ≤ 4 m)</label><input type="number" id="nB" data-k="nB" min="1" max="20"></div>
+        <div class="f"><label for="nP" id="lP">Pergola po dužini</label><input type="number" id="nP" data-k="nP" min="1" max="20"></div>
+        <div class="f"><label for="prol">Prolazna visina</label><input type="number" id="prol" data-k="prol" step="10"></div>
+        <div class="f"><label for="bh">Visina grede sa olukom</label><input type="number" id="bh" data-k="bh" step="10"></div>
+        <div class="f full"><label for="Hz" id="lHz">Visina gore — vrh cevi</label><input type="number" id="Hz" data-k="Hz" step="10"></div>
+      </div>
+      <div class="info" id="izracun"></div>
+      <ul id="upoz"></ul>
+    </div>
+    <div class="grp" id="gCel"><h4>ČELIK</h4>
+      <div class="row">
+        <div class="f"><label for="cev">Cev (stub i greda)</label><select id="cev" data-k="cev"></select></div>
+        <div class="f" id="fTem"><label for="temelj">Temelj</label><select id="temelj" data-k="temelj"><option value="samac">Temelj samac 400×400×800</option><option value="ploca">Postojeća AB ploča</option></select></div>
+        <div class="f" id="fIsp"><label for="isp">Ispust od zida</label><input type="number" id="isp" data-k="isp" step="10" min="150"></div>
+        <div class="f"><label for="sip">Najduži deo grede</label><select id="sip" data-k="sip"><option value="6000">6000 mm</option><option value="12000">12000 mm</option></select></div>
+        <div class="f full"><label for="zastita">Zaštita</label><input id="zastita" data-k="zastita"></div>
+      </div>
+    </div>
+    <div class="grp"><h4>ZAGLAVLJE</h4>
+      <div class="row">
+        <div class="f full"><label for="objekat">Objekat</label><input id="objekat" data-k="objekat"></div>
+        <div class="f"><label for="broj">Broj crteža (bez -01)</label><input id="broj" data-k="broj"></div>
+        <div class="f"><label for="rev">Revizija</label><input id="rev" data-k="rev" maxlength="3"></div>
+        <div class="f"><label for="datum">Datum</label><input id="datum" data-k="datum"></div>
+        <div class="f"><label for="kontrolisao">Kontrolisao</label><input id="kontrolisao" data-k="kontrolisao"></div>
+        <div class="f"><label for="projektovao">Projektovao</label><input id="projektovao" data-k="projektovao"></div>
+        <div class="f"><label for="crtao">Crtao</label><input id="crtao" data-k="crtao"></div>
+      </div>
+    </div>
+    <div class="grp"><h4>ALU PROFILI</h4>
+      <div class="row" id="uloge"></div>
+      <p class="note">Šifre iz porudžbine 0000003232. Proverite koji profil ide na koje mesto — od toga zavise dužine i mase u sastavnici.</p>
+      <button type="button" class="btn2" id="bReset">Vrati podrazumevano</button>
+    </div>
+  </aside>
+  <section id="view">
+    <div class="tabs" id="tabs"></div>
+    <div id="sheets"></div>
+  </section>
+</main>
+
+<script type="module">
+import { uSVG, uPDF } from './projektant/crtez.js';
+import { DEF, TIPOVI, SHS, KATALOG, ULOGE, sviListovi, racun, broj, objekat, zarez } from './projektant/listovi.js';
+
+const LS = 'ag_proj_v1';
+let P = JSON.parse(JSON.stringify(DEF));
+try { const z = JSON.parse(localStorage.getItem(LS)); if (z) P = Object.assign(P, z, { uloge: Object.assign({}, DEF.uloge, z.uloge) }); } catch (e) {}
+const save = () => { try { localStorage.setItem(LS, JSON.stringify(P)); } catch (e) {} };
+let tab = 0, big = false, last = null;
+
+/* ── kontrole ── */
+document.getElementById('tips').innerHTML = Object.entries(TIPOVI).map(([k, t]) => `<button type="button" data-t="${k}"><b>${t.pre}</b>${t.n}</button>`).join('');
+document.getElementById('cev').innerHTML = SHS.map(s => `<option>${s}</option>`).join('');
+document.getElementById('uloge').innerHTML = ULOGE.map(([k, n]) => `<div class="f full"><label for="u_${k}">${n}</label><select id="u_${k}" data-u="${k}">${KATALOG.map(p => `<option value="${p.id}">${p.id} — ${p.n} · ${zarez(p.kg)} kg/m</option>`).join('')}</select></div>`).join('');
+
+function ui() {
+  document.querySelectorAll('#tips button').forEach(b => b.classList.toggle('on', b.dataset.t === P.tip));
+  document.querySelectorAll('[data-k]').forEach(el => { if (document.activeElement !== el) el.value = P[el.dataset.k] ?? ''; });
+  document.querySelectorAll('[data-u]').forEach(el => el.value = P.uloge[el.dataset.u]);
+  const T = TIPOVI[P.tip];
+  document.getElementById('gCel').style.display = T.cel ? '' : 'none';
+  document.getElementById('fTem').style.display = T.cel === 'stubovi' ? '' : 'none';
+  document.getElementById('fIsp').style.display = T.cel === 'konzole' || T.cel === 'lstope' ? '' : 'none';
+  document.getElementById('lD').textContent = T.strana === 2 ? 'Projekcija — po strani' : 'Projekcija (od zida / zadnje ivice)';
+  document.getElementById('lHz').textContent = P.tip === 'dvovodna' ? 'Visina slemena — vrh cevi' : T.cel ? 'Visina gore — vrh cevi' : 'Visina na zidu — vrh profila';
+  document.getElementById('objekat').placeholder = objekat(P, racun(P));
+  document.getElementById('broj').placeholder = T.pre;
+  document.getElementById('datum').placeholder = new Date().toLocaleDateString('sr-RS').replace(/\s/g, '');
+}
+function crtaj() {
+  const out = sviListovi(P); last = out; const R = out.R;
+  const ras = R.L / R.nB;
+  document.getElementById('izracun').innerHTML =
+    `Razmak osa <b>${Math.round(ras)} mm</b> · nagib <b>${R.nag.toFixed(1).replace('.', ',')} %</b><br>` +
+    `Pergola: <b>${R.nP * R.strana}</b> · stubova napred: <b>${(R.nB + 1) * R.strana}</b> · rog <b>${R.rogL} mm</b>` +
+    (R.T.cel ? `<br>Čelik ≈ <b>${Math.round(out.listovi[0].masa)} kg</b>` : '') +
+    ` · Alu ≈ <b>${Math.round(out.listovi[out.listovi.length - 1].masa)} kg</b>`;
+  const u = document.getElementById('upoz'); u.style.display = R.upoz.length ? 'block' : 'none'; u.innerHTML = R.upoz.map(t => `<li>${t}</li>`).join('');
+  if (tab >= out.listovi.length) tab = 0;
+  document.getElementById('tabs').innerHTML = out.listovi.map((l, i) => `<button type="button" data-i="${i}" class="${i === tab ? 'on' : ''}">${l.broj} · ${l.naziv}</button>`).join('') +
+    `<button type="button" class="z" id="bZoom">${big ? 'Ceo list' : 'Uvećaj'}</button>`;
+  const l = out.listovi[tab];
+  document.getElementById('sheets').innerHTML = `<div class="sheet${big ? ' big' : ''}">${uSVG(l.L)}</div>`;
+}
+let tm = null;
+function promena() { save(); ui(); clearTimeout(tm); tm = setTimeout(crtaj, 120); }
+
+document.getElementById('tips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; P.tip = b.dataset.t; promena(); });
+document.querySelectorAll('[data-k]').forEach(el => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
+  const k = el.dataset.k, num = el.type === 'number';
+  let v = num ? parseFloat(el.value) : el.value; if (num && isNaN(v)) return;
+  if (k === 'sip') v = +v;
+  P[k] = v;
+  if (k === 'L') { const mn = Math.ceil(P.L / 4000); if (P.L / P.nB > 4000) P.nB = mn; }
+  if (k === 'nB' || k === 'L') P.nP = Math.min(P.nP, P.nB);
+  promena();
+}));
+document.querySelectorAll('[data-u]').forEach(el => el.addEventListener('change', () => { P.uloge[el.dataset.u] = el.value; promena(); }));
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.id === 'bZoom') big = !big; else tab = +b.dataset.i;
+  crtaj();
+});
+document.getElementById('bReset').addEventListener('click', () => { P = JSON.parse(JSON.stringify(DEF)); promena(); });
+
+/* ── PDF ── */
+async function b64(url) { const buf = await (await fetch(url)).arrayBuffer(); let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return btoa(s); }
+function ucitajJsPDF() { return window.jspdf ? Promise.resolve() : new Promise((ok, no) => { const s = document.createElement('script'); s.src = 'vendor/jspdf/jspdf.umd.min.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); }
+async function pdf() {
+  const btn = document.getElementById('bPdf'); btn.disabled = true; btn.textContent = 'Pravim PDF…';
+  try {
+    await ucitajJsPDF();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3', compress: true });
+    doc.addFileToVFS('DJ.ttf', await b64('projektant/fonts/DejaVuSans.ttf')); doc.addFont('DJ.ttf', 'DJ', 'normal');
+    doc.addFileToVFS('DJB.ttf', await b64('projektant/fonts/DejaVuSans-Bold.ttf')); doc.addFont('DJB.ttf', 'DJ', 'bold');
+    const out = sviListovi(P);
+    out.listovi.forEach((l, i) => { if (i) doc.addPage('a3', 'landscape'); uPDF(doc, l.L); });
+    const ob = objekat(P, out.R);
+    doc.setProperties({ title: `${broj(P, 1).replace(/-01$/, '')} — ${ob}`, author: 'AG GROUP – ALU PRO', creator: 'AG GROUP Projektant' });
+    const LAT = { č: 'c', ć: 'c', š: 's', đ: 'dj', ž: 'z', Č: 'C', Ć: 'C', Š: 'S', Đ: 'Dj', Ž: 'Z' };
+    const ime = (broj(P, 1).replace(/-01$/, '') + ' ' + ob).replace(/[čćšđžČĆŠĐŽ]/g, c => LAT[c]).replace(/[^\w ×-]+/g, '').replace(/×/g, 'x').trim().replace(/\s+/g, '-');
+    doc.save(ime + '.pdf');
+    window.__pdfOut = doc.output('datauristring');
+  } catch (e) { alert('PDF nije uspeo: ' + (e.message || e)); }
+  btn.disabled = false; btn.textContent = 'Preuzmi PDF';
+}
+document.getElementById('bPdf').addEventListener('click', pdf);
+
+/* ── start: prvo font (od njega zavise širine teksta) ── */
+(async () => {
+  try { await Promise.all([document.fonts.load('400 10px DJ'), document.fonts.load('700 10px DJ')]); } catch (e) {}
+  ui(); crtaj();
+})();
+window.__proj = { get P() { return P; }, set P(v) { P = v; }, crtaj, ui, pdf, sviListovi };
+</script>
+</body>
+</html>
