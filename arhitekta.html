@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AG GROUP — Arhitekta</title>
+<meta name="theme-color" content="#14213d">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.svg">
+<style>
+:root{
+  --navy:#14213d; --navy2:#1c2d4f; --gold:#c8944e; --gold2:#a97a37;
+  --ink:#16213a; --mut:#6b7280; --bd:#e3e6eb; --panel:rgba(255,255,255,.94); --wash:#f4f5f7;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#e9ecef;font-family:var(--font);color:var(--ink);-webkit-tap-highlight-color:transparent}
+#app{position:fixed;inset:0;display:flex}
+#view{position:relative;flex:1 1 auto;min-width:0}
+#view canvas{display:block;width:100%;height:100%;touch-action:none}
+#css2d{position:absolute;inset:0;pointer-events:none}
+
+/* zaglavlje preko scene */
+.hdr{position:absolute;left:18px;top:16px;display:flex;align-items:center;gap:12px;z-index:5}
+.hdr .mk{width:44px;height:44px;border-radius:10px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font:800 15px var(--font);letter-spacing:.5px;box-shadow:0 6px 18px rgba(20,33,61,.25);text-decoration:none}
+.hdr .t1{font:800 15px var(--font);letter-spacing:1.4px;color:var(--navy)}
+.hdr .t1 span{color:var(--gold);font-weight:700;letter-spacing:2px;margin-left:6px;font-size:11px}
+.hdr input{margin-top:3px;font:500 13px var(--font);color:var(--ink);background:rgba(255,255,255,.7);border:1px solid rgba(20,33,61,.12);border-radius:7px;padding:4px 8px;width:230px}
+.noc .hdr .t1{color:#fff}.noc .hdr input{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.2)}
+.noc .hdr input::placeholder{color:rgba(255,255,255,.55)}
+.hdr input:focus{outline:2px solid var(--gold);outline-offset:1px}
+
+.info{position:absolute;left:18px;bottom:16px;z-index:5;background:rgba(20,33,61,.86);color:#fff;border-radius:12px;padding:10px 14px;font-size:12.5px;line-height:1.5;max-width:min(560px,calc(100% - 36px));backdrop-filter:blur(6px)}
+.info b{color:var(--gold);font-weight:700;letter-spacing:.4px}
+
+.cams{position:absolute;right:16px;bottom:16px;z-index:5;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.cams button{font:600 12px var(--font);background:rgba(255,255,255,.9);border:1px solid rgba(20,33,61,.12);color:var(--navy);border-radius:999px;padding:8px 13px;cursor:pointer;box-shadow:0 3px 10px rgba(20,33,61,.08)}
+.cams button:hover{border-color:var(--gold)}
+.cams button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* kote */
+.kota{font:700 12px var(--font);color:var(--navy);background:rgba(255,255,255,.92);border:1px solid rgba(20,33,61,.18);border-radius:999px;padding:3px 9px;white-space:nowrap;box-shadow:0 2px 8px rgba(20,33,61,.12)}
+.kota i{font-style:normal;color:var(--mut);font-weight:600;margin-right:4px}
+
+/* panel */
+#panel{flex:0 0 360px;background:var(--panel);border-left:1px solid var(--bd);display:flex;flex-direction:column;min-height:0;z-index:6}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:12px 12px 0}
+.tabs button{font:700 12px var(--font);letter-spacing:.3px;padding:10px 6px;border:1px solid var(--bd);background:#fff;color:var(--mut);border-radius:10px 10px 0 0;cursor:pointer;border-bottom:0}
+.tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.pane{display:none;overflow-y:auto;padding:14px 16px 26px;border-top:2px solid var(--navy);flex:1 1 auto}
+.pane.on{display:block}
+.grp{margin-bottom:18px}
+.grp h4{font:800 10.5px var(--font);letter-spacing:1.3px;text-transform:uppercase;color:var(--navy);display:flex;align-items:center;gap:7px;margin-bottom:9px}
+.grp h4::before{content:'';width:4px;height:13px;border-radius:2px;background:var(--gold)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.fld label{display:block;font:600 11px var(--font);color:var(--mut);margin-bottom:4px}
+.fld input[type=number],.fld select{width:100%;font:600 14px var(--font);color:var(--ink);background:#fff;border:1px solid var(--bd);border-radius:9px;padding:8px 10px}
+.fld input:focus,.fld select:focus{outline:2px solid var(--gold);outline-offset:0;border-color:var(--gold)}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;font:600 12px var(--font);padding:8px 8px;border:1px solid var(--bd);background:#fff;color:var(--ink);border-radius:8px;cursor:pointer;white-space:nowrap}
+.seg button:hover{border-color:var(--gold)}
+.seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.seg.sm button{font-size:11px;padding:6px 6px}
+.sw{display:flex;gap:20px 7px;flex-wrap:wrap}
+.sw button{width:38px;height:38px;border-radius:9px;border:2px solid #fff;box-shadow:0 0 0 1px var(--bd);cursor:pointer;position:relative}
+.sw button.on{box-shadow:0 0 0 2px var(--gold)}
+.sw button span{position:absolute;left:50%;top:100%;transform:translateX(-50%);font:600 9px var(--font);color:var(--mut);margin-top:3px;white-space:nowrap}
+.sw{padding-bottom:14px}
+.side{border:1px solid var(--bd);border-radius:11px;padding:10px;margin-bottom:8px;background:#fff}
+.side .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.side .top b{font:700 12.5px var(--font);color:var(--navy)}
+.tg{display:flex;align-items:center;gap:7px;font:600 12px var(--font);color:var(--ink);cursor:pointer;user-select:none}
+.tg input{width:16px;height:16px;accent-color:var(--navy)}
+.rng{display:flex;align-items:center;gap:10px}
+.rng input{flex:1;accent-color:var(--gold)}
+.rng output{font:700 12px var(--font);color:var(--navy);min-width:38px;text-align:right}
+.note{font-size:11.5px;color:var(--mut);line-height:1.5;margin-top:6px}
+.btn{display:block;width:100%;font:700 13px var(--font);padding:12px;border-radius:11px;border:0;cursor:pointer;margin-top:8px;color:#fff;background:var(--navy)}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2))}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--bd)}
+.btn:focus-visible,.seg button:focus-visible,.tabs button:focus-visible,.cams button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.disabled{opacity:.45;pointer-events:none}
+
+#mob{display:none}
+@media (max-width:820px){
+  #app{flex-direction:column}
+  #panel{position:fixed;left:0;right:0;bottom:0;max-height:62vh;border-left:0;border-top:1px solid var(--bd);border-radius:16px 16px 0 0;transform:translateY(100%);transition:transform .28s;box-shadow:0 -10px 30px rgba(20,33,61,.18)}
+  #panel.open{transform:none}
+  #mob{display:block;position:absolute;right:14px;top:16px;z-index:7;font:700 13px var(--font);background:var(--navy);color:#fff;border:0;border-radius:999px;padding:10px 15px;box-shadow:0 6px 18px rgba(20,33,61,.3)}
+  .hdr input{width:160px}
+  .info{bottom:auto;top:78px;font-size:11.5px}
+  .cams{bottom:14px;left:14px;right:14px;justify-content:center}
+}
+</style>
+<script type="importmap">
+{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/addons/"}}
+</script>
+</head>
+<body>
+<div id="app">
+  <div id="view">
+    <div class="hdr">
+      <a class="mk" href="alat.html" title="Nazad na meni">AG</a>
+      <div>
+        <div class="t1">AG GROUP<span>ARHITEKTA</span></div>
+        <input id="naziv" placeholder="Naziv projekta / kupac" aria-label="Naziv projekta">
+      </div>
+    </div>
+    <div class="info" id="info"></div>
+    <div class="cams" id="cams">
+      <button type="button" data-cam="persp" class="on">Perspektiva</button>
+      <button type="button" data-cam="front">Spreda</button>
+      <button type="button" data-cam="side">Sa strane</button>
+      <button type="button" data-cam="top">Odozgo</button>
+      <button type="button" data-cam="in">Iznutra</button>
+    </div>
+    <button id="mob" type="button">Podešavanja</button>
+    <div id="css2d"></div>
+  </div>
+
+  <aside id="panel" aria-label="Podešavanja projekta">
+    <div class="tabs" role="tablist">
+      <button type="button" class="on" data-tab="p1">Pergola</button>
+      <button type="button" data-tab="p2">Staklo i ZIP</button>
+      <button type="button" data-tab="p3">Prikaz</button>
+    </div>
+
+    <!-- ───────── PERGOLA ───────── -->
+    <div class="pane on" id="p1">
+      <div class="grp"><h4>Proizvod</h4>
+        <div class="seg" data-k="tip">
+          <button type="button" data-v="klasicna">Klasična sa padom</button>
+          <button type="button" data-v="bioklimatska">Bioklimatska</button>
+        </div>
+        <div class="seg" data-k="montaza" style="margin-top:6px">
+          <button type="button" data-v="zid">Na zid</button>
+          <button type="button" data-v="samostojeca">Samostojeća</button>
+        </div>
+      </div>
+
+      <div class="grp"><h4>Dimenzije (cm)</h4>
+        <div class="row">
+          <div class="fld"><label for="f_W">Širina</label><input type="number" id="f_W" data-k="W" min="200" max="1400" step="10"></div>
+          <div class="fld"><label for="f_D">Projekcija</label><input type="number" id="f_D" data-k="D" min="200" max="700" step="10"></div>
+        </div>
+        <div class="row" style="margin-top:8px" id="rowVis">
+          <div class="fld" id="fldHb"><label for="f_Hb">Visina na zidu</label><input type="number" id="f_Hb" data-k="Hb" min="220" max="450" step="5"></div>
+          <div class="fld"><label for="f_Hf">Prolazna visina</label><input type="number" id="f_Hf" data-k="Hf" min="200" max="350" step="5"></div>
+        </div>
+        <p class="note" id="padNote"></p>
+      </div>
+
+      <div class="grp"><h4>Konstrukcija</h4>
+        <div class="row">
+          <div class="fld"><label for="f_stub">Dodatni stubovi</label>
+            <select id="f_stub" data-k="dodStub"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+          <div class="fld"><label for="f_rog" id="lblRog">Dodatni krovni rogovi</label>
+            <select id="f_rog" data-k="dodRog"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
+        </div>
+        <p class="note" id="konNote"></p>
+      </div>
+
+      <div class="grp"><h4>Boja konstrukcije</h4>
+        <div class="sw" id="ralSw"></div>
+      </div>
+
+      <div class="grp" id="grpPlatno"><h4>Krovni pokrivač</h4>
+        <div class="seg" data-k="platno">
+          <button type="button" data-v="bez">Bež</button>
+          <button type="button" data-v="bela">Bela</button>
+          <button type="button" data-v="siva">Siva</button>
+          <button type="button" data-v="antracit">Antracit</button>
+        </div>
+        <p class="note">3D blockout platno sa alu profilima.</p>
+      </div>
+      <div class="grp" id="grpLamele"><h4>Lamele</h4>
+        <div class="seg" data-k="lamela">
+          <button type="button" data-v="bela">Bele</button>
+          <button type="button" data-v="ral">U boji konstrukcije</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ───────── STAKLO I ZIP ───────── -->
+    <div class="pane" id="p2">
+      <div class="grp"><h4>Po stranama</h4>
+        <div id="sides"></div>
+        <p class="note">Klizni i giljotina sistemi rade na istom principu na svim stranama. ZIP zavesa ide sa spoljne strane stakla.</p>
+      </div>
+      <div class="grp"><h4>Staklo</h4>
+        <div class="fld" style="margin-bottom:10px"><label>Giljotina — broj segmenata</label>
+          <div class="seg sm" data-k="giljSeg"><button type="button" data-v="2">2 segmenta</button><button type="button" data-v="3">3 segmenta</button></div></div>
+        <div class="fld"><label for="r_os">Otvorenost stakla</label>
+          <div class="rng"><input type="range" id="r_os" data-k="otvStaklo" min="0" max="100" step="1"><output id="o_os"></output></div></div>
+      </div>
+      <div class="grp"><h4>ZIP zavese</h4>
+        <div class="seg sm" data-k="zipBoja" style="margin-bottom:10px">
+          <button type="button" data-v="antracit">Antracit</button>
+          <button type="button" data-v="siva">Siva</button>
+          <button type="button" data-v="bez">Bež</button>
+          <button type="button" data-v="bela">Bela</button>
+        </div>
+        <div class="fld"><label for="r_zip">Spuštenost</label>
+          <div class="rng"><input type="range" id="r_zip" data-k="zipSpust" min="0" max="100" step="1"><output id="o_zip"></output></div></div>
+      </div>
+    </div>
+
+    <!-- ───────── PRIKAZ ───────── -->
+    <div class="pane" id="p3">
+      <div class="grp"><h4 id="lblKrov">Krov</h4>
+        <div class="rng"><input type="range" id="r_krov" data-k="otvKrov" min="0" max="100" step="1" aria-labelledby="lblKrov"><output id="o_krov"></output></div>
+        <p class="note" id="krovNote"></p>
+      </div>
+      <div class="grp"><h4>Atmosfera</h4>
+        <div class="seg" data-k="noc" style="margin-bottom:9px">
+          <button type="button" data-v="0">Dan</button>
+          <button type="button" data-v="1">Veče</button>
+        </div>
+        <label class="tg"><input type="checkbox" data-k="led"> LED rasveta</label>
+      </div>
+      <div class="grp"><h4>Scena</h4>
+        <div class="seg sm" data-k="pod" style="margin-bottom:9px">
+          <button type="button" data-v="plocice">Pod: pločice</button>
+          <button type="button" data-v="drvo">Pod: drvo</button>
+        </div>
+        <label class="tg" style="margin-bottom:7px"><input type="checkbox" data-k="namestaj"> Nameštaj</label>
+        <label class="tg"><input type="checkbox" data-k="kote"> Kote (mere)</label>
+      </div>
+      <div class="grp"><h4>Projekat</h4>
+        <button type="button" class="btn gold" id="bSnimi">Sačuvaj sliku projekta</button>
+        <button type="button" class="btn ghost" id="bPro">Učitaj iz Pergole Pro</button>
+        <button type="button" class="btn ghost" id="bReset">Vrati podrazumevano</button>
+        <p class="note" id="proNote">„Učitaj iz Pergole Pro" preuzima mere, tip, boju i montažu poslednjeg rada iz Pergole Pro na ovom uređaju.</p>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+/* ═══════════════════ STANJE ═══════════════════ */
+const DEF={
+  tip:'klasicna', montaza:'zid',
+  W:600, D:400, Hb:288, Hf:240,
+  dodStub:1, dodRog:2,
+  ral:'7016', platno:'bez', lamela:'bela',
+  staklo:{front:'klizno', left:'giljotina', right:'klizno', back:'none'},
+  zip:{front:false, left:false, right:false, back:false},
+  zipBoja:'antracit', zipSpust:75, giljSeg:3, otvStaklo:0, otvKrov:0,
+  led:true, noc:'0', namestaj:true, kote:true, pod:'plocice', naziv:''
+};
+const LS='ag_arh_v1';
+let S=JSON.parse(JSON.stringify(DEF));
+try{const z=JSON.parse(localStorage.getItem(LS));if(z)S=Object.assign(S,z,{staklo:Object.assign({},DEF.staklo,z.staklo),zip:Object.assign({},DEF.zip,z.zip)});}catch(e){}
+function save(){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
+
+const RAL={'7016':['#383e42','Antracit'],'9005':['#121314','Crna'],'7021':['#2f3234','Crnosiva'],'9007':['#8a8986','Siva alu'],
+  '7035':['#cbd0cc','Svetlosiva'],'9016':['#f1f0ea','Bela'],'8017':['#45322e','Braon'],'8014':['#4a3b2f','Sepija']};
+const PLATNO={bez:'#ddd2bd',bela:'#f1eee7',siva:'#a7a9aa',antracit:'#4a4e52'};
+const ZIPC={antracit:'#33373b',siva:'#7d8185',bez:'#cbbfa9',bela:'#e9e6df'};
+const SIDE_LBL={front:'Napred',left:'Levo',right:'Desno',back:'Pozadi'};
+const GLASS_T=[['none','Bez'],['klizno','Klizno'],['giljotina','Giljotina'],['fiksno','Fiksno']];
+
+/* ═══════════════════ SCENA ═══════════════════ */
+const view=document.getElementById('view');
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+view.prepend(renderer.domElement);
+const css2d=new CSS2DRenderer({element:document.getElementById('css2d')});
+
+const scene=new THREE.Scene();
+const pmrem=new THREE.PMREMGenerator(renderer);
+scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
+
+const camera=new THREE.PerspectiveCamera(34,1,0.1,250);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.dampingFactor=0.08;
+controls.maxPolarAngle=Math.PI*0.495;controls.minDistance=1.5;controls.maxDistance=45;
+
+const hemi=new THREE.HemisphereLight(0xf2f5fa,0x8a8378,1.1);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xfff1dd,3.2);
+sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-0.0006;sun.shadow.normalBias=0.05;sun.shadow.radius=4;
+scene.add(sun,sun.target);
+
+function gradTex(top,mid,bot){
+  const c=document.createElement('canvas');c.width=4;c.height=512;const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,512);g.addColorStop(0,top);g.addColorStop(.62,mid);g.addColorStop(1,bot);
+  x.fillStyle=g;x.fillRect(0,0,4,512);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+const BG_DAY=gradTex('#c9d6e3','#e9ecee','#e3e1dc'), BG_NIGHT=gradTex('#0b1120','#1c2638','#2a2f38');
+
+/* teksture poda */
+function tileTex(){
+  const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');
+  x.fillStyle='#b9b3a8';x.fillRect(0,0,512,512);
+  for(let i=0;i<2;i++)for(let j=0;j<2;j++){
+    const v=196+Math.floor(Math.random()*10);x.fillStyle=`rgb(${v},${v-5},${v-13})`;x.fillRect(i*256+3,j*256+3,250,250);
+    for(let k=0;k<900;k++){const a=Math.random()*.05;x.fillStyle=`rgba(90,80,65,${a})`;x.fillRect(i*256+3+Math.random()*250,j*256+3+Math.random()*250,2,2);}
+  }
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t;
+}
+function deckTex(){
+  const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');
+  x.fillStyle='#3d2f25';x.fillRect(0,0,512,512);
+  for(let r=0;r<8;r++){const v=[124,96,72];const d=Math.floor(Math.random()*16)-8;
+    x.fillStyle=`rgb(${v[0]+d},${v[1]+d},${v[2]+d})`;x.fillRect(0,r*64+2,512,60);
+    for(let k=0;k<40;k++){x.fillStyle=`rgba(60,40,25,${Math.random()*.18})`;x.fillRect(0,r*64+2+Math.random()*58,512,1);}}
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t;
+}
+const TEX={plocice:tileTex(),drvo:deckTex()};
+
+/* ═══════════════════ MATERIJALI ═══════════════════ */
+const M={
+  alu:new THREE.MeshStandardMaterial({color:0x383e42,metalness:.25,roughness:.5}),
+  lam:new THREE.MeshStandardMaterial({color:0xf1f0ea,metalness:.2,roughness:.45}),
+  fab:new THREE.MeshStandardMaterial({color:0xddd2bd,roughness:.95,side:THREE.DoubleSide}),
+  glass:new THREE.MeshStandardMaterial({color:0xc4d6df,metalness:.1,roughness:.04,transparent:true,opacity:.2,depthWrite:false,envMapIntensity:1.6}),
+  zip:new THREE.MeshStandardMaterial({color:0x33373b,roughness:.9,transparent:true,opacity:.9,side:THREE.DoubleSide}),
+  led:new THREE.MeshStandardMaterial({color:0xfff4e0,emissive:0xffd59a,emissiveIntensity:.6,roughness:.4}),
+  floor:new THREE.MeshStandardMaterial({color:0xffffff,roughness:.85}),
+  grass:new THREE.MeshStandardMaterial({color:0x7d9064,roughness:1}),
+  plaster:new THREE.MeshStandardMaterial({color:0xe6e1d9,roughness:.95}),
+  cap:new THREE.MeshStandardMaterial({color:0x3b3f43,roughness:.6,metalness:.2}),
+  win:new THREE.MeshStandardMaterial({color:0x2d3a46,metalness:.3,roughness:.08,envMapIntensity:1.4,emissive:0xffc77a,emissiveIntensity:0}),
+  winFr:new THREE.MeshStandardMaterial({color:0x2a2e32,metalness:.3,roughness:.45}),
+  sofa:new THREE.MeshStandardMaterial({color:0xbfb7aa,roughness:.95}),
+  cush:new THREE.MeshStandardMaterial({color:0xa99f90,roughness:.95}),
+  wood:new THREE.MeshStandardMaterial({color:0x8a6a4f,roughness:.7}),
+  dark:new THREE.MeshStandardMaterial({color:0x1d1f22,roughness:.6,metalness:.3}),
+  rug:new THREE.MeshStandardMaterial({color:0x9c9384,roughness:1}),
+  leaf:new THREE.MeshStandardMaterial({color:0x4f6b45,roughness:.9}),
+  pot:new THREE.MeshStandardMaterial({color:0x6e6862,roughness:.8}),
+  hedge:new THREE.MeshStandardMaterial({color:0x56704a,roughness:1}),
+  line:new THREE.LineBasicMaterial({color:0x14213d})
+};
+const BOX=new THREE.BoxGeometry(1,1,1);
+
+/* ═══════════════════ POMOĆNE ═══════════════════ */
+let G=null, disp=[], lights=[], labels=[];
+function add(o){G.add(o);return o;}
+function box(x0,x1,y0,y1,z0,z1,mat,sh=true){
+  const m=new THREE.Mesh(BOX,mat);
+  m.scale.set(Math.max(x1-x0,.001),Math.max(y1-y0,.001),Math.max(z1-z0,.001));
+  m.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);
+  m.castShadow=sh&&mat!==M.glass;m.receiveShadow=true;return add(m);
+}
+/* šipka u padu: gornja ivica od (zA,yA) do (zB,yB), presek širina × visina */
+function slopeBar(x0,x1,zA,yA,zB,yB,h,mat){
+  const L=Math.hypot(zB-zA,yB-yA), th=Math.atan2(yA-yB,zB-zA);
+  const nz=(yA-yB)/L, ny=(zB-zA)/L;
+  const m=new THREE.Mesh(BOX,mat);m.scale.set(x1-x0,h,L);m.rotation.x=th;
+  m.position.set((x0+x1)/2,(yA+yB)/2-ny*h/2,(zA+zB)/2-nz*h/2);
+  m.castShadow=true;m.receiveShadow=false;return add(m);
+}
+function geomMesh(pos,mat,sh=true){
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.computeVertexNormals();disp.push(g);
+  const m=new THREE.Mesh(g,mat);m.castShadow=sh;m.receiveShadow=true;return add(m);
+}
+function rbox(w,h,d,r,mat,x,y,z){
+  const g=new RoundedBoxGeometry(w,h,d,3,Math.min(r,w/2,h/2,d/2));disp.push(g);
+  const m=new THREE.Mesh(g,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;return add(m);
+}
+function kota(p1,p2,txt,lbl){
+  const g=new THREE.BufferGeometry().setFromPoints([p1,p2]);disp.push(g);
+  add(new THREE.Line(g,M.line));
+  [p1,p2].forEach(p=>{const t=new THREE.Mesh(BOX,M.cap);t.scale.set(.035,.035,.035);t.position.copy(p);add(t);});
+  const d=document.createElement('div');d.className='kota';d.innerHTML=(lbl?`<i>${lbl}</i>`:'')+txt;d.dataset.t=(lbl?lbl+' ':'')+String(txt).replace(/<[^>]+>/g,'');
+  const o=new CSS2DObject(d);o.position.copy(p1).lerp(p2,.5);add(o);labels.push(o);
+}
+const lerp=(a,b,t)=>a+(b-a)*t;
+const cm=v=>Math.round(v)+' cm';
+
+/* ═══════════════════ GEOMETRIJA PERGOLE ═══════════════════ */
+function geo(){
+  const klas=S.tip==='klasicna', zid=S.montaza==='zid';
+  const W=S.W/100, D=S.D/100, Hf=S.Hf/100;
+  const nPost=2+(+S.dodStub), nRog=2+(+S.dodRog);
+  const pw=klas?.10:.15, pd=klas?(nPost===2?.10:.15):.15;
+  const bh=klas?.20:.25;                       // visina grede
+  const Hb=klas?Math.max(S.Hb/100,Hf+bh+.05):Hf+bh;
+  const zW=zid?(klas?.12:.16):pd;              // dokle ide zidni profil / zadnja greda
+  const zF=D-(klas?.15:.16);                   // unutrašnja ivica prednje grede
+  const topY=z=>klas?lerp(Hb,Hf+bh,(z-zW)/(zF-zW)):Hf+bh;
+  const rh=klas?.16:.22;
+  const xsP=[...Array(nPost)].map((_,i)=>pw/2+i*(W-pw)/(nPost-1));
+  const rw=klas?.08:.14;
+  const xsR=klas?[...Array(nRog)].map((_,i)=>rw/2+i*(W-rw)/(nRog-1))
+               :[...Array(nRog)].map((_,i)=>.08+i*(W-.16)/(nRog-1));
+  return {klas,zid,W,D,Hf,Hb,nPost,nRog,pw,pd,bh,zW,zF,topY,rh,xsP,xsR,rw};
+}
+
+function buildPergola(g){
+  const {klas,zid,W,D,Hf,Hb,pw,pd,bh,zW,zF,topY,rh,xsP,xsR,rw}=g;
+  const A=M.alu;
+  // stubovi napred
+  xsP.forEach(x=>box(x-pw/2,x+pw/2,0,Hf,D-pd,D,A));
+  // stubovi pozadi (samostojeća)
+  if(!zid) xsP.forEach(x=>box(x-pw/2,x+pw/2,0,(klas?Hb-bh:Hf),0,pd,A));
+
+  if(klas){
+    // prednja greda sa olukom
+    box(-.02,W+.02,Hf,Hf+bh,zF,D,A);
+    box(-.04,W+.04,Hf+bh-.07,Hf+bh+.02,D,D+.06,A);
+    // zidni profil ili zadnja greda
+    if(zid) box(-.02,W+.02,Hb-.17,Hb,0,zW,A); else box(-.02,W+.02,Hb-bh,Hb,0,zW,A);
+    // rogovi u padu
+    xsR.forEach(x=>slopeBar(x-rw/2,x+rw/2,zW,Hb,zF,Hf+bh,rh,A));
+    buildFabric(g);
+  }else{
+    const t=.16;
+    box(-.0,W,Hf,Hf+bh,D-t,D,A);
+    box(0,W,Hf,Hf+bh,0,t,A);
+    box(0,t,Hf,Hf+bh,0,D,A);box(W-t,W,Hf,Hf+bh,0,D,A);
+    xsR.slice(1,-1).forEach(x=>box(x-.07,x+.07,Hf+.02,Hf+bh,t,D-t,A));
+    buildLamele(g);
+    if(S.led){ // LED traka po unutrašnjoj ivici okvira
+      const e=.012;
+      box(t,W-t,Hf-e,Hf,D-t-.03,D-t,M.led,false);box(t,W-t,Hf-e,Hf,t,t+.03,M.led,false);
+      box(t,t+.03,Hf-e,Hf,t,D-t,M.led,false);box(W-t-.03,W-t,Hf-e,Hf,t,D-t,M.led,false);
+    }
+  }
+}
+
+/* platno sa alu profilima — skuplja se ka zidu */
+function buildFabric(g){
+  const {W,zW,zF,topY,xsR,rw}=g;
+  const o=S.otvKrov/100, L=Math.hypot(zF-zW,topY(zW)-topY(zF));
+  const nb=Math.max(5,Math.round(L/.34));
+  M.fab.color.set(PLATNO[S.platno]);
+  for(let f=0;f<xsR.length-1;f++){
+    const x0=xsR[f]+rw/2, x1=xsR[f+1]-rw/2;
+    const ts=[...Array(nb)].map((_,k)=>{const tc=k/(nb-1),to=.02+k/(nb-1)*.11;return lerp(tc,to,o);});
+    const zs=ts.map(t=>zW+.05+t*(zF-zW-.08));
+    const pos=[], zc0=zW+.05, zc1=zW+.05+(zF-zW-.08)/(nb-1), L0=Math.hypot(zc1-zc0,topY(zc1)-topY(zc0))*1.002;  // razmak kad je razvučeno
+    for(let k=0;k<nb-1;k++){
+      const za=zs[k],zb=zs[k+1],ya=topY(za)-.035,yb=topY(zb)-.035;
+      const gap=Math.hypot(zb-za,yb-ya), sag=Math.sqrt(Math.max(0,(L0/2)**2-(gap/2)**2))*.9;
+      const zm=(za+zb)/2, ym=(ya+yb)/2-sag;
+      pos.push(x0,ya,za, x1,ya,za, x1,ym,zm,  x0,ya,za, x1,ym,zm, x0,ym,zm,
+               x0,ym,zm, x1,ym,zm, x1,yb,zb,  x0,ym,zm, x1,yb,zb, x0,yb,zb);
+    }
+    geomMesh(pos,M.fab).receiveShadow=false;
+    // alu profili (nose platno) + LED tačke
+    zs.forEach(z=>{
+      const y=topY(z)-.04;box(x0,x1,y-.035,y,z-.018,z+.018,M.alu);
+      if(S.led){const n=Math.max(1,Math.round((x1-x0)/.75));
+        for(let i=0;i<n;i++){const x=x0+(i+.5)*(x1-x0)/n;box(x-.03,x+.03,y-.041,y-.035,z-.01,z+.01,M.led,false);}}
+    });
+  }
+}
+
+/* bioklimatske lamele — okreću se oko svoje ose */
+function buildLamele(g){
+  const {W,D,Hf,bh,xsR}=g, t=.16;
+  M.lam.color.set(S.lamela==='ral'?RAL[S.ral][0]:'#eeede7');
+  const ang=S.otvKrov/100*Math.PI*.47, nl=Math.floor((D-2*t)/.2);
+  for(let f=0;f<xsR.length-1;f++){
+    const x0=(f===0?t:xsR[f]+.07), x1=(f===xsR.length-2?W-t:xsR[f+1]-.07);
+    for(let i=0;i<nl;i++){
+      const z=t+.1+i*((D-2*t-.2)/(nl-1||1));
+      const m=new THREE.Mesh(BOX,M.lam);m.scale.set(x1-x0-.01,.028,.19);
+      m.position.set((x0+x1)/2,Hf+bh-.08,z);m.rotation.x=ang;m.castShadow=true;m.receiveShadow=true;add(m);
+    }
+  }
+}
+
+/* ═══════════════════ STAKLO I ZIP ═══════════════════ */
+function segments(g,side){
+  const {klas,zid,W,D,Hf,Hb,pw,pd,bh,zW,xsP}=g, out=[];
+  const yTop=klas?Hf:Hf;
+  if(side==='front'){
+    for(let j=0;j<xsP.length-1;j++)out.push({o:'x',c:D-pd/2,a0:xsP[j]+pw/2,a1:xsP[j+1]-pw/2,y1:yTop,n:+1});
+  }else if(side==='back'){
+    const yb=klas?Hb-bh:Hf;
+    for(let j=0;j<xsP.length-1;j++)out.push({o:'x',c:pd/2,a0:xsP[j]+pw/2,a1:xsP[j+1]-pw/2,y1:yb,n:-1});
+  }else{
+    const c=side==='left'?pw/2:W-pw/2, a0=zid?zW:pd, a1=D-pd;
+    out.push({o:'z',c,a0,a1,y1:yTop,n:side==='left'?-1:+1,gable:klas});
+  }
+  return out;
+}
+// postavljanje kutije u lokalnim koordinatama segmenta: u duž, w normala
+function sbox(s,u0,u1,y0,y1,w0,w1,mat,sh=true){
+  return s.o==='x'?box(u0,u1,y0,y1,s.c+w0,s.c+w1,mat,sh):box(s.c+w0,s.c+w1,y0,y1,u0,u1,mat,sh);
+}
+const FR=.022;  // debljina rama
+function pane(s,u0,u1,y0,y1,w,frame=true){
+  sbox(s,u0+FR,u1-FR,y0+FR,y1-FR,w-.006,w+.006,M.glass,false);
+  if(frame){
+    sbox(s,u0,u1,y0,y0+FR*1.6,w-.014,w+.014,M.alu);sbox(s,u0,u1,y1-FR,y1,w-.014,w+.014,M.alu);
+    sbox(s,u0,u0+FR,y0,y1,w-.014,w+.014,M.alu);sbox(s,u1-FR,u1,y0,y1,w-.014,w+.014,M.alu);
+  }
+}
+function buildGlass(g){
+  const o=S.otvStaklo/100;
+  ['front','left','right','back'].forEach(side=>{
+    if(side==='back'&&g.zid)return;
+    const t=S.staklo[side];
+    segments(g,side).forEach(s=>{
+      const len=s.a1-s.a0, h=s.y1;
+      if(t!=='none'){
+        // šine gore i dole
+        sbox(s,s.a0,s.a1,0,.03,-.05,.05,M.alu);sbox(s,s.a0,s.a1,h-.035,h,-.05,.05,M.alu);
+      }
+      if(t==='klizno'){
+        const n=Math.max(2,Math.round(len/.85)), wd=len/n;
+        for(let i=0;i<n;i++){
+          const uc=s.a0+i*wd, us=s.a0+i*.035, u=lerp(uc,us,o), w=(i%2?.022:-.022);
+          pane(s,u,u+wd+.02,.03,h-.035,w);
+        }
+      }else if(t==='giljotina'){
+        const c=Math.max(1,Math.round(len/1.3)), cw=len/c, k=+S.giljSeg, sh=(h-.065)/k;
+        for(let j=0;j<c;j++){
+          const u0=s.a0+j*cw, u1=u0+cw;
+          for(let q=0;q<k;q++){
+            const yc=.03+q*sh, ys=.03+Math.min(q,1)*.0, y=lerp(yc,ys,q===0?0:o);
+            pane(s,u0+.005,u1-.005,y,y+sh,(q-1)*.024);
+          }
+          if(j>0)sbox(s,u0-.02,u0+.02,0,h,-.05,.05,M.alu);
+        }
+      }else if(t==='fiksno'){
+        const c=Math.max(1,Math.round(len/1.6)), cw=len/c;
+        for(let j=0;j<c;j++)pane(s,s.a0+j*cw,s.a0+(j+1)*cw,.03,h-.035,0);
+      }
+      // zabat — staklo u trouglu iznad prolazne visine (klasična, bočne strane)
+      if(s.gable&&t!=='none'){
+        const {topY,rh}=g, x=s.c, za=s.a0, zb=s.a1, ya=topY(za)-rh, yb=Math.max(topY(zb)-rh,h+.01);
+        geomMesh([x,h,za, x,h,zb, x,yb,zb,  x,h,za, x,yb,zb, x,ya,za],M.glass,false);
+        sbox(s,za,zb,h-.01,h+.035,-.03,.03,M.alu);
+      }
+      // ZIP zavesa — spolja
+      if(S.zip[side]){
+        const w0=s.n*.075, dz=s.n>0?[w0-.055,w0+.055]:[w0-.055,w0+.055].map(v=>v);
+        const drop=S.zipSpust/100*(h-.12);
+        sbox(s,s.a0-.02,s.a1+.02,h-.12,h,Math.min(...dz),Math.max(...dz),M.alu);
+        sbox(s,s.a0-.02,s.a0+.02,0,h-.12,w0-.025,w0+.025,M.alu);sbox(s,s.a1-.02,s.a1+.02,0,h-.12,w0-.025,w0+.025,M.alu);
+        if(drop>.01){M.zip.color.set(ZIPC[S.zipBoja]);sbox(s,s.a0+.02,s.a1-.02,h-.12-drop,h-.12,w0-.004,w0+.004,M.zip);}
+      }
+    });
+  });
+}
+
+/* ═══════════════════ OKRUŽENJE ═══════════════════ */
+function buildScene(g){
+  const {zid,W,D,Hb,Hf}=g;
+  // teren i terasa
+  const lawn=new THREE.Mesh(new THREE.PlaneGeometry(160,160),M.grass);disp.push(lawn.geometry);
+  lawn.rotation.x=-Math.PI/2;lawn.position.set(W/2,-.12,D/2);lawn.receiveShadow=true;add(lawn);
+  const tx0=zid?-2.2:-1.6, tx1=W+(zid?2.2:1.6), tz0=zid?0:-1.4, tz1=D+1.9;
+  const tex=TEX[S.pod];M.floor.map=tex;M.floor.needsUpdate=true;
+  tex.repeat.set((tx1-tx0)/(S.pod==='drvo'?1.2:1.2),(tz1-tz0)/(S.pod==='drvo'?1.2:1.2));
+  const sl=box(tx0,tx1,-.12,0,tz0,tz1,M.floor,false);sl.receiveShadow=true;
+  // prilagođavanje UV-a kutije (gornja strana) — samo gornja ploha je vidljiva, ostalo deluje kao ivica
+  if(zid){
+    const hw=Math.max(Hb+1.25,3.4), x0=-3.2, x1=W+3.2;
+    box(x0,x1,0,hw,-.35,0,M.plaster);
+    box(x0-.05,x1+.05,hw,hw+.12,-.42,.06,M.cap);       // atika
+    box(x0,x1,0,.18,-.35,.015,M.cap);                   // sokla
+    // klizna vrata iza pergole
+    const dw=Math.min(W*.62,4.2), dx=W/2-dw/2, dh=Math.min(2.4,Hf-.05);
+    box(dx-.05,dx+dw+.05,0,dh+.05,-.02,.02,M.winFr);
+    box(dx,dx+dw,.05,dh,-.015,.022,M.win,false);
+    for(let i=1;i<3;i++)box(dx+i*dw/3-.02,dx+i*dw/3+.02,.05,dh,-.02,.028,M.winFr);
+    // prozori sa strane
+    [[x0+.9,1.3],[x1-.9-1.3,1.3]].forEach(([wx,ww])=>{
+      if(wx+ww<-0.2||wx>W+.2){box(wx-.05,wx+ww+.05,.95,2.25,-.02,.02,M.winFr);box(wx,wx+ww,1.0,2.2,-.015,.022,M.win,false);}
+    });
+  }else{
+    // živa ograda u pozadini
+    box(-4,W+4,-.12,1.25,-3.6,-2.9,M.hedge);
+  }
+  if(S.namestaj&&W>=3&&D>=2.6) buildFurniture(g);
+}
+function buildFurniture(g){
+  const {W,D}=g, cx=W/2, cz=D/2+.1;
+  const sw=Math.min(2.6,W-1.2), sx0=cx-sw/2;
+  // tepih
+  box(cx-Math.min(1.9,W/2-.4),cx+Math.min(1.9,W/2-.4),0,.012,cz-1.05,cz+.95,M.rug,false).castShadow=false;
+  // ugaona garnitura
+  rbox(sw,.38,.85,.06,M.sofa,cx,.22,cz-.75);
+  rbox(sw,.42,.18,.06,M.sofa,cx,.58,cz-1.1);
+  rbox(.85,.38,1.25,.06,M.sofa,sx0+.425,.22,cz+.3);
+  rbox(.18,.42,1.25,.06,M.sofa,sx0+.05,.58,cz+.3);
+  for(let i=0;i<3;i++)rbox(sw/3-.06,.12,.7,.05,M.cush,sx0+sw/6+i*sw/3,.46,cz-.7);
+  // sto
+  rbox(1.0,.06,.62,.02,M.wood,cx+.35,.36,cz+.15);
+  box(cx-.1,cx+.8,0,.33,cz-.12,cz+.42,M.dark);
+  // biljka
+  const pot=new THREE.Mesh(new THREE.CylinderGeometry(.22,.17,.5,24),M.pot);disp.push(pot.geometry);
+  pot.position.set(Math.min(W-.45,cx+sw/2+.25),.25,Math.max(.45,cz-1.1));pot.castShadow=true;add(pot);
+  const lf=new THREE.Mesh(new THREE.IcosahedronGeometry(.42,1),M.leaf);disp.push(lf.geometry);
+  lf.position.set(pot.position.x,.9,pot.position.z);lf.scale.set(1,1.25,1);lf.castShadow=true;add(lf);
+}
+
+/* kote */
+function buildKote(g){
+  const {klas,W,D,Hf,Hb}=g;
+  const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+  kota(V(0,.03,D+.55),V(W,.03,D+.55),cm(S.W),'širina');
+  kota(V(W+.55,.03,0),V(W+.55,.03,D),cm(S.D),'projekcija');
+  kota(V(W+.3,0,D),V(W+.3,Hf,D),cm(S.Hf),'prolazna');
+  if(klas)kota(V(W+.3,0,.04),V(W+.3,Hb,.04),cm(S.Hb),'na zidu');
+}
+
+/* svetla za veče */
+function buildLights(g){
+  lights.forEach(l=>scene.remove(l));lights=[];
+  if(!(S.led&&S.noc==='1'))return;
+  const {W,D,Hf,xsR,klas}=g, n=Math.min(6,Math.max(1,xsR.length-1));
+  for(let i=0;i<n;i++){
+    const x=W*(i+.5)/n;
+    const l=new THREE.PointLight(0xffc98a,klas?2.6:2.2,6,2);l.position.set(x,Hf-.15,D*.5);scene.add(l);lights.push(l);
+  }
+}
+
+/* ═══════════════════ IZGRADNJA ═══════════════════ */
+let GEO=null;
+function rebuild(){
+  if(G){scene.remove(G);disp.forEach(d=>d.dispose());}
+  labels.forEach(l=>l.element.remove());labels=[];disp=[];
+  G=new THREE.Group();scene.add(G);
+  const g=GEO=geo();
+  M.alu.color.set(RAL[S.ral][0]);
+  buildScene(g);buildPergola(g);buildGlass(g);
+  if(S.kote)buildKote(g);
+  buildLights(g);
+  atmosphere(g);
+  ui();
+}
+function atmosphere(g){
+  const night=S.noc==='1';
+  scene.background=night?BG_NIGHT:BG_DAY;
+  scene.fog=new THREE.Fog(night?0x1c2638:0xe6e8e9,28,70);
+  scene.environmentIntensity=night?.1:.38;
+  hemi.intensity=night?.15:.42;
+  hemi.color.set(night?0x6d7fa6:0xf2f5fa);
+  sun.intensity=night?.3:4.2;sun.color.set(night?0x8fa3d6:0xfff1dd);
+  const {W,D}=g, r=Math.max(W,D)+4;
+  sun.position.set(W/2-r*1.05,r*.95,D/2+r*.5);sun.target.position.set(W/2,0,D/2);
+  const c=sun.shadow.camera;c.left=-r;c.right=r;c.top=r;c.bottom=-r;c.near=.5;c.far=r*4;c.updateProjectionMatrix();
+  M.led.emissiveIntensity=S.led?(night?3.2:.5):0;M.led.color.set(S.led?0xfff4e0:0xd9d9d6);
+  M.win.emissiveIntensity=night?.28:0;
+  renderer.toneMappingExposure=night?1.1:.92;
+  document.body.classList.toggle('noc',night);
+}
+
+/* ═══════════════════ KAMERA ═══════════════════ */
+let camAnim=null;
+function camPose(k){
+  const g=GEO, W=g.W, D=g.D, H=g.klas?g.Hb:g.Hf+.3, R=Math.max(W,D*1.3,H*1.6);
+  const tgt=new THREE.Vector3(W*.45,H*.48,D*.38);
+  const P={
+    persp:[W+R*.62,H*1.05+.75,D+R*1.6],
+    front:[W/2,H*.55+.4,D+R*1.75],
+    side:[W+R*1.7,H*.6+.4,D*.55],
+    top:[W/2+.01,R*2.3,D/2+R*.35],
+    in:[W*.3,1.45,Math.min(.6,D*.2)]
+  }[k];
+  if(k==='in')return {p:new THREE.Vector3(...P),t:tgt.set(W*.6,1.75,D+3.5)};
+  /* uzan ekran (telefon uspravno) — kamera se odmiče da cela pergola stane */
+  const f=camera.aspect<1.2?Math.pow(1.2/camera.aspect,.85):1;
+  return {p:new THREE.Vector3(...P).sub(tgt).multiplyScalar(f).add(tgt),t:tgt};
+}
+function setCam(k,instant){
+  document.querySelectorAll('#cams button').forEach(b=>b.classList.toggle('on',b.dataset.cam===k));
+  const e=camPose(k);
+  if(instant){camera.position.copy(e.p);controls.target.copy(e.t);controls.update();return;}
+  camAnim={p0:camera.position.clone(),t0:controls.target.clone(),p1:e.p,t1:e.t,s:performance.now()};
+}
+
+/* ═══════════════════ PANEL ═══════════════════ */
+function bindAll(){
+  // segmenti
+  document.querySelectorAll('.seg[data-k]').forEach(seg=>{
+    seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+      S[seg.dataset.k]=isNaN(+b.dataset.v)||seg.dataset.k==='noc'?b.dataset.v:+b.dataset.v;
+      if(seg.dataset.k==='tip'&&S.tip==='bioklimatska'&&S.dodRog>3)S.dodRog=1;
+      changed(true);});
+  });
+  // brojevi, liste, klizači, prekidači
+  document.querySelectorAll('input[data-k],select[data-k]').forEach(el=>{
+    const ev=el.type==='range'||el.type==='checkbox'?'input':'change';
+    el.addEventListener(ev,()=>{
+      const k=el.dataset.k;
+      if(el.type==='checkbox')S[k]=el.checked;
+      else{let v=parseFloat(el.value);if(isNaN(v))return;
+        const mn=parseFloat(el.min),mx=parseFloat(el.max);
+        if(el.type==='number'){if(!isNaN(mn))v=Math.max(mn,v);if(!isNaN(mx))v=Math.min(mx,v);}
+        S[k]=v;}
+      changed(el.type==='number'||el.tagName==='SELECT');
+    });
+  });
+  // RAL
+  const sw=document.getElementById('ralSw');
+  sw.innerHTML=Object.entries(RAL).map(([k,v])=>`<button type="button" data-ral="${k}" style="background:${v[0]}" title="RAL ${k} — ${v[1]}" aria-label="RAL ${k} ${v[1]}"><span>${k}</span></button>`).join('');
+  sw.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.ral=b.dataset.ral;changed(false);});
+  // strane
+  document.getElementById('sides').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-side]');if(!b)return;S.staklo[b.dataset.side]=b.dataset.v;changed(false);});
+  document.getElementById('sides').addEventListener('change',e=>{
+    const c=e.target.closest('input[data-zip]');if(!c)return;S.zip[c.dataset.zip]=c.checked;changed(false);});
+  // tabovi
+  document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+    document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id===b.dataset.tab));}));
+  // kamere
+  document.getElementById('cams').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setCam(b.dataset.cam);});
+  // naziv
+  const nz=document.getElementById('naziv');nz.value=S.naziv||'';nz.addEventListener('input',()=>{S.naziv=nz.value;save();});
+  // mobilni panel
+  document.getElementById('mob').addEventListener('click',()=>document.getElementById('panel').classList.toggle('open'));
+  document.getElementById('bSnimi').addEventListener('click',snimi);
+  document.getElementById('bPro').addEventListener('click',izPro);
+  document.getElementById('bReset').addEventListener('click',()=>{const n=S.naziv;S=JSON.parse(JSON.stringify(DEF));S.naziv=n;changed(true);});
+}
+let tm=null;
+function changed(recam){
+  save();rebuild();
+  if(recam){clearTimeout(tm);tm=setTimeout(()=>setCam(document.querySelector('#cams button.on')?.dataset.cam||'persp'),60);}
+}
+function ui(){
+  const g=GEO;
+  document.querySelectorAll('.seg[data-k]').forEach(seg=>seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',String(S[seg.dataset.k])===b.dataset.v)));
+  document.querySelectorAll('input[data-k],select[data-k]').forEach(el=>{
+    if(document.activeElement===el&&el.type==='number')return;
+    if(el.type==='checkbox')el.checked=!!S[el.dataset.k];else el.value=S[el.dataset.k];});
+  document.querySelectorAll('#ralSw button').forEach(b=>b.classList.toggle('on',b.dataset.ral===S.ral));
+  // strane
+  const sides=['front','left','right'].concat(g.zid?[]:['back']);
+  document.getElementById('sides').innerHTML=sides.map(sd=>`
+    <div class="side"><div class="top"><b>${SIDE_LBL[sd]}</b>
+      <label class="tg"><input type="checkbox" data-zip="${sd}" ${S.zip[sd]?'checked':''}> ZIP</label></div>
+      <div class="seg sm">${GLASS_T.map(([v,l])=>`<button type="button" data-side="${sd}" data-v="${v}" class="${S.staklo[sd]===v?'on':''}">${l}</button>`).join('')}</div>
+    </div>`).join('');
+  // natpisi i vidljivost
+  document.getElementById('fldHb').classList.toggle('disabled',!g.klas);
+  document.querySelector('label[for=f_Hf]').textContent=g.klas?'Prolazna visina':'Visina (prolazna)';
+  document.getElementById('grpPlatno').style.display=g.klas?'':'none';
+  document.getElementById('grpLamele').style.display=g.klas?'none':'';
+  document.getElementById('lblRog').textContent=g.klas?'Dodatni krovni rogovi':'Dodatni krovni nosači';
+  const pad=g.klas?((S.Hb-S.Hf)/S.D*100):null;
+  document.getElementById('padNote').textContent=g.klas?`Pad krova ${pad.toFixed(1)}%`+(pad<5?' — premalo za odvod vode':pad>25?' — neuobičajeno veliki':''):'Ravan krov sa lamelama, odvod kroz bočne profile i stubove.';
+  document.getElementById('konNote').textContent=`${g.nPost} ${g.nPost<5?'stuba':'stubova'} napred${g.zid?'':' + '+g.nPost+' pozadi'} · ${g.klas?g.nRog+' roga · '+(g.nRog-1)+(g.nRog-1===1?' polje':' polja')+' krova':(g.nRog-1)+(g.nRog-1===1?' polje':' polja')+' lamela'} · stubovi ${Math.round(g.pw*100)}×${Math.round(g.pd*100)} cm`;
+  document.getElementById('o_os').textContent=S.otvStaklo+'%';
+  document.getElementById('o_zip').textContent=S.zipSpust+'%';
+  document.getElementById('o_krov').textContent=S.otvKrov+'%';
+  document.getElementById('lblKrov').textContent=g.klas?'Krov — platno uvučeno':'Krov — lamele otvorene';
+  document.getElementById('krovNote').textContent=g.klas?'0% = platno razvučeno, 100% = skupljeno uz zid.':'0% = lamele zatvorene, 100% = otvorene.';
+  const st=Object.entries(S.staklo).filter(([k,v])=>v!=='none'&&(k!=='back'||!g.zid)).map(([k,v])=>SIDE_LBL[k].toLowerCase()+' '+v);
+  const zp=Object.entries(S.zip).filter(([k,v])=>v&&(k!=='back'||!g.zid)).map(([k])=>SIDE_LBL[k].toLowerCase());
+  document.getElementById('info').innerHTML=
+    `<b>${g.klas?'KLASIČNA SA PADOM':'BIOKLIMATSKA'}</b> · ${S.W} × ${S.D} cm · ${g.zid?'na zid':'samostojeća'} · RAL ${S.ral}`+
+    (st.length?`<br>Staklo: ${st.join(', ')}`:'')+(zp.length?` · ZIP: ${zp.join(', ')}`:'');
+}
+
+/* ═══════════════════ UČITAVANJE IZ PERGOLE PRO ═══════════════════ */
+function izPro(){
+  let d=null;try{d=JSON.parse(localStorage.getItem('pg_v2'));}catch(e){}
+  const note=document.getElementById('proNote');
+  if(!d||!d.s){note.textContent='Na ovom uređaju nema rada iz Pergole Pro. Otvorite projekat tamo, pa pokušajte ponovo.';return;}
+  const s=d.s,f=d.f||{};
+  S.tip=s.type==='bioklimatska'?'bioklimatska':'klasicna';
+  S.montaza=s.mount==='samostojeca'?'samostojeca':'zid';
+  const n=v=>parseInt(v);
+  if(n(f.pw_0))S.W=n(f.pw_0);if(n(f.pp_0))S.D=n(f.pp_0);
+  if(n(f.pg_passHeight))S.Hf=n(f.pg_passHeight);
+  if(n(f.pg_wallHeight))S.Hb=n(f.pg_wallHeight);else S.Hb=Math.round(S.Hf+S.D*.12);
+  if(S.tip==='bioklimatska'&&!n(f.pg_passHeight))S.Hf=250;
+  const ppp=n(f.pg_postsPerPergola)||3;S.dodStub=Math.max(0,ppp-2);S.dodRog=S.tip==='klasicna'?Math.max(0,ppp-2):Math.max(0,ppp-2);
+  if(s.ral&&RAL[s.ral])S.ral=s.ral;
+  if(f.pg_projectName)S.naziv=f.pg_projectName;document.getElementById('naziv').value=S.naziv||'';
+  note.textContent=`Učitano: ${f.pg_projectName||'poslednji rad'} — ${S.W} × ${S.D} cm.`;
+  changed(true);
+}
+
+/* ═══════════════════ SLIKA PROJEKTA ═══════════════════ */
+function snimi(){
+  const W=renderer.domElement.width, H=renderer.domElement.height, pr=renderer.getPixelRatio();
+  renderer.render(scene,camera);
+  const band=Math.round(86*pr), c=document.createElement('canvas');c.width=W;c.height=H+band;
+  const x=c.getContext('2d');x.drawImage(renderer.domElement,0,0);
+  // kote
+  if(S.kote){x.font=`700 ${12*pr}px ${getComputedStyle(document.body).fontFamily}`;x.textBaseline='middle';
+    labels.forEach(o=>{const v=o.getWorldPosition(new THREE.Vector3()).project(camera);if(v.z>1)return;
+      const px=(v.x+1)/2*W, py=(1-v.y)/2*H, t=o.element.dataset.t||o.element.textContent, tw=x.measureText(t).width+18*pr;
+      x.fillStyle='rgba(255,255,255,.92)';x.beginPath();x.roundRect(px-tw/2,py-11*pr,tw,22*pr,11*pr);x.fill();
+      x.strokeStyle='rgba(20,33,61,.2)';x.lineWidth=pr;x.stroke();x.fillStyle='#14213d';x.textAlign='center';x.fillText(t,px,py+pr);});}
+  // naslovna traka
+  x.fillStyle='#14213d';x.fillRect(0,H,W,band);x.fillStyle='#c8944e';x.fillRect(0,H,W,3*pr);
+  const fam=getComputedStyle(document.body).fontFamily, g=GEO;
+  x.textAlign='left';x.textBaseline='alphabetic';x.fillStyle='#fff';x.font=`800 ${20*pr}px ${fam}`;x.fillText('AG GROUP',24*pr,H+38*pr);
+  x.fillStyle='#c8944e';x.font=`700 ${11*pr}px ${fam}`;x.fillText('PERGOLA.RS  ·  3D PROJEKAT',24*pr,H+60*pr);
+  x.textAlign='center';x.fillStyle='#fff';x.font=`700 ${15*pr}px ${fam}`;
+  x.fillText(S.naziv||'Projekat pergole',W/2,H+38*pr);
+  x.fillStyle='rgba(255,255,255,.7)';x.font=`500 ${12*pr}px ${fam}`;
+  x.fillText(`${g.klas?'Klasična pergola sa padom':'Bioklimatska pergola'} · ${S.W} × ${S.D} cm · RAL ${S.ral}`,W/2,H+60*pr);
+  const dt=new Date(),ds=`${String(dt.getDate()).padStart(2,'0')}.${String(dt.getMonth()+1).padStart(2,'0')}.${dt.getFullYear()}.`;
+  x.textAlign='right';x.fillText(ds,W-24*pr,H+48*pr);
+  const a=document.createElement('a');const LAT={č:'c',ć:'c',š:'s',đ:'dj',ž:'z',Č:'C',Ć:'C',Š:'S',Đ:'Dj',Ž:'Z'};
+  a.download=(S.naziv||'projekat').replace(/[čćšđžČĆŠĐŽ]/g,ch=>LAT[ch]).replace(/[^\w -]+/g,'').trim().replace(/\s+/g,'-')+'-3D.png';
+  c.toBlob(bl=>{const u=URL.createObjectURL(bl);a.href=u;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);},'image/png');
+}
+
+/* ═══════════════════ PETLJA ═══════════════════ */
+function resize(){
+  const w=view.clientWidth,h=view.clientHeight;
+  renderer.setSize(w,h,false);css2d.setSize(w,h);camera.aspect=w/Math.max(h,1);camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(view);
+function loop(now){
+  if(camAnim){const t=Math.min(1,(now-camAnim.s)/700),e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+    camera.position.lerpVectors(camAnim.p0,camAnim.p1,e);controls.target.lerpVectors(camAnim.t0,camAnim.t1,e);if(t>=1)camAnim=null;}
+  controls.update();renderer.render(scene,camera);css2d.render(scene,camera);requestAnimationFrame(loop);
+}
+bindAll();rebuild();resize();setCam('persp',true);requestAnimationFrame(loop);
+window.__arh={S,rebuild:()=>changed(true),setCam,renderer,sun,scene,THREE};
+</script>
+</body>
+</html>
