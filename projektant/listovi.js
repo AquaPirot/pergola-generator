@@ -633,7 +633,7 @@ export function list02(P, R, meta) {
   zaglavlje(L, P, {
     naziv: 'SKLOP PERGOLA', podnaziv: 'Osnova, preseci, sastavnica', objekat: objekat(P, R), datum: meta.datum,
     razmera: [...new Set([sO, sP, sB])].map(s => '1:' + s).join(', '), masa: masa ? `≈ ${Math.round(masa)} kg (alu)` : '—',
-    broj: broj(P, R.T.cel ? 2 : 1), list: `${meta.n - 1}/${meta.n}`, rev: P.rev || 'A'
+    broj: broj(P, R.T.cel ? 2 : 1), list: `${R.T.cel ? 2 : 1}/${meta.n}`, rev: P.rev || 'A'
   });
   return { L, rows, masa };
 }
@@ -714,17 +714,11 @@ export function list03(P, R, meta) {
   if (D.rezC.length) tab('1  ČELIK — REZNA LISTA', [{ t: 'Poz', w: 9, f: r => r.poz }, { t: 'Element', w: 52, a: 'l', f: r => r.naziv }, { t: 'Profil', w: 30, f: r => r.dim }, { t: 'Dužina', w: 16, f: fL }, { t: 'Kom', w: 11, f: fK }, { t: 'Rez', w: 11, f: () => '90°' }, { t: 'Ukupno m', w: 17, f: r => zarez((r.L * r.kom / 1000).toFixed(2)) }],
     D.rezC, `crtež ${broj(P, 1)}`);
   plan('2  PLAN SEČENJA — ČELIK', D.planC);
-  tab((D.rezC.length ? '3' : '1') + '  ALU — REZNA LISTA', [{ t: 'Poz', w: 9, f: r => r.poz }, { t: 'Element', w: 50, a: 'l', f: r => r.naziv }, { t: 'Šifra', w: 16, f: r => r.dim }, { t: 'Dužina', w: 16, f: fL }, { t: 'Kom', w: 11, f: fK }, { t: 'kg/m', w: 13, f: r => zarez(PROF(r.dim).kg) }, { t: 'Ukupno m', w: 17, f: r => zarez((r.L * r.kom / 1000).toFixed(2)) }],
-    D.rezA, `crtež ${broj(P, R.T.cel ? 2 : 1)}`);
-  plan((D.rezC.length ? '4' : '2') + '  PLAN SEČENJA — ALU', D.planA);
-  let nb = D.rezC.length ? 5 : 3;
+  let nb = 3;
   if (D.ploce.length) tab(`${nb++}  PLOČE I REBRA (LIM S235JR)`, [{ t: 'Poz', w: 9, f: r => r.poz }, { t: 'Element', w: 48, a: 'l', f: r => r.naziv }, { t: 'Dimenzija', w: 24, f: r => r.dim }, { t: 'Kom', w: 10, f: fK }, { t: 'Rupe', w: 15, f: r => r.rupe }, { t: '', w: 7, f: () => '□' }], D.ploce);
   const spoj = D.spoj.map(r => ({ poz: r.poz, naziv: r.naziv, dim: r.dim, kom: r.kom, mat: r.mat }));
   if (D.nAnk) spoj.push({ poz: '', naziv: 'Hemijska masa za ankere', dim: `za ${D.nAnk} rupa Ø14×165`, kom: '', mat: '' }, { poz: '', naziv: 'Burgija Ø14 (beton / zid)', dim: 'dužina ≥ 200', kom: 1, mat: '' });
   if (spoj.length) tab(`${nb++}  SPOJNI MATERIJAL`, [{ t: 'Poz', w: 9, f: r => r.poz }, { t: 'Naziv', w: 48, a: 'l', f: r => r.naziv }, { t: 'Dimenzija', w: 30, f: r => r.dim }, { t: 'Kom', w: 10, f: fK }, { t: 'Kvalitet', w: 15, f: r => r.mat }, { t: '', w: 7, f: () => '□' }], spoj);
-  const mw = R.mod.map(m => Math.round(R.xa[m[1]] - R.xa[m[0]]));
-  const opr = D.oprema.map(r => ({ naziv: r.naziv, dim: r.k === 'cerada' ? [...new Set(mw)].map(w => `≈ ${w} × ${R.rogL}`).join(', ') : r.k === 'opsivka' || r.k === 'zidni' ? `L = ${r.L}` : '', kom: r.kom, mat: r.mat === '—' ? '' : r.mat }));
-  tab(`${nb++}  OPREMA PERGOLE`, [{ t: 'Naziv', w: 52, a: 'l', f: r => r.naziv }, { t: 'Dimenzija / napomena', w: 38, f: r => r.dim }, { t: 'Kom', w: 10, f: fK }, { t: 'Materijal', w: 22, f: r => r.mat }, { t: '', w: 7, f: () => '□' }], opr);
   const ns = R.nast.length, zav = P.zavar, zas = P.zastita;
   const chk = [
     'Mere proverene na licu mesta (zid, visine, pad)',
@@ -733,29 +727,27 @@ export function list03(P, R, meta) {
     R.T.cel ? `Zavareno: ${zav}` : null,
     R.T.cel ? `Zaštita: ${zas}` : null,
     ns ? `Nastavak grede iznad ose ${R.nast.map(i => i + 1).join(', ')} — probno spojeno` : null,
-    `Alu profili isečeni (${D.rezA.reduce((a, r) => a + r.kom, 0)} kom), boja RAL proverena`,
-    'Cerade, motori i daljinski provereni',
     D.nAnk ? `Ankeri, hemijska masa, burgija Ø14 spakovani (${D.nAnk} kom)` : null,
     'Alat i vezivni materijal za montažu spakovan'
   ].filter(Boolean).map(t => ({ t }));
   tab(`${nb++}  PRE MONTAŽE — PROVERA`, [{ t: '', w: 7, f: () => '□' }, { t: 'Stavka', w: 110, a: 'l', f: r => r.t }, { t: 'Potpis', w: 25, f: () => '' }], chk);
 
-  const mc = D.cel.reduce((a, r) => a + r.kg, 0), ma = D.alu.reduce((a, r) => a + r.kg, 0);
+  const mc = D.cel.reduce((a, r) => a + r.kg, 0);
   zaglavlje(L, P, {
-    naziv: 'RADIONIČKA LISTA', podnaziv: 'Rezna lista, materijal i priprema za montažu', objekat: objekat(P, R), datum: meta.datum,
-    razmera: '—', masa: (mc ? `čelik ≈ ${Math.round(mc)} kg · ` : '') + `alu ≈ ${Math.round(ma)} kg`,
+    naziv: 'RADIONIČKA LISTA', podnaziv: 'Čelik: rezna lista, ploče, okov i priprema za montažu', objekat: objekat(P, R), datum: meta.datum,
+    razmera: '—', masa: `≈ ${Math.round(mc)} kg`,
     broj: broj(P, meta.n), list: `${meta.n}/${meta.n}`, rev: P.rev || 'A'
   });
-  return { L, masa: mc + ma };
+  return { L, masa: mc };
 }
 
 export function sviListovi(P) {
-  const R = racun(P), n = R.T.cel ? 3 : 2;
+  const R = racun(P), n = R.T.cel ? 3 : 1;
   const d = P.datum || new Date().toLocaleDateString('sr-RS', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\s/g, '');
   const meta = { n, datum: d };
   const out = [];
   const a = list01(P, R, meta); if (a) out.push(Object.assign(a, { broj: broj(P, 1), naziv: 'Konstrukcija' }));
-  const b = list02(P, R, meta); out.push(Object.assign(b, { broj: broj(P, n - 1), naziv: 'Sklop pergola' }));
-  const c = list03(P, R, meta); out.push(Object.assign(c, { broj: broj(P, n), naziv: 'Radionička lista' }));
+  const b = list02(P, R, meta); out.push(Object.assign(b, { broj: broj(P, R.T.cel ? 2 : 1), naziv: 'Sklop pergola' }));
+  if (R.T.cel) { const c = list03(P, R, meta); out.push(Object.assign(c, { broj: broj(P, 3), naziv: 'Radionička lista' })); }
   return { R, listovi: out };
 }
