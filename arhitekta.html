@@ -241,6 +241,11 @@ html,body{height:100%;overflow:hidden;background:#e9ecef;font-family:var(--font)
           <button type="button" data-v="bez">Bež</button>
           <button type="button" data-v="bela">Bela</button>
         </div>
+        <div class="seg sm" data-k="zipTip" style="margin-bottom:6px">
+          <button type="button" data-v="screen">Screen — prozračno</button>
+          <button type="button" data-v="blackout">Blackout — neprozirno</button>
+        </div>
+        <p class="note" id="zipNote" style="margin:0 0 10px"></p>
         <div class="fld"><label for="r_zip">Spuštenost</label>
           <div class="rng"><input type="range" id="r_zip" data-k="zipSpust" min="0" max="100" step="1"><output id="o_zip"></output></div></div>
       </div>
@@ -302,6 +307,7 @@ const DEF={
   ral:'7016', platno:'bez', lamela:'bela',
   staklo:{front:'klizno', left:'giljotina', right:'klizno', back:'none'},
   zip:{front:false, left:false, right:false, back:false},
+  vrata:{front:'none', left:'none', right:'none', back:'none'}, zipTip:'screen',
   zipBoja:'antracit', zipSpust:75, giljSeg:3, otvStaklo:0, otvKrov:0,
   led:true, noc:'0', namestaj:true, kote:true, pod:'plocice', naziv:''
 };
@@ -311,7 +317,7 @@ const b64e=t=>{let r='';new TextEncoder().encode(t).forEach(c=>r+=String.fromCha
 const b64d=t=>new TextDecoder().decode(Uint8Array.from(atob(t.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)));
 const KUPAC=/[?&]kupac\b/.test(location.search)||location.hash.startsWith('#p=');
 let S=JSON.parse(JSON.stringify(DEF));
-const spoji=z=>{if(z)S=Object.assign(S,z,{staklo:Object.assign({},DEF.staklo,z.staklo),zip:Object.assign({},DEF.zip,z.zip)});};
+const spoji=z=>{if(z)S=Object.assign(S,z,{staklo:Object.assign({},DEF.staklo,z.staklo),zip:Object.assign({},DEF.zip,z.zip),vrata:Object.assign({},DEF.vrata,z.vrata)});};
 if(KUPAC){try{spoji(JSON.parse(b64d(location.hash.slice(3))));}catch(e){}document.body.classList.add('kupac');}
 else{try{spoji(JSON.parse(localStorage.getItem(LS)));}catch(e){}}
 function save(){if(KUPAC)return;try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
@@ -322,6 +328,7 @@ const PLATNO={bez:'#ddd2bd',bela:'#f1eee7',siva:'#a7a9aa',antracit:'#4a4e52'};
 const ZIPC={antracit:'#33373b',siva:'#7d8185',bez:'#cbbfa9',bela:'#e9e6df'};
 const SIDE_LBL={front:'Napred',left:'Levo',right:'Desno',back:'Pozadi'};
 const GLASS_T=[['none','Bez'],['klizno','Klizno'],['giljotina','Giljotina'],['fiksno','Fiksno']];
+const VRATA_T=[['none','Bez vrata'],['levo','Levo'],['sredina','Sredina'],['desno','Desno']];
 
 /* ═══════════════════ SCENA ═══════════════════ */
 const view=document.getElementById('view');
@@ -569,6 +576,61 @@ function pane(s,u0,u1,y0,y1,w,frame=true){
     sbox(s,u0,u0+FR,y0,y1,w-.014,w+.014,M.alu);sbox(s,u1-FR,u1,y0,y1,w-.014,w+.014,M.alu);
   }
 }
+/* ispuna dela polja izabranim sistemom stakla */
+function ispuna(s,t,a0,a1,h,o){
+  const len=a1-a0;
+  if(t==='klizno'){
+    const n=Math.max(2,Math.round(len/.85)), wd=len/n;
+    for(let i=0;i<n;i++){
+      const uc=a0+i*wd, us=a0+i*.035, u=lerp(uc,us,o), w=(i%2?.022:-.022);
+      pane(s,u,u+wd+(i<n-1?.02:0),.03,h-.035,w);
+    }
+  }else if(t==='giljotina'){
+    /* jedno polje između stubova — bez vertikale u sredini; tek preko 5 m polje se deli */
+    const c=Math.max(1,Math.ceil(len/5)), cw=len/c, k=+S.giljSeg, sh=(h-.065)/k;
+    for(let j=0;j<c;j++){
+      const u0=a0+j*cw, u1=u0+cw;
+      for(let q=0;q<k;q++){ const yc=.03+q*sh, y=lerp(yc,.03,q===0?0:o); pane(s,u0+.005,u1-.005,y,y+sh,(q-1)*.024); }
+      if(j>0)sbox(s,u0-.02,u0+.02,0,h,-.05,.05,M.alu);
+    }
+  }else if(t==='fiksno'){
+    const c=Math.max(1,Math.round(len/1.6)), cw=len/c;
+    for(let j=0;j<c;j++)pane(s,a0+j*cw,a0+(j+1)*cw,.03,h-.035,0);
+  }
+}
+/* gde su vrata na ovom polju: [u0,u1] ili null */
+function vrataNa(g,side,s){
+  const poz=S.vrata&&S.vrata[side];if(!poz||poz==='none'||S.staklo[side]==='none')return null;
+  const sv=segments(g,side), A0=sv[0].a0, A1=sv[sv.length-1].a1, dw=.95;
+  let c=poz==='levo'?A0+.35+dw/2:poz==='desno'?A1-.35-dw/2:(A0+A1)/2;
+  let seg=sv.find(q=>c>=q.a0&&c<=q.a1);
+  if(!seg){seg=sv.reduce((a,q)=>Math.abs((q.a0+q.a1)/2-c)<Math.abs((a.a0+a.a1)/2-c)?q:a);c=(seg.a0+seg.a1)/2;}   // pada na stub — u sredinu najbližeg polja
+  if(Math.abs(seg.a0-s.a0)>1e-6||Math.abs(seg.a1-s.a1)>1e-6)return null;
+  const w=Math.min(dw,s.a1-s.a0-.08), u0=Math.min(Math.max(c-w/2,s.a0+.04),s.a1-.04-w);
+  return [u0,u0+w];
+}
+/* krilo vrata na šarke — otvara se napolje sa „Otvorenost stakla" */
+function lbox(grp,x0,x1,y0,y1,z0,z1,mat,sh=true){
+  const m=new THREE.Mesh(BOX,mat);m.scale.set(x1-x0,y1-y0,z1-z0);m.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);
+  m.castShadow=sh&&mat!==M.glass;m.receiveShadow=true;grp.add(m);return m;
+}
+function vrata(s,u0,u1,h,o){
+  const dw=u1-u0, F=.05;
+  // dovratnik
+  sbox(s,u0-F,u0,0,h,-.04,.04,M.alu);sbox(s,u1,u1+F,0,h,-.04,.04,M.alu);
+  sbox(s,u0-F,u1+F,h-.05,h,-.045,.045,M.alu);
+  // krilo — grupa sa osom u šarki (u0)
+  const grp=new THREE.Group();add(grp);
+  const ang=o*Math.PI*.47;
+  if(s.o==='x'){grp.position.set(u0,0,s.c+s.n*.03);grp.rotation.y=-s.n*ang;}
+  else{grp.position.set(s.c+s.n*.03,0,u0);grp.rotation.y=-Math.PI/2+s.n*ang;}
+  const hl=h-.07, fw=.055;
+  lbox(grp,0,dw,.012,hl,-.022,.022,M.glass,false);
+  lbox(grp,0,dw,.012,.012+fw*1.6,-.026,.026,M.alu);lbox(grp,0,dw,hl-fw,hl,-.026,.026,M.alu);
+  lbox(grp,0,fw,.012,hl,-.026,.026,M.alu);lbox(grp,dw-fw,dw,.012,hl,-.026,.026,M.alu);
+  // kvaka sa obe strane
+  [-1,1].forEach(z=>{lbox(grp,dw-fw-.05,dw-fw-.03,.98,1.16,z*.03,z*.05,M.dark);lbox(grp,dw-fw-.16,dw-fw-.03,1.06,1.08,z*.05,z*.065,M.dark);});
+}
 function buildGlass(g){
   const o=S.otvStaklo/100;
   ['front','left','right','back'].forEach(side=>{
@@ -580,28 +642,13 @@ function buildGlass(g){
         // šine gore i dole
         sbox(s,s.a0,s.a1,0,.03,-.05,.05,M.alu);sbox(s,s.a0,s.a1,h-.035,h,-.05,.05,M.alu);
       }
-      if(t==='klizno'){
-        const n=Math.max(2,Math.round(len/.85)), wd=len/n;
-        for(let i=0;i<n;i++){
-          const uc=s.a0+i*wd, us=s.a0+i*.035, u=lerp(uc,us,o), w=(i%2?.022:-.022);
-          pane(s,u,u+wd+.02,.03,h-.035,w);
-        }
-      }else if(t==='giljotina'){
-        /* jedno polje između stubova — staklo ide celom širinom, bez vertikale u sredini;
-           tek preko 5 m polje se deli */
-        const c=Math.max(1,Math.ceil(len/5)), cw=len/c, k=+S.giljSeg, sh=(h-.065)/k;
-        for(let j=0;j<c;j++){
-          const u0=s.a0+j*cw, u1=u0+cw;
-          for(let q=0;q<k;q++){
-            const yc=.03+q*sh, ys=.03+Math.min(q,1)*.0, y=lerp(yc,ys,q===0?0:o);
-            pane(s,u0+.005,u1-.005,y,y+sh,(q-1)*.024);
-          }
-          if(j>0)sbox(s,u0-.02,u0+.02,0,h,-.05,.05,M.alu);
-        }
-      }else if(t==='fiksno'){
-        const c=Math.max(1,Math.round(len/1.6)), cw=len/c;
-        for(let j=0;j<c;j++)pane(s,s.a0+j*cw,s.a0+(j+1)*cw,.03,h-.035,0);
-      }
+      // vrata: širina ~95 cm, položaj duž cele strane (levo / sredina / desno)
+      const dv=vrataNa(g,side,s);
+      if(t!=='none'&&dv){
+        if(dv[0]-s.a0>.05)ispuna(s,t,s.a0,dv[0],h,o);
+        if(s.a1-dv[1]>.05)ispuna(s,t,dv[1],s.a1,h,o);
+        vrata(s,dv[0],dv[1],h,o);
+      }else if(t!=='none')ispuna(s,t,s.a0,s.a1,h,o);
       // zabat — staklo u trouglu iznad prolazne visine (klasična, bočne strane)
       if(s.gable&&t!=='none'){
         const {topY,rh}=g, x=s.c, za=s.a0, zb=s.a1, ya=topY(za)-rh, yb=Math.max(topY(zb)-rh,h+.01);
@@ -617,7 +664,8 @@ function buildGlass(g){
         const drop=S.zipSpust/100*(h-.12);
         sbox(s,s.a0-.02,s.a1+.02,h-.12,h,Math.min(...dz),Math.max(...dz),M.alu);
         sbox(s,s.a0-.02,s.a0+.02,0,h-.12,w0-.025,w0+.025,M.alu);sbox(s,s.a1-.02,s.a1+.02,0,h-.12,w0-.025,w0+.025,M.alu);
-        if(drop>.01){M.zip.color.set(ZIPC[S.zipBoja]);sbox(s,s.a0+.02,s.a1-.02,h-.12-drop,h-.12,w0-.004,w0+.004,M.zip);}
+        if(drop>.01){const scr=S.zipTip!=='blackout';M.zip.color.set(ZIPC[S.zipBoja]);M.zip.opacity=scr?.5:.97;M.zip.depthWrite=!scr;M.zip.roughness=scr?.97:.9;
+          sbox(s,s.a0+.02,s.a1-.02,h-.12-drop,h-.12,w0-.004,w0+.004,M.zip,!scr);}
       }
     });
   });
@@ -780,6 +828,7 @@ function bindAll(){
   sw.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.ral=b.dataset.ral;changed(false);});
   // strane
   document.getElementById('sides').addEventListener('click',e=>{
+    const d=e.target.closest('button[data-door]');if(d){S.vrata[d.dataset.door]=d.dataset.v;changed(false);return;}
     const b=e.target.closest('button[data-side]');if(!b)return;S.staklo[b.dataset.side]=b.dataset.v;changed(false);});
   document.getElementById('sides').addEventListener('change',e=>{
     const c=e.target.closest('input[data-zip]');if(!c)return;S.zip[c.dataset.zip]=c.checked;changed(false);});
@@ -820,7 +869,9 @@ function ui(){
     <div class="side"><div class="top"><b>${SIDE_LBL[sd]}</b>
       <label class="tg"><input type="checkbox" data-zip="${sd}" ${S.zip[sd]?'checked':''}> ZIP</label></div>
       <div class="seg sm">${GLASS_T.map(([v,l])=>`<button type="button" data-side="${sd}" data-v="${v}" class="${S.staklo[sd]===v?'on':''}">${l}</button>`).join('')}</div>
+      ${S.staklo[sd]!=='none'?`<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="font:600 11px var(--font);color:var(--mut)">Vrata</span><div class="seg sm" style="flex:1">${VRATA_T.map(([v,l])=>`<button type="button" data-door="${sd}" data-v="${v}" class="${(S.vrata[sd]||'none')===v?'on':''}">${v==='none'?'Bez':l}</button>`).join('')}</div></div>`:''}
     </div>`).join('');
+  document.getElementById('zipNote').textContent=S.zipTip==='blackout'?'Ne propušta svetlo — potpuna zaštita i privatnost.':'Štiti od sunca i vetra, a iznutra se vidi napolje.';
   // natpisi i vidljivost
   document.getElementById('fldHb').classList.toggle('disabled',!g.klas);
   document.querySelector('label[for=f_Hf]').textContent=g.klas?'Prolazna visina':'Visina (prolazna)';
@@ -837,9 +888,10 @@ function ui(){
   document.getElementById('krovNote').textContent=g.klas?'0% = platno razvučeno, 100% = skupljeno uz zid.':'0% = lamele zatvorene, 100% = otvorene.';
   const st=Object.entries(S.staklo).filter(([k,v])=>v!=='none'&&(k!=='back'||!g.zid)).map(([k,v])=>SIDE_LBL[k].toLowerCase()+' '+v);
   const zp=Object.entries(S.zip).filter(([k,v])=>v&&(k!=='back'||!g.zid)).map(([k])=>SIDE_LBL[k].toLowerCase());
+  const vr=Object.entries(S.vrata||{}).filter(([k,v])=>v!=='none'&&S.staklo[k]!=='none'&&(k!=='back'||!g.zid)).map(([k])=>SIDE_LBL[k].toLowerCase());
   document.getElementById('info').innerHTML=
     `<b>${g.klas?'KLASIČNA SA PADOM':'BIOKLIMATSKA'}</b> · ${S.W} × ${S.D} cm · ${g.zid?'na zid':'samostojeća'} · RAL ${S.ral}`+
-    (st.length?`<br>Staklo: ${st.join(', ')}`:'')+(zp.length?` · ZIP: ${zp.join(', ')}`:'');
+    (st.length?`<br>Staklo: ${st.join(', ')}`:'')+(vr.length?` · vrata: ${vr.join(', ')}`:'')+(zp.length?` · ZIP: ${zp.join(', ')}`:'');
 }
 
 /* ═══════════════════ UČITAVANJE IZ PERGOLE PRO ═══════════════════ */
@@ -904,12 +956,12 @@ const slug=()=>{const LAT={č:'c',ć:'c',š:'s',đ:'dj',ž:'z',Č:'C',Ć:'C',Š:
 /* scenario: prikazuje se samo ono što pergola ima */
 function vidPlan(){
   const g=GEO, strane=['front','left','right'].concat(g.zid?[]:['back']);
-  const zipS=strane.filter(k=>S.zip[k]), mov=strane.filter(k=>S.staklo[k]==='klizno'||S.staklo[k]==='giljotina');
+  const zipS=strane.filter(k=>S.zip[k]), mov=strane.filter(k=>S.staklo[k]==='klizno'||S.staklo[k]==='giljotina'), ima=strane.some(k=>S.staklo[k]!=='none'&&S.vrata&&S.vrata[k]&&S.vrata[k]!=='none');
   const P=[];let t=0;const ph=(k,d,cap)=>{P.push({k,t0:t,t1:t+d,cap});t+=d;};
   ph('uvod',1.6,S.naziv||'Vaša nova pergola');
   if(zipS.length)ph('zip',2.3,'ZIP zavese');
-  if(mov.length){const v=new Set(mov.map(k=>S.staklo[k]));
-    ph('staklo',2.5,v.size>1?'Klizna stakla i giljotina':v.has('klizno')?'Klizna stakla':'Giljotina stakla');}
+  if(mov.length||ima){const v=new Set(mov.map(k=>S.staklo[k]));
+    ph('staklo',2.5,!mov.length?'Staklena vrata':v.size>1?'Klizna stakla i giljotina':v.has('klizno')?'Klizna stakla':'Giljotina stakla');}
   ph('krov',2.5,g.klas?'Krovno platno se povlači':'Lamele se otvaraju');
   ph('noc',3.0,'LED rasveta');
   ph('kraj',2.6,'');
