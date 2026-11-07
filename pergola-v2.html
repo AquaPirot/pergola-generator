@@ -234,7 +234,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v56</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v57</div>
 </header>
 
 <div class="view-bar">
@@ -269,9 +269,10 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
           <div class="form-row single"><div class="form-group"><label>Kupac</label>
             <input type="text" id="pg_qName" placeholder="npr. Marko Petrović"></div></div>
           <div class="form-row single"><div class="form-group"><label>Pergola</label>
-            <div class="type-selector" id="pg_qType" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+            <div class="type-selector" id="pg_qType" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:0">
               <div class="type-option active" data-qt="klasicna" onclick="pgQType(this)"><span class="type-icon">&#9698;</span><span class="type-name">Klasična</span></div>
               <div class="type-option" data-qt="bioklimatska" onclick="pgQType(this)"><span class="type-icon">&#9776;</span><span class="type-name">Bioklimatska</span></div>
+              <div class="type-option" data-qt="biofix" onclick="pgQType(this)"><span class="type-icon">&#9644;</span><span class="type-name">BIOFIX</span></div>
             </div></div></div>
           <div class="form-row">
             <div class="form-group"><label>Širina <span class="unit">(m)</span></label>
@@ -316,10 +317,11 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
 
         <div class="form-section">
           <div class="form-section-title">&#9670; Tip pergole</div>
-          <div class="type-selector" id="pg_typeSel">
+          <div class="type-selector" id="pg_typeSel" style="grid-template-columns:1fr 1fr">
             <div class="type-option active" data-type="bioklimatska" onclick="pgSelectType(this)"><span class="type-icon">&#9776;</span><span class="type-name">Bioklimatska</span></div>
             <div class="type-option" data-type="ravna" onclick="pgSelectType(this)"><span class="type-icon">&#9644;</span><span class="type-name">Ravna 3D</span></div>
             <div class="type-option" data-type="klasicna" onclick="pgSelectType(this)"><span class="type-icon">&#9651;</span><span class="type-name">Klasična</span></div>
+            <div class="type-option" data-type="biofix" onclick="pgSelectType(this)"><span class="type-icon">&#9641;</span><span class="type-name">BIOFIX panel</span></div>
           </div>
         </div>
 
@@ -612,7 +614,12 @@ const PG_ML={bioklimatska:'Pokretne lamele',ravna:'3D Blockout platno',klasicna:
 /* Duži naziv pokrivača — samo u ponudi za kupca; crteži koriste kratki PG_ML */
 /* Naziv koji ide kupcu — bez broja stubova i rogova, to mu ne znači ništa */
 const PG_NAZIV={bioklimatska:'Bioklimatska pergola',klasicna:'Klasična pergola sa padom',ravna:'Ravna pergola'};
-function pgNazivKupac(){return T(PG_NAZIV[pgS.type]||PG_TL[pgS.type]);}
+/* BIOFIX = konstrukcija bioklimatske, krov od termoizolovanog panela 5 cm, bez motora i lamela */
+function pgBF(){return pgS.type==='bioklimatska'&&!!pgS.biofix;}
+function pgTL(){return pgBF()?'BIOFIX pergola (termoizolovani panel)':PG_TL[pgS.type];}
+function pgML(){return pgBF()?'Termoizolovani panel 5 cm':PG_ML[pgS.type];}
+function pgPokrivac(){return pgBF()?'Termoizolovani panel 5 cm':PG_POKRIVAC[pgS.type];}
+function pgNazivKupac(){return T(pgBF()?'BIOFIX — termoizolovana fiksna pergola':(PG_NAZIV[pgS.type]||PG_TL[pgS.type]));}
 const PG_POKRIVAC={bioklimatska:'Pokretne aluminijumske lamele',
   ravna:'3D blockout i alu profili sa integrisanom rasvetom',
   klasicna:'3D blockout i alu profili sa integrisanom rasvetom'};
@@ -629,7 +636,7 @@ function switchView(v,btn){
 }
 
 /* ═══ UI HANDLERS ═══ */
-function pgSelectType(el){document.querySelectorAll('#pg_typeSel .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.type=el.dataset.type;pgS.samoTip=pgS.type==='bioklimatska'?'stubovi':'celik';pgCeradaDefault();pgDrainNote();pgModelAuto();pgMountUI();pgLayRender();}
+function pgSelectType(el){document.querySelectorAll('#pg_typeSel .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.biofix=el.dataset.type==='biofix';pgS.type=pgS.biofix?'bioklimatska':el.dataset.type;pgS.samoTip=pgS.type==='bioklimatska'?'stubovi':'celik';pgCeradaDefault();pgDrainNote();pgModelAuto();pgMountUI();pgLayRender();}
 function pgSelectCount(el){document.querySelectorAll('#pg_countSel .num-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.count=parseInt(el.dataset.count);pgBuildDims();document.getElementById('sharedPostSection').style.display=pgS.count>1?'block':'none';pgLayRender();}
 function pgSelectMount(el){document.querySelectorAll('#pg_mountSel .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.mount=el.dataset.mount;if(!pgS.samoTip)pgS.samoTip=pgS.type==='bioklimatska'?'stubovi':'celik';pgMountUI();pgLayRender();}
 function pgSelectSamoTip(el){document.querySelectorAll('#pg_samoTipSel .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.samoTip=el.dataset.st;pgMountUI();}
@@ -640,7 +647,7 @@ function pgCeradaDefault(){
 }
 function pgDrainNote(){
   const el=document.getElementById('pg_drainNote');if(!el)return;
-  el.textContent=pgS.type==='bioklimatska'
+  el.textContent=pgBF()?'Voda sa panela otiče u oluke integrisane u konstrukciju i odvodi se kroz stubove.':pgS.type==='bioklimatska'
     ?'Bočni profili pergole su ujedno oluci: voda sa lamela otiče u njih, preusmerava se ka stubovima i kroz otvor u dnu stuba izlazi napolje.'
     :'Oluci su integrisani u konstrukciju: voda sa platna otiče u oluk i odvodi se kroz stubove.';
 }
@@ -696,7 +703,7 @@ pgBuildDims();
 
 
 /* ═══ JEZIK PONUDE ═══ */
-const PG_BG={"PONUDA ZA KUPCA":"ОФЕРТА ЗА КЛИЕНТА","PROJEKAT:":"ПРОЕКТ:","Projekat":"Проект","Model":"Модел","Gabarit":"Габарит","Boja":"Цвят","Br. ponude":"№ на офертата","Datum":"Дата","Tip":"Тип","Prolazna visina":"Проходна височина","Proizvedeno u Srbiji":"Произведено в Сърбия","Po izboru":"По избор","—":"—","TEHNIČKI CRTEŽ PERGOLE":"ТЕХНИЧЕСКИ ЧЕРТЕЖ НА ПЕРГОЛА","3D TEHNIČKI PRIKAZ PERGOLE":"3D ТЕХНИЧЕСКИ ИЗГЛЕД НА ПЕРГОЛА","Br. crteža":"№ на чертежа","Prolazna visina":"Проходна височина","Specifikacija":"Спецификация","SPECIFIKACIJA":"СПЕЦИФИКАЦИЯ","SPECIFIKACIJA PROJEKTA":"СПЕЦИФИКАЦИЯ НА ПРОЕКТА","Dimenzije (Š × D)":"Размери (Ш × Д)","Visina napred (prolazna)":"Височина отпред (проходна)","Visina kod zida":"Височина до стената","Visina konstrukcije":"Височина на конструкцията","Visina na zidu":"Височина до стената","Površina":"Площ","Pad krova":"Наклон на покрива","Pokrivač":"Покритие","Boja konstrukcije":"Цвят на конструкцията","Boja platna / cerade":"Цвят на платното","Boja cerade/platna":"Цвят на платното","Stubovi":"Колони","Montaža":"Монтаж","Odvod vode":"Отводняване","Čelična konstrukcija":"Стоманена конструкция","Motor":"Мотор","Broj pergola":"Брой пергули","Ukupna širina":"Обща ширина","Projekcija":"Проекция","Projekcija (max)":"Проекция (макс.)","UKUPNA CENA":"ОБЩА ЦЕНА","CENA":"ЦЕНА","CENA NA UPIT":"ЦЕНА ПРИ ЗАПИТВАНЕ","Na upit":"При запитване","Pozovite nas za ponudu":"Обадете се за оферта","Plaćanje: 50% avans, 50% dan pre isporuke i montaže.":"Плащане: 50% авансово, 50% в деня преди доставка и монтаж.","Plaćanje: 50% avans  •  50% dan pre isporuke i montaže":"Плащане: 50% авансово • 50% в деня преди доставка и монтаж","TEHNIČKI PRIKAZI":"ТЕХНИЧЕСКИ ЧЕРТЕЖИ","PREDNJI POGLED":"ПРЕДЕН ИЗГЛЕД","BOČNI PRESEK":"СТРАНИЧЕН РАЗРЕЗ","TLOCRT (odozgo)":"ПЛАН (отгоре)","TLOCRT (pogled odozgo)":"ПЛАН (изглед отгоре)","FRONTALNI POGLED":"ПРЕДЕН ИЗГЛЕД","Prednji pogled":"Преден изглед","Bočni presek":"Страничен разрез","Tlocrt (pogled odozgo)":"План (изглед отгоре)","OPIS MODELA":"ОПИСАНИЕ НА МОДЕЛА","Opis modela":"Описание на модела","USLOVI":"УСЛОВИЯ","Uslovi":"Условия","U CENU JE UKLJUČENO":"ЦЕНАТА ВКЛЮЧВА","U cenu je uključeno":"Цената включва","NIJE UKLJUČENO":"НЕ Е ВКЛЮЧЕНО","Nije uključeno":"Не е включено","Zašto AG GROUP":"Защо AG GROUP","Naši radovi":"Нашите проекти","Ponuda za:":"Оферта за:","Karakteristike":"Характеристики","Napomena: ":"Забележка: ","Ponuda":"Оферта","Ponuda važi 7 dana — do ":"Офертата важи 7 дни — до ","Rok isporuke i montaže: ":"Срок за доставка и монтаж: ","Visine se utvrđuju prilikom uzimanja mera.":"Височините се определят при заснемане на място.","Kontakt: ":"Контакт: ","20 dana":"20 дни","po dogovoru":"по договаряне","uz objekat (zid)":"към сграда (стена)","čelična konstrukcija uz objekat":"стоманена конструкция към сградата","čelična konstr. uz objekat":"стоманена констр. към сградата","samostojeća — sopstveni stubovi":"самостояща — собствени колони","samostojeća — čelična konstrukcija":"самостояща — стоманена конструкция","samostojeća — čelična konstr.":"самостояща — стоманена констр.","kroz bočne profile i stubove":"през страничните профили и колоните","kroz integrisane oluke u konstrukciji":"през интегрирани улуци в конструкцията","levi ugaoni stub":"лява ъглова колона","desni ugaoni stub":"дясна ъглова колона","oba ugaona stuba":"двете ъглови колони","leva":"лява","desna":"дясна","Bioklimatska pergola (pokretne lamele)":"Биоклиматична пергола (подвижни ламели)","Ravna pergola (3D Blockout platno)":"Права пергола (3D Blockout платно)","Klasična pergola sa padom":"Класическа пергола с наклон","Pokretne lamele":"Подвижни ламели","3D Blockout platno":"3D Blockout платно","Bioklimatska — 2 stuba":"Биоклиматична — 2 колони","Bioklimatska — 3 stuba":"Биоклиматична — 3 колони","Bioklimatska — 4 stuba":"Биоклиматична — 4 колони","Ravna — 2 stuba":"Права — 2 колони","Ravna — 3 stuba":"Права — 3 колони","Ravna — 4 stuba":"Права — 4 колони","Klasična sa padom — 2 stuba / 2 roga":"Класическа с наклон — 2 колони / 2 ребра","Klasična sa padom — 3 stuba / 3 roga":"Класическа с наклон — 3 колони / 3 ребра","Klasična sa padom — 4 stuba / 4 roga":"Класическа с наклон — 4 колони / 4 ребра","Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.":"Биоклиматичната пергола е алуминиева конструкция, чийто покрив се състои от въртящи се ламели. С промяна на ъгъла на ламелите регулирате количеството светлина и въздушния поток под перголата. В затворено положение ламелите образуват компактна покривна повърхност, а водата се насочва към интегрираното отводняване, съобразно конструкцията и техническите ограничения на избраната система.","Klasična pergola je aluminijumska konstrukcija sa tehničkim platnom koje se pomoću vođica otvara i skuplja. Kada je platno razvučeno, pravi senku i štiti prostor od uobičajenih vremenskih uslova u granicama konkretnog sistema. Kada želite otvoreno nebo, krov se povlači. Zbog lakšeg izgleda i dobre prilagodljivosti često je racionalan izbor za natkrivanje većih terasa.":"Класическата пергола е алуминиева конструкция с техническо платно, което се отваря и прибира чрез водачи. Когато платното е разпънато, прави сянка и защитава пространството от обичайните атмосферни условия в границите на конкретната система. Когато желаете открито небе, покривът се прибира. Заради по-лекия вид и добрата гъвкавост често е рационален избор за покриване на по-големи тераси.","Model pergole sa slike":"Модел пергола от снимката","Samsung LED rasveta":"Samsung LED осветление","Motor i daljinski upravljač — motor i rasveta na istom daljinskom":"Мотор и дистанционно — мотор и осветление на едно дистанционно","Motori i daljinski upravljač — motor i rasveta na istom daljinskom":"Мотори и дистанционно — мотор и осветление на едно дистанционно","Konstrukcija od ekstrudiranog aluminijuma, farbana elektrostatskom farbom":"Конструкция от екструдиран алуминий, боядисана с електростатична боя","Aluminijumske vodilice pergole":"Алуминиеви водачи на перголата","Aluminijumske vodilice lamela":"Алуминиеви водачи на ламелите","Nagib pergole od 10–15%":"Наклон на перголата 10–15%","Nagib pergole od 1–2%":"Наклон на перголата 1–2%","Oluci za vodu sakriveni u konstrukciji":"Улуци за вода, скрити в конструкцията","Limena nadstrešnica za skupljenu pergolu":"Ламаринен навес за прибраното платно","3D blockout — troslojno termostabilno platno":"3D blockout — трислойно термостабилно платно","Aluminijumske lamele kao krovni pokrivač":"Алуминиеви ламели като покривно покритие","Transport i montaža":"Транспорт и монтаж","Elektro priključak do mesta montaže":"Електрическо захранване до мястото на монтажа","Građevinski radovi — temelj i sidrenje u beton ako podloga nije spremna":"Строителни работи — основа и анкериране в бетон, ако основата не е подготвена","Limarski radovi koji nisu deo date ponude za pergolu":"Ламаринджийски работи, които не са част от тази оферта","ALUMINIJUM VISOKE ČVRSTOĆE":"АЛУМИНИЙ С ВИСОКА ЯКОСТ","Plastifikacija u RAL nijansi po izboru":"Прахово боядисване в RAL цвят по избор","OTPORNOST NA VREMENSKE USLOVE":"УСТОЙЧИВОСТ НА АТМОСФЕРНИ УСЛОВИЯ","Kiša, vetar i UV zaštita":"Дъжд, вятър и UV защита","GARANCIJA 2 GODINE":"ГАРАНЦИЯ 2 ГОДИНИ","Na konstrukciju i mehanizam":"За конструкцията и механизма","PROFESIONALNA MONTAŽA":"ПРОФЕСИОНАЛЕН МОНТАЖ","Montaža sopstvenom ekipom":"Монтаж със собствен екип","ZID":"ЗИД","OLUK":"УЛУК","ZIDIĆ":"ПАРАПЕТ","ODVOD":"ОТВОД","RAZMAK":"РАЗСТОЯНИЕ","ZAJEDNIČKI STUB":"ОБЩА КОЛОНА","ODVOJENI STUBOVI":"ОТДЕЛНИ КОЛОНИ","RAZMAKNUTE PERGOLE":"РАЗДЕЛЕНИ ПЕРГОЛИ","PREDNJA LINIJA — PORAVNATO":"ПРЕДНА ЛИНИЯ — ИЗРАВНЕНО","ZADNJI STUB":"ЗАДНА КОЛОНА","MEĐUSTUB":"МЕЖДИННА КОЛОНА","Prolazna visina merena do donje ivice oluka.":"Проходната височина е мерена до долния ръб на улука.","oluk → odvod kroz stub":"улук → отвод през колоната","pad: ":"наклон: ","PAD ":"НАКЛОН ","* Zajednički stub na spoju":"* Обща колона на връзката","MOTOR P":"МОТОР P","← leva strana":"← лява страна","desna strana →":"дясна страна →","Visine i pad krova se utvrđuju prilikom uzimanja mera na terenu.":"Височините и наклонът се определят при заснемане на място.","Presek kroz najdublju pergolu — prednje ivice svih pergola su u istoj liniji.":"Разрез през най-дълбоката пергола — предните ръбове на всички пергули са на една линия.","Pozovi":"Обадете се","Viber poruka":"Viber съобщение","dodirnite za uvećanje":"докоснете за увеличение","Dodirnite fotografiju za uvećanje.":"Докоснете снимката за увеличение.","prolazna visina ":"проходна височина ","REDOVNA CENA":"РЕДОВНА ЦЕНА","CENA UZ POTVRDU DO ":"ЦЕНА ПРИ ПОТВЪРЖДЕНИЕ ДО ","CENA UZ POTVRDU DO":"ЦЕНА ПРИ ПОТВЪРЖДЕНИЕ ДО","UŠTEDA ":"ИКОНОМИЯ ","Ponuda važi 3 dana — do ":"Офертата важи 3 дни — до ","10–20 dana":"10–20 дни","oko 10%":"около 10%","Boja krovnog pokrivača":"Цвят на покривното покритие","po izboru":"по избор","Pokretne aluminijumske lamele":"Подвижни алуминиеви ламели","3D blockout i alu profili sa integrisanom rasvetom":"3D blockout и алуминиеви профили с вградено осветление","PROIZVODIMO":"ПРОИЗВЕЖДАМЕ","sopstvena proizvodnja":"собствено производство","MONTIRAMO":"МОНТИРАМЕ","naša ekipa":"наш екип","SERVISIRAMO":"СЕРВИЗИРАМЕ","i posle garancije":"и след гаранцията","SAMI PROIZVODIMO":"ПРОИЗВЕЖДАМЕ САМИ","Ne uvozimo gotove pergole — svaka se radi po vašoj meri":"Не внасяме готови перголи — всяка се прави по вашата мярка","MONTIRA NAŠA EKIPA":"МОНТИРА НАШИЯТ ЕКИП","Bez podizvođača — ko je napravi, taj je i postavi":"Без подизпълнители — който я направи, той я и монтира","SERVIS I POSLE GARANCIJE":"СЕРВИЗ И СЛЕД ГАРАНЦИЯТА","Rezervni delovi i izlazak na teren i za pet godina":"Резервни части и посещение на място и след пет години","PREKO 10 GODINA U POSLU":"НАД 10 ГОДИНИ В БРАНША","Ugrađujemo samo materijale koje smo proverili na terenu":"Влагаме само материали, проверени на терен","MERA, NE KATALOG":"МЯРКА, НЕ КАТАЛОГ","Pravimo na centimetar, ne na najbližu katalošku dimenziju":"Правим до сантиметър, не до най-близкия каталожен размер","Na sve elemente pergole":"За всички елементи на перголата","Bioklimatska pergola":"Биоклиматична пергола","Ravna pergola":"Права пергола","Vansezonski popust":"Извънсезонна отстъпка","VAŽI DO ":"ВАЖИ ДО ","Ponuda važi do ":"Офертата важи до ","Nema fotografije za ovaj model":"Няма снимка за този модел"," cm":" см"," mm":" мм"," m²":" м²"," kom":" бр.","kom":"бр."};
+const PG_BG={"PONUDA ZA KUPCA":"ОФЕРТА ЗА КЛИЕНТА","PROJEKAT:":"ПРОЕКТ:","Projekat":"Проект","Model":"Модел","Gabarit":"Габарит","Boja":"Цвят","Br. ponude":"№ на офертата","Datum":"Дата","Tip":"Тип","Prolazna visina":"Проходна височина","Proizvedeno u Srbiji":"Произведено в Сърбия","Po izboru":"По избор","—":"—","TEHNIČKI CRTEŽ PERGOLE":"ТЕХНИЧЕСКИ ЧЕРТЕЖ НА ПЕРГОЛА","3D TEHNIČKI PRIKAZ PERGOLE":"3D ТЕХНИЧЕСКИ ИЗГЛЕД НА ПЕРГОЛА","Br. crteža":"№ на чертежа","Prolazna visina":"Проходна височина","Specifikacija":"Спецификация","SPECIFIKACIJA":"СПЕЦИФИКАЦИЯ","SPECIFIKACIJA PROJEKTA":"СПЕЦИФИКАЦИЯ НА ПРОЕКТА","Dimenzije (Š × D)":"Размери (Ш × Д)","Visina napred (prolazna)":"Височина отпред (проходна)","Visina kod zida":"Височина до стената","Visina konstrukcije":"Височина на конструкцията","Visina na zidu":"Височина до стената","Površina":"Площ","Pad krova":"Наклон на покрива","Pokrivač":"Покритие","Boja konstrukcije":"Цвят на конструкцията","Boja platna / cerade":"Цвят на платното","Boja cerade/platna":"Цвят на платното","Stubovi":"Колони","Montaža":"Монтаж","Odvod vode":"Отводняване","Čelična konstrukcija":"Стоманена конструкция","Motor":"Мотор","Broj pergola":"Брой пергули","Ukupna širina":"Обща ширина","Projekcija":"Проекция","Projekcija (max)":"Проекция (макс.)","UKUPNA CENA":"ОБЩА ЦЕНА","CENA":"ЦЕНА","CENA NA UPIT":"ЦЕНА ПРИ ЗАПИТВАНЕ","Na upit":"При запитване","Pozovite nas za ponudu":"Обадете се за оферта","Plaćanje: 50% avans, 50% dan pre isporuke i montaže.":"Плащане: 50% авансово, 50% в деня преди доставка и монтаж.","Plaćanje: 50% avans  •  50% dan pre isporuke i montaže":"Плащане: 50% авансово • 50% в деня преди доставка и монтаж","TEHNIČKI PRIKAZI":"ТЕХНИЧЕСКИ ЧЕРТЕЖИ","PREDNJI POGLED":"ПРЕДЕН ИЗГЛЕД","BOČNI PRESEK":"СТРАНИЧЕН РАЗРЕЗ","TLOCRT (odozgo)":"ПЛАН (отгоре)","TLOCRT (pogled odozgo)":"ПЛАН (изглед отгоре)","FRONTALNI POGLED":"ПРЕДЕН ИЗГЛЕД","Prednji pogled":"Преден изглед","Bočni presek":"Страничен разрез","Tlocrt (pogled odozgo)":"План (изглед отгоре)","OPIS MODELA":"ОПИСАНИЕ НА МОДЕЛА","Opis modela":"Описание на модела","USLOVI":"УСЛОВИЯ","Uslovi":"Условия","U CENU JE UKLJUČENO":"ЦЕНАТА ВКЛЮЧВА","U cenu je uključeno":"Цената включва","NIJE UKLJUČENO":"НЕ Е ВКЛЮЧЕНО","Nije uključeno":"Не е включено","Zašto AG GROUP":"Защо AG GROUP","Naši radovi":"Нашите проекти","Ponuda za:":"Оферта за:","Karakteristike":"Характеристики","Napomena: ":"Забележка: ","Ponuda":"Оферта","Ponuda važi 7 dana — do ":"Офертата важи 7 дни — до ","Rok isporuke i montaže: ":"Срок за доставка и монтаж: ","Visine se utvrđuju prilikom uzimanja mera.":"Височините се определят при заснемане на място.","Kontakt: ":"Контакт: ","20 dana":"20 дни","po dogovoru":"по договаряне","uz objekat (zid)":"към сграда (стена)","čelična konstrukcija uz objekat":"стоманена конструкция към сградата","čelična konstr. uz objekat":"стоманена констр. към сградата","samostojeća — sopstveni stubovi":"самостояща — собствени колони","samostojeća — čelična konstrukcija":"самостояща — стоманена конструкция","samostojeća — čelična konstr.":"самостояща — стоманена констр.","kroz bočne profile i stubove":"през страничните профили и колоните","kroz integrisane oluke u konstrukciji":"през интегрирани улуци в конструкцията","levi ugaoni stub":"лява ъглова колона","desni ugaoni stub":"дясна ъглова колона","oba ugaona stuba":"двете ъглови колони","leva":"лява","desna":"дясна","Bioklimatska pergola (pokretne lamele)":"Биоклиматична пергола (подвижни ламели)","Ravna pergola (3D Blockout platno)":"Права пергола (3D Blockout платно)","Klasična pergola sa padom":"Класическа пергола с наклон","Pokretne lamele":"Подвижни ламели","3D Blockout platno":"3D Blockout платно","Bioklimatska — 2 stuba":"Биоклиматична — 2 колони","Bioklimatska — 3 stuba":"Биоклиматична — 3 колони","Bioklimatska — 4 stuba":"Биоклиматична — 4 колони","Ravna — 2 stuba":"Права — 2 колони","Ravna — 3 stuba":"Права — 3 колони","Ravna — 4 stuba":"Права — 4 колони","Klasična sa padom — 2 stuba / 2 roga":"Класическа с наклон — 2 колони / 2 ребра","Klasična sa padom — 3 stuba / 3 roga":"Класическа с наклон — 3 колони / 3 ребра","Klasična sa padom — 4 stuba / 4 roga":"Класическа с наклон — 4 колони / 4 ребра","Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.":"Биоклиматичната пергола е алуминиева конструкция, чийто покрив се състои от въртящи се ламели. С промяна на ъгъла на ламелите регулирате количеството светлина и въздушния поток под перголата. В затворено положение ламелите образуват компактна покривна повърхност, а водата се насочва към интегрираното отводняване, съобразно конструкцията и техническите ограничения на избраната система.","Klasična pergola je aluminijumska konstrukcija sa tehničkim platnom koje se pomoću vođica otvara i skuplja. Kada je platno razvučeno, pravi senku i štiti prostor od uobičajenih vremenskih uslova u granicama konkretnog sistema. Kada želite otvoreno nebo, krov se povlači. Zbog lakšeg izgleda i dobre prilagodljivosti često je racionalan izbor za natkrivanje većih terasa.":"Класическата пергола е алуминиева конструкция с техническо платно, което се отваря и прибира чрез водачи. Когато платното е разпънато, прави сянка и защитава пространството от обичайните атмосферни условия в границите на конкретната система. Когато желаете открито небе, покривът се прибира. Заради по-лекия вид и добрата гъвкавост често е рационален избор за покриване на по-големи тераси.","Model pergole sa slike":"Модел пергола от снимката","Samsung LED rasveta":"Samsung LED осветление","Motor i daljinski upravljač — motor i rasveta na istom daljinskom":"Мотор и дистанционно — мотор и осветление на едно дистанционно","Motori i daljinski upravljač — motor i rasveta na istom daljinskom":"Мотори и дистанционно — мотор и осветление на едно дистанционно","Konstrukcija od ekstrudiranog aluminijuma, farbana elektrostatskom farbom":"Конструкция от екструдиран алуминий, боядисана с електростатична боя","Aluminijumske vodilice pergole":"Алуминиеви водачи на перголата","Aluminijumske vodilice lamela":"Алуминиеви водачи на ламелите","Nagib pergole od 10–15%":"Наклон на перголата 10–15%","Nagib pergole od 1–2%":"Наклон на перголата 1–2%","Oluci za vodu sakriveni u konstrukciji":"Улуци за вода, скрити в конструкцията","Limena nadstrešnica za skupljenu pergolu":"Ламаринен навес за прибраното платно","3D blockout — troslojno termostabilno platno":"3D blockout — трислойно термостабилно платно","Aluminijumske lamele kao krovni pokrivač":"Алуминиеви ламели като покривно покритие","Transport i montaža":"Транспорт и монтаж","Elektro priključak do mesta montaže":"Електрическо захранване до мястото на монтажа","Građevinski radovi — temelj i sidrenje u beton ako podloga nije spremna":"Строителни работи — основа и анкериране в бетон, ако основата не е подготвена","Limarski radovi koji nisu deo date ponude za pergolu":"Ламаринджийски работи, които не са част от тази оферта","ALUMINIJUM VISOKE ČVRSTOĆE":"АЛУМИНИЙ С ВИСОКА ЯКОСТ","Plastifikacija u RAL nijansi po izboru":"Прахово боядисване в RAL цвят по избор","OTPORNOST NA VREMENSKE USLOVE":"УСТОЙЧИВОСТ НА АТМОСФЕРНИ УСЛОВИЯ","Kiša, vetar i UV zaštita":"Дъжд, вятър и UV защита","GARANCIJA 2 GODINE":"ГАРАНЦИЯ 2 ГОДИНИ","Na konstrukciju i mehanizam":"За конструкцията и механизма","PROFESIONALNA MONTAŽA":"ПРОФЕСИОНАЛЕН МОНТАЖ","Montaža sopstvenom ekipom":"Монтаж със собствен екип","ZID":"ЗИД","OLUK":"УЛУК","ZIDIĆ":"ПАРАПЕТ","ODVOD":"ОТВОД","RAZMAK":"РАЗСТОЯНИЕ","ZAJEDNIČKI STUB":"ОБЩА КОЛОНА","ODVOJENI STUBOVI":"ОТДЕЛНИ КОЛОНИ","RAZMAKNUTE PERGOLE":"РАЗДЕЛЕНИ ПЕРГОЛИ","PREDNJA LINIJA — PORAVNATO":"ПРЕДНА ЛИНИЯ — ИЗРАВНЕНО","ZADNJI STUB":"ЗАДНА КОЛОНА","MEĐUSTUB":"МЕЖДИННА КОЛОНА","Prolazna visina merena do donje ivice oluka.":"Проходната височина е мерена до долния ръб на улука.","oluk → odvod kroz stub":"улук → отвод през колоната","pad: ":"наклон: ","PAD ":"НАКЛОН ","* Zajednički stub na spoju":"* Обща колона на връзката","MOTOR P":"МОТОР P","← leva strana":"← лява страна","desna strana →":"дясна страна →","Visine i pad krova se utvrđuju prilikom uzimanja mera na terenu.":"Височините и наклонът се определят при заснемане на място.","Presek kroz najdublju pergolu — prednje ivice svih pergola su u istoj liniji.":"Разрез през най-дълбоката пергола — предните ръбове на всички пергули са на една линия.","Pozovi":"Обадете се","Viber poruka":"Viber съобщение","dodirnite za uvećanje":"докоснете за увеличение","Dodirnite fotografiju za uvećanje.":"Докоснете снимката за увеличение.","prolazna visina ":"проходна височина ","REDOVNA CENA":"РЕДОВНА ЦЕНА","CENA UZ POTVRDU DO ":"ЦЕНА ПРИ ПОТВЪРЖДЕНИЕ ДО ","CENA UZ POTVRDU DO":"ЦЕНА ПРИ ПОТВЪРЖДЕНИЕ ДО","UŠTEDA ":"ИКОНОМИЯ ","Ponuda važi 3 dana — do ":"Офертата важи 3 дни — до ","10–20 dana":"10–20 дни","oko 10%":"около 10%","Boja krovnog pokrivača":"Цвят на покривното покритие","po izboru":"по избор","Pokretne aluminijumske lamele":"Подвижни алуминиеви ламели","3D blockout i alu profili sa integrisanom rasvetom":"3D blockout и алуминиеви профили с вградено осветление","PROIZVODIMO":"ПРОИЗВЕЖДАМЕ","sopstvena proizvodnja":"собствено производство","MONTIRAMO":"МОНТИРАМЕ","naša ekipa":"наш екип","SERVISIRAMO":"СЕРВИЗИРАМЕ","i posle garancije":"и след гаранцията","SAMI PROIZVODIMO":"ПРОИЗВЕЖДАМЕ САМИ","Ne uvozimo gotove pergole — svaka se radi po vašoj meri":"Не внасяме готови перголи — всяка се прави по вашата мярка","MONTIRA NAŠA EKIPA":"МОНТИРА НАШИЯТ ЕКИП","Bez podizvođača — ko je napravi, taj je i postavi":"Без подизпълнители — който я направи, той я и монтира","SERVIS I POSLE GARANCIJE":"СЕРВИЗ И СЛЕД ГАРАНЦИЯТА","Rezervni delovi i izlazak na teren i za pet godina":"Резервни части и посещение на място и след пет години","PREKO 10 GODINA U POSLU":"НАД 10 ГОДИНИ В БРАНША","Ugrađujemo samo materijale koje smo proverili na terenu":"Влагаме само материали, проверени на терен","MERA, NE KATALOG":"МЯРКА, НЕ КАТАЛОГ","Pravimo na centimetar, ne na najbližu katalošku dimenziju":"Правим до сантиметър, не до най-близкия каталожен размер","Na sve elemente pergole":"За всички елементи на перголата","Bioklimatska pergola":"Биоклиматична пергола","Ravna pergola":"Права пергола","Vansezonski popust":"Извънсезонна отстъпка","VAŽI DO ":"ВАЖИ ДО ","Ponuda važi do ":"Офертата важи до ","BIOFIX — termoizolovana fiksna pergola":"BIOFIX — термоизолирана фиксирана пергола","BIOFIX pergola (termoizolovani panel)":"BIOFIX пергола (термоизолиран панел)","Termoizolovani panel 5 cm":"Термоизолиран панел 5 см","Konstrukcija od ekstrudiranog aluminijuma, stubovi 180×180 mm":"Конструкция от екструдиран алуминий, колони 180×180 мм","Termoizolovani krovni panel 5 cm — toplotna i zvučna izolacija":"Термоизолиран покривен панел 5 см — топло- и звукоизолация","Samsung LED rasveta po obodu, sa dimerom na daljinskom":"Samsung LED осветление по периметъра, с димер на дистанционното","Odvod vode kroz oluke integrisane u konstrukciju":"Отводняване през улуци, вградени в конструкцията","Nema fotografije za ovaj model":"Няма снимка за този модел"," cm":" см"," mm":" мм"," m²":" м²"," kom":" бр.","kom":"бр."};
 function T(x){if(pgS.lang!=='bg')return x;const s=String(x);return PG_BG[s]!==undefined?PG_BG[s]:s;}
 function U(x){ // jedinice u brojevima
   if(pgS.lang!=='bg')return x;
@@ -768,6 +775,8 @@ const PG_MODELS=[
   {id:'bio-2',tip:'bioklimatska',stubovi:2,naziv:'Bioklimatska — 2 stuba',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
   {id:'bio-3',tip:'bioklimatska',stubovi:3,naziv:'Bioklimatska — 3 stuba',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
   {id:'bio-4',tip:'bioklimatska',stubovi:4,naziv:'Bioklimatska — 4 stuba',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
+  {id:'biofix-2',tip:'biofix',stubovi:2,naziv:'BIOFIX — 2 stuba',opis:'BIOFIX je aluminijumska pergola sa krovom od termoizolovanog panela 5 cm — ravan i moderan izgled, odlična toplotna i zvučna izolacija. Nema motora ni pokretnih delova, pa nema šta da se pokvari. LED rasveta po obodu, sa dimerom na daljinskom.'},
+  {id:'biofix-3',tip:'biofix',stubovi:3,naziv:'BIOFIX — 3 stuba',opis:'BIOFIX je aluminijumska pergola sa krovom od termoizolovanog panela 5 cm — ravan i moderan izgled, odlična toplotna i zvučna izolacija. Nema motora ni pokretnih delova, pa nema šta da se pokvari. LED rasveta po obodu, sa dimerom na daljinskom.'},
   {id:'ravna-2',tip:'ravna',stubovi:2,naziv:'Ravna — 2 stuba',opis:'Ravna pergola sa 3D Blockout platnom na motorni pogon. Konstrukcija na 2 stuba. Platno se uvlači u kasetu, potpuna zaštita od sunca i kiše.'},
   {id:'ravna-3',tip:'ravna',stubovi:3,naziv:'Ravna — 3 stuba',opis:'Ravna pergola sa 3D Blockout platnom na motorni pogon. Konstrukcija na 3 stuba za veće raspone. Platno se uvlači u kasetu.'},
   {id:'ravna-4',tip:'ravna',stubovi:4,naziv:'Ravna — 4 stuba',opis:'Ravna pergola sa 3D Blockout platnom, ojačana konstrukcija na 4 stuba. Platno se uvlači u kasetu.'},
@@ -786,7 +795,7 @@ function pgModelFotoList(id){const m=pgModel(id);if(pgPhotos[m.id])return[pgPhot
 function pgThumbErr(el,id){let i=parseInt(el.dataset.i||'0')+1;if(i<PG_FOTO_EXT.length){el.dataset.i=i;el.src='foto/'+id+'.'+PG_FOTO_EXT[i]+pgVer();}else{el.style.display='none';const nx=el.nextElementSibling;if(nx)nx.style.display='block';}}
 function pgModelAuto(){
   const posts=parseInt(document.getElementById('pg_postsPerPergola').value)||3;
-  const hit=PG_MODELS.find(m=>m.tip===pgS.type&&m.stubovi===posts);
+  const tip=pgBF()?'biofix':pgS.type, hit=PG_MODELS.find(m=>m.tip===tip&&m.stubovi===posts)||(tip==='biofix'?PG_MODELS.find(m=>m.id==='biofix-3'):null);
   if(hit&&hit.id!==pgS.model){pgS.model=hit.id;pgModelRender();}
 }
 function pgModelPick(id){pgS.model=id;pgModelRender();pgSaveState();}
@@ -846,7 +855,8 @@ function pgSnapshot(){
 }
 function pgApply(d){
   if(!d||!d.s)return;const s=d.s,fv=d.f||{};
-  if(s.type){pgS.type=s.type;document.querySelectorAll('#pg_typeSel .type-option').forEach(o=>o.classList.toggle('active',o.dataset.type===pgS.type));}
+  pgS.biofix=!!s.biofix&&s.type==='bioklimatska';
+  if(s.type){pgS.type=s.type;document.querySelectorAll('#pg_typeSel .type-option').forEach(o=>o.classList.toggle('active',o.dataset.type===(pgS.biofix?'biofix':pgS.type)));}
   if(s.count){pgS.count=s.count;document.querySelectorAll('#pg_countSel .num-option').forEach(o=>o.classList.toggle('active',parseInt(o.dataset.count)===pgS.count));pgBuildDims();document.getElementById('sharedPostSection').style.display=pgS.count>1?'block':'none';}
   pgS.model=s.model||'bio-3';pgModelRender();
   pgS.mount=s.mount||'zid';document.querySelectorAll('#pg_mountSel .type-option').forEach(o=>o.classList.toggle('active',o.dataset.mount===pgS.mount));
@@ -1091,6 +1101,9 @@ const PG_CENE_KLAS=[
  [3500,3600,3700,3900,4200,4600,4950,5250,5500,5850,6100,6200,6400,null,null,null,null],
  [3600,3700,3800,3950,4400,4750,5150,5550,5850,6100,6300,6500,null,null,null,null,null]
 ];
+/* BIOFIX — cena sa montažom, uz objekat. Mera između → cena sledeće veće; preko 7 × 3 m ne radimo */
+const PG_BF_SIR=[3,4,5,6,7], PG_BF_PRO=[2,3];
+const PG_CENE_BF=[[1950,2150,2300,2500,2900],[2250,2450,2700,2950,3450]];
 /* Bioklimatska: cena po m² prema povrsini — [do koliko m², €/m²] */
 const PG_BIO_M2=[[10,650],[15,590],[20,550],[30,490]];
 
@@ -1103,15 +1116,17 @@ function pgQArea(){return (parseFloat(document.getElementById('pg_qW').value)||0
 
 function pgQTip(){const a=document.querySelector('#pg_qType .type-option.active');return a?a.dataset.qt:'klasicna';}
 function pgQSnap(v,arr){for(let i=0;i<arr.length;i++)if(v<=arr[i]+1e-9)return arr[i];return null;}
-function pgQPosts(w){return w<=4?2:(w<=8?3:4);}
+function pgQPosts(w,tip){if(tip==='biofix')return w<=5?2:3;return w<=4?2:(w<=8?3:4);}
 /* 2 stuba → 10×10, od 3 naviše → 10×15; bioklimatska uvek 15×15 */
-function pgQStub(tip,w){return tip==='bioklimatska'?['15','15']:(pgQPosts(w)===2?['10','10']:['10','15']);}
+function pgQStub(tip,w){return tip==='biofix'?['18','18']:tip==='bioklimatska'?['15','15']:(pgQPosts(w)===2?['10','10']:['10','15']);}
 function pgQVisine(tip,d){
-  if(tip==='bioklimatska')return{pass:250,wall:250,nag:0};
+  if(tip==='bioklimatska'||tip==='biofix')return{pass:250,wall:250,nag:0};
   const pass=d<=4?240:230,nag=d<=5?0.12:0.10;
   return{pass:pass,wall:pass+Math.round(nag*d*100),nag:nag};
 }
+function pgQGrid(tip){return tip==='biofix'?[PG_BF_SIR,PG_BF_PRO]:[PG_QSIR,PG_QPRO];}
 function pgQCena(tip,w,d){
+  if(tip==='biofix'){const W=pgQSnap(w,PG_BF_SIR),D=pgQSnap(d,PG_BF_PRO);return W===null||D===null?null:PG_CENE_BF[PG_BF_PRO.indexOf(D)][PG_BF_SIR.indexOf(W)];}
   const W=pgQSnap(w,PG_QSIR),D=pgQSnap(d,PG_QPRO);
   if(W===null||D===null)return null;
   if(tip==='klasicna')return PG_CENE_KLAS[PG_QPRO.indexOf(D)][PG_QSIR.indexOf(W)];
@@ -1149,7 +1164,7 @@ function pgQRender(){
         w=parseFloat(document.getElementById('pg_qW').value)||0,
         d=parseFloat(document.getElementById('pg_qD').value)||0,
         a=w*d, cena=pgQCena(tip,w,d),
-        W=pgQSnap(w,PG_QSIR),D=pgQSnap(d,PG_QPRO),
+        W=pgQSnap(w,pgQGrid(tip)[0]),D=pgQSnap(d,pgQGrid(tip)[1]),
         cur=pgPrices.cur, pi=document.getElementById('pg_qPrice'), m2e=document.getElementById('pg_qM2');
   if(pgQMod==='m2')pi.value=a>0?pgQZaokruzi(a*pgQM2):'';
   else if(pgQMod==='cenovnik')pi.value=cena!==null?pgQZaokruzi(cena):'';
@@ -1170,6 +1185,8 @@ function pgQRender(){
     nota=pgQBr(a)+' m² × '+pgQBr(pgQM2)+' '+cur+'/m²'+zk+' · cenu možete izmeniti.';
   else if(pgQMod==='rucno')
     nota=pgQBr(a)+' m²'+(ef!==null?' · izlazi '+ef+' '+cur+'/m²':'')+' · ručno upisana cena.';
+  else if(cena===null&&tip==='biofix')
+    nota='BIOFIX radimo do 7 × 3 m — za veću meru upišite cenu ručno ili predložite manju.';
   else if(cena===null&&(W===null||D===null))
     nota='Mera je van cenovnika (širina do 10 m, projekcija do 7 m) — upišite cenu ili cenu po m².';
   else if(cena===null&&tip==='bioklimatska')
@@ -1177,15 +1194,15 @@ function pgQRender(){
   else if(cena===null)
     nota='Ovu dimenziju ne radimo — upišite cenu ručno ili predložite manju meru.';
   else{
-    nota=pgQBr(a)+' m² · iz cenovnika';
+    nota=pgQBr(a)+' m² · iz cenovnika'+(tip==='biofix'?' (cena sa montažom)':'');
     if(W!==w||D!==d)nota+=' (tarifa za '+pgQBr(W)+' × '+pgQBr(D)+' m)';
     if(pgQZaokruzi(cena)!==cena)nota+=zk;
     nota+=' · cenu možete izmeniti.';
   }
   document.getElementById('pg_qNote').textContent=nota;
 
-  const v=pgQVisine(tip,d),st=pgQPosts(w),sd=pgQStub(tip,w),dim=sd[0]+'×'+sd[1];
-  let vis=tip==='bioklimatska'
+  const v=pgQVisine(tip,d),st=pgQPosts(w,tip),sd=pgQStub(tip,w),dim=sd[0]+'×'+sd[1];
+  let vis=tip==='bioklimatska'||tip==='biofix'
     ? 'visina <b>250 cm</b> (ne ide u ponudu)'
     : 'pad krova <b>~10%</b> — visine se uzimaju na terenu';
   document.getElementById('pg_qAuto').innerHTML=
@@ -1202,14 +1219,14 @@ function pgQState(){
         cena=document.getElementById('pg_qPrice').value,
         stb=pgQStub(tip,w);
   const st=Object.assign({},PG_DEF_S,{
-    type:tip,count:1,mount:'zid',samoTip:tip==='bioklimatska'?'stubovi':'celik',
+    type:tip==='biofix'?'bioklimatska':tip,biofix:tip==='biofix',count:1,mount:'zid',samoTip:tip==='klasicna'?'celik':'stubovi',
     drain:'both',hasWallTube:true,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,
     showPrice:!!cena,priceMode:'fix',ral:pgS.ral,lang:pgS.lang,depth:1,model:pgS.model
   });
   const f=Object.assign({},PG_DEF_F,{
     pg_projectName:document.getElementById('pg_qName').value.trim(),
     pg_wallHeight:'',pg_passHeight:'',
-    pg_postsPerPergola:String(pgQPosts(w)),pg_postW:stb[0],pg_postD:stb[1],
+    pg_postsPerPergola:String(pgQPosts(w,tip)),pg_postW:stb[0],pg_postD:stb[1],
     pg_drain:'both',pg_tubeW:'40',pg_tubeH:'80',
     pg_priceFix:String(cena||''),pg_rok:'10–20 dana',pg_ceradaBoja:'',
     pw_0:String(Math.round(w*100)),pp_0:String(Math.round(d*100))
@@ -1297,7 +1314,7 @@ function pgPP(){
       pos.push({x:gx,pi,sh:joinNext&&si===pp-1});}}
   return pos;}
 function pgOdvodTxt(){
-  const base=T(pgS.type==='bioklimatska'?'kroz bočne profile i stubove':'kroz integrisane oluke u konstrukciji');
+  const base=T(pgS.type==='bioklimatska'&&!pgBF()?'kroz bočne profile i stubove':'kroz integrisane oluke u konstrukciji');
   if(pgS.drain==='none')return base;
   return base+' — '+T({left:'levi ugaoni stub',right:'desni ugaoni stub',both:'oba ugaona stuba'}[pgS.drain]||'');
 }
@@ -1366,7 +1383,7 @@ function sheetFrame(c,x,y,w,h){c.save();c.strokeStyle=PG_NAVY;c.lineWidth=2.5;c.
 function pgSpecData(){
   const tw=pgTW(),mp=pgMP(),ta=pgTA(),tp=pgTP(),sl=pgSl();
   const drainTxt={none:'—',left:'levi ugaoni stub',right:'desni ugaoni stub',both:'oba ugaona stuba'}[pgS.drain]||'—';
-  const kon=[['Tip',PG_TL[pgS.type]],['Pokrivač',PG_ML[pgS.type]],['Boja konstrukcije','RAL '+pgS.ralDisplay],['Boja cerade/platna',pgS.ceradaBoja||'—'],['Stubovi',`${tp} kom — ${pgS.postW}×${pgS.postD} cm`]];
+  const kon=[['Tip',pgTL()],['Pokrivač',pgML()],['Boja konstrukcije','RAL '+pgS.ralDisplay],['Boja cerade/platna',pgS.ceradaBoja||'—'],['Stubovi',`${tp} kom — ${pgS.postW}×${pgS.postD} cm`]];
   if(pgS.count>1){const anyGap=pgGapSum()>0;kon.push(['Spoj pergola',anyGap?'razmaknute':(pgS.sharedPost?'zajednički stub':'odvojeni stubovi')]);}
   const mere=[['Ukupna širina',`${tw} cm`],['Projekcija (max)',`${mp} cm`],[pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina na zidu',`${pgS.wallHeight} cm`],['Prolazna visina',`${pgS.passHeight} cm — do oluka`]];
   if(pgS.type==='klasicna')mere.push(['Pad krova',`${sl} %`]);
@@ -1457,7 +1474,7 @@ function generatePergola(){
   const CH=specEnd+268;
 
   const c=initCanvas('outputCanvas',CW,CH);
-  docHeader(c,CW,T('TEHNIČKI CRTEŽ PERGOLE'),T(PG_TL[pgS.type]).toUpperCase(),id,d);
+  docHeader(c,CW,T('TEHNIČKI CRTEŽ PERGOLE'),T(pgTL()).toUpperCase(),id,d);
   projInfo(c,CW,y0,pn);
   if(showP){
     c.fillStyle=PG_ACCENT;c.fillRect(0,yPrice,CW,46);
@@ -1487,7 +1504,7 @@ function generatePergola(){
 
   titleBlock(c,CW,CH,[
     ['Projekat',pn||'—'],
-    ['Tip',PG_TL[pgS.type]],
+    ['Tip',pgTL()],
     ['Gabarit',`${tw} × ${mp} cm`],
     ['Boja','RAL '+pgS.ralDisplay],
     ['Br. crteža',id],
@@ -1554,7 +1571,8 @@ function pgDrawTlocrt(c,ox,oy,w,h,tW,mP){
     c.fillStyle='rgba(200,148,78,.04)';c.fillRect(px,py,pw,pp);
     c.strokeStyle='rgba(26,26,46,.15)';c.lineWidth=0.8;
     c.save();c.beginPath();c.rect(px,py,pw,pp);c.clip();
-    if(pgS.type==='bioklimatska'){for(let ly=py+10;ly<py+pp;ly+=12){c.beginPath();c.moveTo(px,ly);c.lineTo(px+pw,ly);c.stroke();}}
+    if(pgBF()){for(let lx=px+100*sc;lx<px+pw-2;lx+=100*sc){c.beginPath();c.moveTo(lx,py);c.lineTo(lx,py+pp);c.stroke();}}
+    else if(pgS.type==='bioklimatska'){for(let ly=py+10;ly<py+pp;ly+=12){c.beginPath();c.moveTo(px,ly);c.lineTo(px+pw,ly);c.stroke();}}
     else{for(let dd=-pp;dd<pw+pp;dd+=14){c.beginPath();c.moveTo(px+dd,py);c.lineTo(px+dd+pp,py+pp);c.stroke();}}
     c.restore();
     c.strokeStyle=PG_NAVY;c.lineWidth=2;c.strokeRect(px,py,pw,pp);
@@ -1767,7 +1785,7 @@ function generate3D(){
   pgRenderWarnings();
   const CW=1600,CH=1560;
   const c=initCanvas('canvas3d',CW,CH);
-  docHeader(c,CW,T('3D TEHNIČKI PRIKAZ PERGOLE'),T(PG_TL[pgS.type]).toUpperCase(),id,d);
+  docHeader(c,CW,T('3D TEHNIČKI PRIKAZ PERGOLE'),T(pgTL()).toUpperCase(),id,d);
   let y=projInfo(c,CW,105,pn);if(!pn)y=105;
   const dl=[`Širina: ${tw} cm`,`Projekcija: ${mp} cm`,`${pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina na zidu'}: ${pgS.wallHeight} cm`,`Prolazna visina: ${pgS.passHeight} cm (do oluka)`];
   if(pgS.hasWallTube)dl.push(`Zidna cev: ${pgS.wallTubeH*10}×${pgS.wallTubeW*10} mm`);
@@ -1775,7 +1793,7 @@ function generate3D(){
   const kl=[`Pergola: ${pgS.count}`,`Stubova: ${tp}`,`Stub: ${pgS.postW}×${pgS.postD} cm`,`Površina: ${ta.toFixed(2)} m²`];
   y=infoBlock(c,CW,y,'DIMENZIJE',dl,'KONSTRUKCIJA',kl);
   if(notes){c.fillStyle='#6b7280';c.font='italic 14px Segoe UI,sans-serif';c.fillText('Napomena: '+notes,30,y+18);y+=30;}
-  y=matBar(c,CW,y,['Materijal: Aluminijum'+(pgSteel()?' + čelik':''),'Boja: RAL '+pgS.ralDisplay,'Tip: '+PG_ML[pgS.type]]);
+  y=matBar(c,CW,y,['Materijal: Aluminijum'+(pgSteel()?' + čelik':''),'Boja: RAL '+pgS.ralDisplay,'Tip: '+pgML()]);
   const price3=pgPrice();
   if(pgS.showPrice&&price3>0){
     c.fillStyle=PG_ACCENT;c.fillRect(0,y,CW,46);
@@ -1933,8 +1951,15 @@ function generate3D(){
         poly([p(rx+rogW/2,backY+bH,zO),p(rx+rogW/2,backY+bH+rogH,zO),p(rx+rogW/2,backY+bH+rogH,zO+pp2),p(rx+rogW/2,backY+bH,zO+pp2)],fDark,'#111',1.8);
         poly([p(rx-rogW/2,backY+bH,zO),p(rx+rogW/2,backY+bH,zO),p(rx+rogW/2,backY+bH+rogH,zO),p(rx-rogW/2,backY+bH+rogH,zO)],hexDarken(fHex,.4),'#111',1.5);
       });
+      if(pgBF()){
+        // 2. BIOFIX — termoizolovani panel 5 cm preko cele površine, spojevi na ~100 cm
+        const pY=backY+bH+rogH, pT=5;
+        poly([p(xOff,pY+pT,zO),p(xOff+pw,pY+pT,zO),p(xOff+pw,pY+pT,zO+pp2),p(xOff,pY+pT,zO+pp2)],hexDarken(fHex,.9),'#111',1.4);
+        poly([p(xOff,pY,zO+pp2),p(xOff+pw,pY,zO+pp2),p(xOff+pw,pY+pT,zO+pp2),p(xOff,pY+pT,zO+pp2)],hexDarken(fHex,.6),'#111',1.2);
+        for(let jx=xOff+100;jx<xOff+pw-5;jx+=100){const A=p(jx,pY+pT,zO),B=p(jx,pY+pT,zO+pp2);c.save();c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=1;c.beginPath();c.moveTo(A.x,A.y);c.lineTo(B.x,B.y);c.stroke();c.restore();}
+      }
       // 2. Lamele (pokretne) — duž X ose, na vrhu rogova
-      const nLam=Math.min(16,Math.round(pp2/14));
+      const nLam=pgBF()?0:Math.min(16,Math.round(pp2/14));
       for(let li=0;li<nLam;li++){
         const lz=zO+(li+.5)*(pp2/nLam);
         const lamY=backY+bH+rogH-2.5;
@@ -2138,7 +2163,7 @@ function generate3D(){
 
   titleBlock(c,CW,CH,[
     ['Projekat',pn||'—'],
-    ['Tip',PG_TL[pgS.type]],
+    ['Tip',pgTL()],
     ['Gabarit',`${tw} × ${mp} cm`],
     ['Boja','RAL '+pgS.ralDisplay],
     ['Br. crteža',id],
@@ -2179,7 +2204,15 @@ const PG_UKLJUCENO={
   ]
 };
 PG_UKLJUCENO.ravna=PG_UKLJUCENO.klasicna;   // ravna za sada koristi listu klasične
-function pgUkljuceno(){return PG_UKLJUCENO[pgS.type]||PG_UKLJUCENO.klasicna;}
+PG_UKLJUCENO.biofix=[
+  'Model pergole sa slike',
+  'Konstrukcija od ekstrudiranog aluminijuma, stubovi 180×180 mm',
+  'Termoizolovani krovni panel 5 cm — toplotna i zvučna izolacija',
+  {t:'Samsung LED rasveta po obodu, sa dimerom na daljinskom',z:['kr']},
+  'Odvod vode kroz oluke integrisane u konstrukciju',
+  'Transport i montaža'
+];
+function pgUkljuceno(){return pgBF()?PG_UKLJUCENO.biofix:(PG_UKLJUCENO[pgS.type]||PG_UKLJUCENO.klasicna);}
 const PG_NIJE=[
   'Elektro priključak do mesta montaže',
   'Građevinski radovi — temelj i sidrenje u beton ako podloga nije spremna',
@@ -2429,7 +2462,7 @@ async function generatePonuda(){
                  [T(pgS.mount==='samostojeca'?'Visina konstrukcije':'Visina kod zida'),U(`${pgS.wallHeight} cm`)]);
   rows.push(
     [T('Površina'),U(`${ta.toFixed(2)} m²`)],
-    [T('Pokrivač'),T(PG_POKRIVAC[pgS.type])],
+    [T('Pokrivač'),T(pgPokrivac())],
     [T('Boja konstrukcije'),'RAL '+pgS.ralDisplay],
     [T('Boja krovnog pokrivača'),T(pgS.ceradaBoja||'po izboru')],
     [T('Stubovi'),U(`${tp} kom — ${pgS.postW}×${pgS.postD} cm`)],
@@ -2682,7 +2715,7 @@ ${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div clas
           :`<div class="price"><div class="lbl">${esc(o.L.cenaUpit)}</div><div class="val">${esc(o.L.naUpit)}</div><div class="sub">${esc(o.L.upit2)}</div></div>`}
   <h3>${esc(o.L.spec)}</h3>
   <div class="card">${o.spec.map(r=>row(r[0],r[1])).join('')}</div>
-  ${o.demo?`<h3>${esc(o.L.kakoRadi)}</h3>
+  ${o.demo&&o.anim?`<h3>${esc(o.L.kakoRadi)}</h3>
   <div class="demo"><iframe src="${o.demo}animacija.html" loading="lazy" title="${esc(o.L.kakoRadi)}" scrolling="no"></iframe>
   <p>${esc(o.L.demoNap)}</p></div>`:''}
   <h3>${esc(o.L.teh)}</h3>
@@ -2792,7 +2825,7 @@ async function generateLink(){
     spec.push([T('Površina'),U(`${ta.toFixed(2)} m²`)]);
     if(pgS.type==='klasicna'&&V)spec.push([T('Pad krova'),`${sl} %`]);
     else if(pgS.type==='klasicna')spec.push([T('Pad krova'),T('oko 10%')]);
-    spec.push([T('Pokrivač'),T(PG_POKRIVAC[pgS.type])],[T('Boja konstrukcije'),'RAL '+pgS.ralDisplay],
+    spec.push([T('Pokrivač'),T(pgPokrivac())],[T('Boja konstrukcije'),'RAL '+pgS.ralDisplay],
       [T('Boja krovnog pokrivača'),T(pgS.ceradaBoja||'po izboru')],
       [T('Stubovi'),U(`${tp} kom — ${pgS.postW}×${pgS.postD} cm`)],
       [T('Montaža'),T(pgS.mount==='samostojeca'?(pgOwnBack()?'samostojeća — sopstveni stubovi':'samostojeća — čelična konstrukcija'):(pgS.mount==='uzobjekat'?'čelična konstrukcija uz objekat':'uz objekat (zid)'))]);
@@ -2819,7 +2852,7 @@ async function generateLink(){
       ukljuceno:pgUkljuceno().map(u=>typeof u==='string'?{t:T(u),zh:''}:{t:T(u.t),zh:u.z.map(flagSVG).join('')}),nije:PG_NIJE.map(T),
       prednosti:PG_PREDNOSTI.map(x=>[T(x[0]),T(x[1])]),
       traka:PG_TRAKA.map(x=>[T(x[0]),T(x[1])]),
-      demo:pgS.lang==='sr'?'../demo/':'',
+      demo:pgS.lang==='sr'?'../demo/':'',anim:!pgBF(),
       galBase:'../galerija/'+({bioklimatska:'bio',klasicna:'klas',ravna:'ravna'}[pgS.type]||'klas')+'/',
       broj:genId('PON'),datum:ds(),
       L:{spec:T('Specifikacija'),cena:T('UKUPNA CENA'),cenaUpit:T('CENA'),naUpit:T('Na upit'),
