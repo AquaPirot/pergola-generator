@@ -54,6 +54,7 @@ main{flex:1;display:flex;min-height:0}
 .sheet{background:#fff;box-shadow:0 8px 28px rgba(20,33,61,.18);margin:0 auto 18px;max-width:1500px}
 .sheet svg{display:block;width:100%;height:auto}
 .sheet.big{max-width:none;width:240%}
+.fL svg{display:block;width:100%;height:auto;max-height:120px;background:var(--wash);border-radius:8px}
 .btn2{font:700 12.5px var(--font);padding:9px 12px;border-radius:9px;border:1px solid var(--bd);background:#fff;color:var(--navy);cursor:pointer;width:100%;margin-top:8px}
 @media (max-width:860px){
   main{flex-direction:column;overflow:auto}
@@ -88,9 +89,15 @@ main{flex:1;display:flex;min-height:0}
     </div>
     <div class="grp" id="gCel"><h4>ČELIK</h4>
       <div class="row">
-        <div class="f"><label for="cev">Cev (stub i greda)</label><select id="cev" data-k="cev"></select></div>
+        <div class="f"><label for="cev" id="lCev">Cev (stub i greda)</label><select id="cev" data-k="cev"></select></div>
         <div class="f" id="fTem"><label for="temelj">Temelj</label><select id="temelj" data-k="temelj"><option value="samac">Temelj samac 400×400×800</option><option value="ploca">Postojeća AB ploča</option></select></div>
         <div class="f" id="fIsp"><label for="isp">Ispust od zida</label><input type="number" id="isp" data-k="isp" step="10" min="150"></div>
+        <div class="f full fL"><label for="lOr">Kako je L-stopa okrenuta</label><select id="lOr" data-k="lOr"></select></div>
+        <div class="f fL"><label for="lA">Vodoravni krak (spolja)</label><input type="number" id="lA" data-k="lA" step="10" min="150"></div>
+        <div class="f fL"><label for="lH">Uspravni krak (spolja)</label><input type="number" id="lH" data-k="lH" step="10" min="100"></div>
+        <div class="f fL"><label for="cevL">Cev L-stope</label><select id="cevL" data-k="cevL"></select></div>
+        <div class="f fL" id="lPik" aria-hidden="true"></div>
+        <div class="f"><label for="sipC">Šipka čelika (nabavna)</label><select id="sipC" data-k="sipC"><option value="6000">6000 mm</option><option value="12000">12000 mm</option></select></div>
         <div class="f"><label for="sip">Najduži deo grede</label><select id="sip" data-k="sip"><option value="6000">6000 mm</option><option value="12000">12000 mm</option></select></div>
         <div class="f full"><label for="zastita">Zaštita</label><input id="zastita" data-k="zastita"></div>
       </div>
@@ -120,7 +127,7 @@ main{flex:1;display:flex;min-height:0}
 
 <script type="module">
 import { uSVG, uPDF } from './projektant/crtez.js';
-import { DEF, TIPOVI, SHS, KATALOG, ULOGE, sviListovi, racun, broj, objekat, zarez } from './projektant/listovi.js';
+import { DEF, TIPOVI, SHS, KATALOG, ULOGE, L_OR, lGeom, sviListovi, racun, broj, objekat, zarez } from './projektant/listovi.js';
 
 const LS = 'ag_proj_v1';
 let P = JSON.parse(JSON.stringify(DEF));
@@ -131,6 +138,17 @@ let tab = 0, big = false, last = null;
 /* ── kontrole ── */
 document.getElementById('tips').innerHTML = Object.entries(TIPOVI).map(([k, t]) => `<button type="button" data-t="${k}"><b>${t.pre}</b>${t.n}</button>`).join('');
 document.getElementById('cev').innerHTML = SHS.map(s => `<option>${s}</option>`).join('');
+document.getElementById('cevL').innerHTML = SHS.map(s => `<option>${s}</option>`).join('');
+document.getElementById('lOr').innerHTML = Object.entries(L_OR).map(([k, n]) => `<option value="${k}">${n}</option>`).join('');
+/* sličica L-stope — crta se iz iste geometrije kao listovi */
+function lPikto() {
+  const G = lGeom(P, 100, 0), r = a => `<rect x="${Math.min(a[0], a[2])}" y="${-Math.max(a[1], a[3])}" width="${Math.abs(a[2] - a[0])}" height="${Math.abs(a[3] - a[1])}"`;
+  const x0 = -320, x1 = G.vOut + 160, y0 = Math.min(G.bot, -100) - 140, y1 = Math.max(G.top, 0) + 120;
+  const zT = G.or === 'vrh' ? G.Hw : y1, zid = `<rect x="-260" y="${-zT}" width="260" height="${zT - y0}" fill="#d9dde3"/>`;
+  const greda = `<rect x="${G.vS - 50}" y="0" width="100" height="100" fill="#c8944e"/>`;
+  const okap = G.or === 'gore' ? `<polygon points="0,${-(G.ver[1] + 60)} ${G.vS - 110},${-(G.ver[1] + 160)} ${G.vS - 110},${-(G.ver[1] + 200)} 0,${-(G.ver[1] + 100)}" fill="#9aa3ae"/>` : '';
+  document.getElementById('lPik').innerHTML = `<svg viewBox="${x0} ${-y1} ${x1 - x0} ${y1 - y0}">${zid}${okap}${r(G.plate)} fill="#14213d"/>${r(G.hor)} fill="#14213d"/>${r(G.ver)} fill="#14213d"/>${greda}</svg>`;
+}
 document.getElementById('uloge').innerHTML = ULOGE.map(([k, n]) => `<div class="f full"><label for="u_${k}">${n}</label><select id="u_${k}" data-u="${k}">${KATALOG.map(p => `<option value="${p.id}">${p.id} — ${p.n} · ${zarez(p.kg)} kg/m</option>`).join('')}</select></div>`).join('');
 
 function ui() {
@@ -140,7 +158,10 @@ function ui() {
   const T = TIPOVI[P.tip];
   document.getElementById('gCel').style.display = T.cel ? '' : 'none';
   document.getElementById('fTem').style.display = T.cel === 'stubovi' ? '' : 'none';
-  document.getElementById('fIsp').style.display = T.cel === 'konzole' || T.cel === 'lstope' ? '' : 'none';
+  document.getElementById('fIsp').style.display = T.cel === 'konzole' ? '' : 'none';
+  document.querySelectorAll('.fL').forEach(e => e.style.display = T.cel === 'lstope' ? '' : 'none');
+  document.getElementById('lCev').textContent = T.cel === 'stubovi' ? 'Cev (stub i greda)' : T.cel === 'konzole' ? 'Cev (konzola i greda)' : 'Cev grede';
+  if (T.cel === 'lstope') lPikto();
   document.getElementById('lD').textContent = T.strana === 2 ? 'Projekcija — po strani' : 'Projekcija (od zida / zadnje ivice)';
   document.getElementById('lHz').textContent = P.tip === 'dvovodna' ? 'Visina slemena — vrh cevi' : T.cel ? 'Visina gore — vrh cevi' : 'Visina na zidu — vrh profila';
   document.getElementById('objekat').placeholder = objekat(P, racun(P));
@@ -154,7 +175,7 @@ function crtaj() {
     `Razmak osa <b>${Math.round(ras)} mm</b> · nagib <b>${R.nag.toFixed(1).replace('.', ',')} %</b><br>` +
     `Pergola: <b>${R.nP * R.strana}</b> · stubova napred: <b>${(R.nB + 1) * R.strana}</b> · rog <b>${R.rogL} mm</b>` +
     (R.T.cel ? `<br>Čelik ≈ <b>${Math.round(out.listovi[0].masa)} kg</b>` : '') +
-    ` · Alu ≈ <b>${Math.round(out.listovi[out.listovi.length - 1].masa)} kg</b>`;
+    ` · Alu ≈ <b>${Math.round(out.listovi.find(l => l.naziv === 'Sklop pergola').masa)} kg</b>`;
   const u = document.getElementById('upoz'); u.style.display = R.upoz.length ? 'block' : 'none'; u.innerHTML = R.upoz.map(t => `<li>${t}</li>`).join('');
   if (tab >= out.listovi.length) tab = 0;
   document.getElementById('tabs').innerHTML = out.listovi.map((l, i) => `<button type="button" data-i="${i}" class="${i === tab ? 'on' : ''}">${l.broj} · ${l.naziv}</button>`).join('') +
@@ -169,7 +190,7 @@ document.getElementById('tips').addEventListener('click', e => { const b = e.tar
 document.querySelectorAll('[data-k]').forEach(el => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
   const k = el.dataset.k, num = el.type === 'number';
   let v = num ? parseFloat(el.value) : el.value; if (num && isNaN(v)) return;
-  if (k === 'sip') v = +v;
+  if (k === 'sip' || k === 'sipC') v = +v;
   P[k] = v;
   if (k === 'L') { const mn = Math.ceil(P.L / 4000); if (P.L / P.nB > 4000) P.nB = mn; }
   if (k === 'nB' || k === 'L') P.nP = Math.min(P.nP, P.nB);
