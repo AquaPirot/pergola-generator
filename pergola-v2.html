@@ -223,7 +223,14 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
         <button class="sm-btn" onclick="pgLinkShare()" style="flex:1;align-items:center;text-align:center">Pošalji</button>
       </div>
       <a class="sm-btn" id="pg_linkOpen" href="#" target="_blank" rel="noopener" style="align-items:center;text-align:center;text-decoration:none">Otvori i proveri</a>
-      <div class="info-note">Link možete poslati Viberom, WhatsApp-om ili SMS-om. Otvara se u pregledaču, bez zumiranja, sa svim merama, cenom i crtežima.</div>
+      <label for="pg_poruka" style="font-size:12px;font-weight:700;color:var(--navy);margin-top:4px">Poruka uz link</label>
+      <textarea id="pg_poruka" rows="8" oninput="pgPorukaSave()" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;font:13px/1.45 var(--font);resize:vertical"></textarea>
+      <div style="display:flex;gap:8px">
+        <button class="sm-btn" onclick="pgPorukaViber()" style="flex:1;align-items:center;text-align:center;background:#7360f2;color:#fff;border-color:#7360f2">Viber</button>
+        <button class="sm-btn" onclick="pgPorukaWA()" style="flex:1;align-items:center;text-align:center;background:#25d366;color:#fff;border-color:#25d366">WhatsApp</button>
+        <button class="sm-btn" id="pg_porukaCopyBtn" onclick="pgPorukaKopiraj()" style="flex:1;align-items:center;text-align:center">Kopiraj poruku</button>
+      </div>
+      <div class="info-note">{model}, {mera} i {link} program sam popunjava. Tekst menjate jednom — pamti se za sledeći put. <a href="#" onclick="pgPorukaReset();return false">Vrati predlog teksta</a></div>
       <button class="sm-btn" onclick="pgLinkClose()" style="align-items:center;text-align:center;border-color:var(--border)">Zatvori</button>
     </div>
   </div>
@@ -234,7 +241,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v57</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v58</div>
 </header>
 
 <div class="view-bar">
@@ -2619,7 +2626,7 @@ function pgPonudaHTML(o){
 <meta name="description" content="${esc(o.model)} ${esc(o.gabarit)} — ponuda ${esc(o.firma)}">
 <meta property="og:title" content="${esc(o.firma)} — ${esc(o.model)}">
 <meta property="og:description" content="${esc(o.gabarit)}${o.cena?' — '+esc(o.cena):''}">
-${o.foto?`<meta property="og:image" content="${o.fotoAbs}">`:''}
+${o.fotoAbs?`<meta property="og:image" content="${o.fotoAbs}">`:''}
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--navy:#14213d;--navy2:#1c2d4f;--gold:#c8944e;--bg:#f4f5f7;--card:#fff;--tx:#16213a;--mut:#6b7280;--bd:#e4e7ec}
@@ -2809,13 +2816,15 @@ async function generateLink(){
   if(btn){btn.innerHTML='&#8987; Pravim link...';btn.disabled=true;}
   try{
     // fotografija: lokalna (data URL) ide ugrađena, serverska kao putanja iz foldera ponude/
-    let foto='',fotoAbs='';
+    let foto='',fotoAbs='',ogImg='';
     const im=await pgLoadImgAny(pgModelFotoList());
     if(im){
       const src=im.src;
-      if(src.startsWith('data:')){foto=src;fotoAbs='';}
+      /* fotografija sa uređaja: u ponudi ostaje ugrađena, a umanjena kopija ide na hosting — za sliku u Viberu/WhatsApp-u */
+      if(src.startsWith('data:')){foto=src;ogImg=pgOgSlika(im);fotoAbs=ogImg?'__OG_IMAGE__':'';}
       else{const rel=src.substring(src.lastIndexOf('foto/'));foto='../'+rel;fotoAbs=src;}
     }
+    if(!fotoAbs)fotoAbs=new URL('img/ag-og.jpg',location.href).href;   // bez fotografije — znak AG GROUP
     let logo='';
     if(pgLogoImg){const ls=pgLogoImg.src;logo=ls.startsWith('data:')?ls:'../'+ls.substring(ls.lastIndexOf('logo.'));}
     const V=pgS.visineOK;
@@ -2867,7 +2876,7 @@ async function generateLink(){
          prolazna:T('prolazna visina '),nemaFoto:T('Nema fotografije za ovaj model')}
     };
     const html=pgPonudaHTML(o);
-    const res=await pgApi('publish',{html});
+    const res=await pgApi('publish',ogImg?{html,img:ogImg}:{html});
     pgLinkShow(res.url);
   }catch(e){
     alert('Nije uspelo pravljenje linka: '+e.message);
@@ -2875,8 +2884,38 @@ async function generateLink(){
     if(btn){btn.innerHTML=old;btn.disabled=false;}
   }
 }
+function pgOgSlika(im){
+  try{const k=Math.min(1,1200/im.naturalWidth),c=document.createElement('canvas');
+    c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.85);}catch(e){return '';}
+}
+/* ═══ PORUKA UZ LINK — šablon se menja jednom i pamti ═══ */
+const PG_PORUKA_DEF={
+  sr:'Poštovani,\njavljam se povodom Vašeg upita za pergolu. U linku ispod je Vaša ponuda ({model}, {mera}) — fotografije, mere, tehnički crteži, cena i sve što je uključeno:\n{link}\n\nZa sva pitanja ili izmene slobodno mi pišite ili me pozovite.\n\nSrdačan pozdrav,\nAleksandar Ćirić · PERGOLA.RS\n064 89 79 242',
+  bg:'Здравейте,\nпиша Ви във връзка с Вашето запитване за пергола. На линка по-долу е Вашата оферта ({model}, {mera}) — снимки, размери, технически чертежи, цена и всичко, което е включено:\n{link}\n\nЗа всякакви въпроси или промени ми пишете или се обадете.\n\nПоздрави,\nАлександър Чирич · PERGOLAS.BG\n0887 748 578'
+};
+function pgPorukaKey(){return 'pg_poruka_'+(pgS.lang==='bg'?'bg':'sr');}
+function pgPorukaSablon(){try{const v=localStorage.getItem(pgPorukaKey());if(v)return v;}catch(e){}return PG_PORUKA_DEF[pgS.lang==='bg'?'bg':'sr'];}
+function pgPorukaSave(){try{localStorage.setItem(pgPorukaKey(),document.getElementById('pg_poruka').value);}catch(e){}}
+function pgPorukaReset(){try{localStorage.removeItem(pgPorukaKey());}catch(e){}document.getElementById('pg_poruka').value=pgPorukaSablon();}
+function pgPorukaTekst(){
+  const url=document.getElementById('pg_linkUrl').value, t=document.getElementById('pg_poruka').value||pgPorukaSablon();
+  const model=T(pgBF()?'BIOFIX pergola':(PG_NAZIV[pgS.type]||PG_TL[pgS.type]));
+  const mera=pgS.pergs.map(p=>(p.w/100).toString().replace('.',',')+' × '+(p.p/100).toString().replace('.',',')+' m').join(' + ');
+  let s=t.replace(/\{model\}/g,model).replace(/\{mera\}/g,mera);
+  return s.indexOf('{link}')>=0?s.replace(/\{link\}/g,url):s+'\n'+url;
+}
+function pgPorukaKopiraj(){
+  const txt=pgPorukaTekst(),b=document.getElementById('pg_porukaCopyBtn');
+  const ok=()=>{b.textContent='✓ Kopirano';setTimeout(()=>b.textContent='Kopiraj poruku',1800);};
+  if(navigator.clipboard)navigator.clipboard.writeText(txt).then(ok).catch(()=>{const ta=document.getElementById('pg_poruka'),v=ta.value;ta.value=txt;ta.select();document.execCommand('copy');ta.value=v;ok();});
+  else{const ta=document.getElementById('pg_poruka'),v=ta.value;ta.value=txt;ta.select();document.execCommand('copy');ta.value=v;ok();}
+}
+function pgPorukaViber(){location.href='viber://forward?text='+encodeURIComponent(pgPorukaTekst());}
+function pgPorukaWA(){window.open('https://wa.me/?text='+encodeURIComponent(pgPorukaTekst()),'_blank','noopener');}
 function pgLinkShow(url){
   document.getElementById('pg_linkUrl').value=url;
+  document.getElementById('pg_poruka').value=pgPorukaSablon();
   document.getElementById('pg_linkOpen').href=url;
   document.getElementById('pg_linkOverlay').classList.add('visible');
 }
@@ -2891,8 +2930,8 @@ function pgLinkCopy(){
 async function pgLinkShare(){
   const url=document.getElementById('pg_linkUrl').value;
   const t=(document.getElementById('pg_projectName').value.trim()||PG_FIRMA)+' — ponuda';
-  if(navigator.share){try{await navigator.share({title:t,text:t,url});return;}catch(e){}}
-  pgLinkCopy();
+  if(navigator.share){try{await navigator.share({title:t,text:pgPorukaTekst()});return;}catch(e){}}
+  pgPorukaKopiraj();
 }
 
 /* ═══════════════════════════════════════════════════════════

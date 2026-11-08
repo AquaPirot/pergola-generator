@@ -28,9 +28,6 @@ if (($_GET['action'] ?? '') === 'publish') {
   $dir = defined('PONUDE_DIR') ? PONUDE_DIR : __DIR__ . '/ponude';
   if (!is_dir($dir) && !@mkdir($dir, 0755, true)) out(false, null, 'Ne mogu da napravim folder ponude/. Napravite ga ručno u File Manager-u.');
   $token = bin2hex(random_bytes(6));
-  $file  = $dir . '/' . $token . '.html';
-  if (@file_put_contents($file, $html) === false) out(false, null, 'Upis nije uspeo — proverite dozvole foldera ponude/ (treba 0755).');
-  @chmod($file, 0644);
   if (defined('PONUDE_URL')) {
     $urlBase = rtrim(PONUDE_URL, '/');
   } else {
@@ -38,6 +35,23 @@ if (($_GET['action'] ?? '') === 'publish') {
     $urlBase = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? '')
              . rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/') . '/ponude';
   }
+  // slika za pregled linka (Viber, WhatsApp) — fotografija modela sa uređaja, umanjena
+  $og = '';
+  $img = $body['img'] ?? '';
+  if (is_string($img) && preg_match('#^data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$#', $img, $m)) {
+    $bin = base64_decode($m[2], true);
+    if ($bin !== false && strlen($bin) <= 3 * 1024 * 1024 && @getimagesizefromstring($bin)) {
+      $ext = $m[1] === 'jpeg' ? 'jpg' : $m[1];
+      if (@file_put_contents($dir . '/' . $token . '.' . $ext, $bin) !== false) {
+        @chmod($dir . '/' . $token . '.' . $ext, 0644);
+        $og = $urlBase . '/' . $token . '.' . $ext;
+      }
+    }
+  }
+  $html = str_replace('__OG_IMAGE__', htmlspecialchars($og, ENT_QUOTES), $html);
+  $file  = $dir . '/' . $token . '.html';
+  if (@file_put_contents($file, $html) === false) out(false, null, 'Upis nije uspeo — proverite dozvole foldera ponude/ (treba 0755).');
+  @chmod($file, 0644);
   out(true, ['url' => $urlBase . '/' . $token . '.html']);
 }
 
