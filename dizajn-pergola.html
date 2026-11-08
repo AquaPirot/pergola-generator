@@ -357,8 +357,8 @@ function initCanvas(CW,CH){const cv=document.getElementById('outputCanvas');cv.s
    PERGOLA MODULE
    ═══════════════════════════════════════════════════════════ */
 let pgS={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190};
-const PG_TL={bioklimatska:'Bioklimatska pergola (pokretne lamele)',ravna:'Ravna pergola (3D Blockout platno)',klasicna:'Klasična pergola sa padom (3D Blockout platno)'};
-const PG_ML={bioklimatska:'Pokretne lamele',ravna:'3D Blockout platno',klasicna:'3D Blockout platno'};
+const PG_TL={bioklimatska:'Bioklimatska pergola (pokretne lamele)',ravna:'Ravna pergola (3D Blockout cerada)',klasicna:'Klasična pergola sa padom (3D Blockout cerada)'};
+const PG_ML={bioklimatska:'Pokretne lamele',ravna:'3D Blockout cerada',klasicna:'3D Blockout cerada'};
 
 function pgSelectType(el){document.querySelectorAll('#panel-pergola .type-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.type=el.dataset.type;}
 function pgSelectCount(el){document.querySelectorAll('#panel-pergola .num-option').forEach(o=>o.classList.remove('active'));el.classList.add('active');pgS.count=parseInt(el.dataset.count);pgBuildDims();}

@@ -220,7 +220,7 @@ html,body{height:100%;overflow:hidden;background:#e9ecef;font-family:var(--font)
           <button type="button" data-v="siva">Siva</button>
           <button type="button" data-v="antracit">Antracit</button>
         </div>
-        <p class="note">3D blockout platno sa alu profilima.</p>
+        <p class="note">Troslojna 3D Blockout cerada 850 g/m² sa alu profilima.</p>
       </div>
       <div class="grp" id="grpLamele"><h4>Lamele</h4>
         <div class="seg" data-k="lamela">
@@ -892,8 +892,8 @@ function ui(){
   document.getElementById('o_os').textContent=S.otvStaklo+'%';
   document.getElementById('o_zip').textContent=S.zipSpust+'%';
   document.getElementById('o_krov').textContent=S.otvKrov+'%';
-  document.getElementById('lblKrov').textContent=g.klas?'Krov — platno uvučeno':'Krov — lamele otvorene';
-  document.getElementById('krovNote').textContent=g.klas?'0% = platno razvučeno, 100% = skupljeno uz zid.':'0% = lamele zatvorene, 100% = otvorene.';
+  document.getElementById('lblKrov').textContent=g.klas?'Krov — cerada uvučena':'Krov — lamele otvorene';
+  document.getElementById('krovNote').textContent=g.klas?'0% = cerada razvučena, 100% = skupljena uz zid.':'0% = lamele zatvorene, 100% = otvorene.';
   const st=Object.entries(S.staklo).filter(([k,v])=>v!=='none'&&(k!=='back'||!g.zid)).map(([k,v])=>SIDE_LBL[k].toLowerCase()+' '+v);
   const zp=Object.entries(S.zip).filter(([k,v])=>v&&(k!=='back'||!g.zid)).map(([k])=>SIDE_LBL[k].toLowerCase());
   const vr=Object.entries(S.vrata||{}).filter(([k,v])=>v!=='none'&&S.staklo[k]!=='none'&&(k!=='back'||!g.zid)).map(([k])=>SIDE_LBL[k].toLowerCase());
@@ -1002,7 +1002,7 @@ function vidPlan(){
   if(zipS.length)ph('zip',2.3,'ZIP zavese');
   if(mov.length||ima){const v=new Set(mov.map(k=>S.staklo[k]));
     ph('staklo',2.5,!mov.length?'Staklena vrata':v.size>1?'Klizna stakla i giljotina':v.has('klizno')?'Klizna stakla':'Giljotina stakla');}
-  ph('krov',2.5,g.klas?'Krovno platno se povlači':'Lamele se otvaraju');
+  ph('krov',2.5,g.klas?'Krovna cerada se povlači':'Lamele se otvaraju');
   ph('noc',3.0,'LED rasveta');
   ph('kraj',2.6,'');
   return {P,T:t,zip:zipS.length>0,sub:`${g.klas?'Klasična pergola':'Bioklimatska pergola'} · ${S.W} × ${S.D} cm`};
