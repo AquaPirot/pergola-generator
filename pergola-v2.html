@@ -263,7 +263,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v60</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v61</div>
 </header>
 
 <div class="view-bar">
@@ -2600,7 +2600,7 @@ ${o.foto?`<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div clas
     ${x.meta?`<div class="dm">${esc(x.meta)}</div>`:''}${x.teh?`<div class="dm">${esc(x.teh)}</div>`:''}
     <p>${esc(x.opis)}</p><img class="dc" src="${x.crtez}" alt=""><div class="du">&#10003; ${esc(x.ukl)}</div></div></div>`).join('')}`:''}
   ${o.demo&&o.anim?`<h3>${esc(o.L.kakoRadi)}</h3>
-  <div class="demo"><iframe src="${o.demo}animacija.html" loading="lazy" title="${esc(o.L.kakoRadi)}" scrolling="no"></iframe>
+  <div class="demo"><iframe src="${o.demo}${o.anim}" loading="lazy" title="${esc(o.L.kakoRadi)}" scrolling="no"></iframe>
   <p>${esc(o.L.demoNap)}</p></div>`:''}
   <h3>${esc(o.L.teh)}</h3>
   <div class="card">${o.crtezi.map(d=>draw(d[0],d[1])).join('')}</div>
@@ -2746,7 +2746,7 @@ async function generateLink(){
       ukljuceno:pgUkljuceno().map(u=>typeof u==='string'?{t:T(u),zh:''}:{t:T(u.t),zh:u.z.map(flagSVG).join('')}),nije:PG_NIJE.map(T),
       prednosti:PG_PREDNOSTI.map(x=>[T(x[0]),T(x[1])]),
       traka:PG_TRAKA.map(x=>[T(x[0]),T(x[1])]),
-      demo:pgS.lang==='sr'?'../demo/':'',anim:pgS.type==='klasicna',   // animacija prikazuje klasičnu pergolu
+      demo:pgS.lang==='sr'?'../demo/':'',anim:pgS.type==='klasicna'?'animacija.html':(pgS.type==='bioklimatska'&&!pgBF()?'animacija-bio.html':''),   // svaki model svoju animaciju; BIOFIX nema pokretnih delova
       galBase:'../galerija/'+({bioklimatska:'bio',klasicna:'klas',ravna:'ravna'}[pgS.type]||'klas')+'/',
       broj:genId('PON'),datum:ds(),
       L:{spec:T('Specifikacija'),cena:T(dodL.length?'UKUPNA CENA — SA DODACIMA':'UKUPNA CENA'),cenaUpit:T('CENA'),naUpit:T('Na upit'),
