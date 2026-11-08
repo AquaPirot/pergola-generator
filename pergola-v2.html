@@ -278,7 +278,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v64</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v65</div>
 </header>
 
 <div class="view-bar">
@@ -817,8 +817,8 @@ const PG_MODELS=[
   {id:'bio-2',tip:'bioklimatska',stubovi:2,naziv:'Bioklimatska — 2 stuba',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
   {id:'bio-3',tip:'bioklimatska',stubovi:3,naziv:'Bioklimatska — 3 stuba',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
   {id:'bio-4',tip:'bioklimatska',stubovi:4,naziv:'Bioklimatska — 4 stuba',opis:'Bioklimatska pergola je aluminijumska konstrukcija čiji krov čine rotirajuće lamele. Promenom ugla lamela regulišete količinu svetlosti i strujanje vazduha ispod pergole. U zatvorenom položaju lamele formiraju kompaktnu krovnu površinu, a voda se usmerava ka integrisanoj odvodnji, u skladu sa konstrukcijom i tehničkim ograničenjima odabranog sistema.'},
-  {id:'biofix-2',tip:'biofix',stubovi:2,naziv:'BIOFIX — 2 stuba',opis:'BIOFIX je aluminijumska pergola sa krovom od termoizolovanog panela 5 cm — ravan i moderan izgled, odlična toplotna i zvučna izolacija. Nema motora ni pokretnih delova, pa nema šta da se pokvari. LED rasveta po obodu, sa dimerom na daljinskom.'},
-  {id:'biofix-3',tip:'biofix',stubovi:3,naziv:'BIOFIX — 3 stuba',opis:'BIOFIX je aluminijumska pergola sa krovom od termoizolovanog panela 5 cm — ravan i moderan izgled, odlična toplotna i zvučna izolacija. Nema motora ni pokretnih delova, pa nema šta da se pokvari. LED rasveta po obodu, sa dimerom na daljinskom.'},
+  {id:'biofix-2',tip:'biofix',stubovi:2,naziv:'BIOFIX — 2 stuba',opis:'BIOFIX je aluminijumska pergola sa krovom od termoizolovanog panela 5 cm — ravan i moderan izgled, odlična toplotna i zvučna izolacija. Krov je fiksan, bez motora i pokretnih delova. LED rasveta po obodu, sa dimerom na daljinskom.'},
+  {id:'biofix-3',tip:'biofix',stubovi:3,naziv:'BIOFIX — 3 stuba',opis:'BIOFIX je aluminijumska pergola sa krovom od termoizolovanog panela 5 cm — ravan i moderan izgled, odlična toplotna i zvučna izolacija. Krov je fiksan, bez motora i pokretnih delova. LED rasveta po obodu, sa dimerom na daljinskom.'},
   {id:'ravna-2',tip:'ravna',stubovi:2,naziv:'Ravna — 2 stuba',opis:'Ravna pergola sa troslojnom 3D Blockout ceradom od 850 g/m² na motorni pogon. Konstrukcija na 2 stuba. Cerada se uvlači u kasetu, potpuna zaštita od sunca i kiše.'},
   {id:'ravna-3',tip:'ravna',stubovi:3,naziv:'Ravna — 3 stuba',opis:'Ravna pergola sa troslojnom 3D Blockout ceradom od 850 g/m² na motorni pogon. Konstrukcija na 3 stuba za veće raspone. Cerada se uvlači u kasetu.'},
   {id:'ravna-4',tip:'ravna',stubovi:4,naziv:'Ravna — 4 stuba',opis:'Ravna pergola sa troslojnom 3D Blockout ceradom od 850 g/m², ojačana konstrukcija na 4 stuba. Cerada se uvlači u kasetu.'},
@@ -1492,7 +1492,7 @@ var PG_RAZ={
   'biofix|klasicna':[
     ['Krov',{klasicna:'Troslojna 3D Blockout cerada 850 g/m² — uvlači se kad želite otvoreno nebo',biofix:'Termoizolovani panel 5 cm — stalna zaštita'}],
     ['Leto / zima',{klasicna:'Senka i zaštita od kiše',biofix:'Za sva godišnja doba'}],
-    ['Pokretni delovi',{klasicna:'Motor i cerada',biofix:'Nema — nema šta da se pokvari'}],
+    ['Pokretni delovi',{klasicna:'Motor i cerada',biofix:'Nema — krov je fiksan'}],
     ['LED rasveta',{klasicna:'✓ sa dimerom',biofix:'✓ sa dimerom'}]],
   'bioklimatska|klasicna':[
     ['Krov',{klasicna:'Troslojna 3D Blockout cerada 850 g/m² — uvlači se kad želite otvoreno nebo',bioklimatska:'Aluminijumske lamele, okreću se do 105°'}],
@@ -1505,7 +1505,7 @@ var PG_RAZ={
     ['Krov',{bioklimatska:'Aluminijumske lamele, okreću se do 105°',biofix:'Termoizolovani panel 5 cm — stalna zaštita'}],
     ['Leto / zima',{bioklimatska:'Za sva godišnja doba',biofix:'Za sva godišnja doba'}],
     ['Svetlo i vazduh',{bioklimatska:'Ugao lamela po želji — svetlo i ventilacija',biofix:'Krov je stalno zatvoren — senka'}],
-    ['Pokretni delovi',{bioklimatska:'Motor i lamele, na daljinski',biofix:'Nema — nema šta da se pokvari'}],
+    ['Pokretni delovi',{bioklimatska:'Motor i lamele, na daljinski',biofix:'Nema — krov je fiksan'}],
     ['LED rasveta',{bioklimatska:'✓ sa dimerom',biofix:'✓ sa dimerom'}]]
 };
 function pgVarTipA(){return pgQOn()?pgQTip():(pgBF()?'biofix':pgS.type);}
