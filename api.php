@@ -27,6 +27,8 @@ if (($_GET['action'] ?? '') === 'publish') {
   if (strlen($html) > 8 * 1024 * 1024) out(false, null, 'Ponuda je prevelika (preko 8 MB).');
   $dir = defined('PONUDE_DIR') ? PONUDE_DIR : __DIR__ . '/ponude';
   if (!is_dir($dir) && !@mkdir($dir, 0755, true)) out(false, null, 'Ne mogu da napravim folder ponude/. Napravite ga ručno u File Manager-u.');
+  // prazan index.html — da se spisak ponuda ne može izlistati ako server prikazuje sadržaj foldera
+  if (!file_exists($dir . '/index.html')) { @file_put_contents($dir . '/index.html', ''); @chmod($dir . '/index.html', 0644); }
   $token = bin2hex(random_bytes(6));
   if (defined('PONUDE_URL')) {
     $urlBase = rtrim(PONUDE_URL, '/');

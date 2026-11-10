@@ -16,6 +16,14 @@ NAZIVI FAJLOVA (obavezno tačno ovako):
   klas-3.jpg    Klasična sa padom — 3 stuba / 3 roga
   klas-4.jpg    Klasična sa padom — 4 stuba / 4 roga
 
+  biofix-2.jpg  BIOFIX — 2 stuba
+  biofix-3.jpg  BIOFIX — 3 stuba
+
+SAMOSTOJEĆE PERGOLE (nije obavezno):
+  Ako uz naziv dodate -samo (npr. bio-2-samo.jpg, klas-3-samo.jpg,
+  biofix-2-samo.jpg), ta fotografija ide u ponudu kad je montaža
+  "Samostojeća". Ako takve slike nema, koristi se obična slika modela.
+
 PREPORUKE:
   - Format: JPG
   - Odnos stranica: pejzaž (široka slika), npr. 1600x900 px
