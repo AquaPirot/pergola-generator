@@ -14,11 +14,11 @@ function out($ok, $data = null, $err = null) {
 }
 
 /* Čišćenje starih ponuda — najviše jednom dnevno, pri objavi nove.
-   Ponuda starija od PONUDE_DANA (podrazumevano 90) zamenjuje se kratkom stranicom
+   Ponuda starija od PONUDE_DANA (podrazumevano 30) zamenjuje se kratkom stranicom
    „ponuda je istekla" sa kontaktom, a njena slika za pregled linka se briše.
    Godinu dana posle toga briše se i ta kratka stranica. PONUDE_DANA = 0 isključuje čišćenje. */
 function ponude_cisti($dir) {
-  $dana = defined('PONUDE_DANA') ? (int)PONUDE_DANA : 90;
+  $dana = defined('PONUDE_DANA') ? (int)PONUDE_DANA : 30;
   if ($dana <= 0) return;
   $znak = $dir . '/.ciscenje';
   if (file_exists($znak) && @filemtime($znak) > time() - 86400) return;

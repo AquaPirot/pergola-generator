@@ -14,8 +14,8 @@ define('PONUDE_DIR', dirname(__DIR__) . '/ponude');
 define('PONUDE_URL', 'https://pergola.aggroup.rs/ponude');
 */
 
-/* ── Opciono: posle koliko dana se ponuda (link) gasi. Podrazumevano 90.
+/* ── Opciono: posle koliko dana se ponuda (link) gasi. Podrazumevano 30.
    Istekla ponuda se zamenjuje kratkom stranicom „ponuda je istekla" sa vašim telefonom.
    0 = ponude se nikad ne brišu. ──
-define('PONUDE_DANA', 90);
+define('PONUDE_DANA', 30);
 */
