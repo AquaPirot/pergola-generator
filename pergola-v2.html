@@ -283,7 +283,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v66</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v67</div>
 </header>
 
 <div class="view-bar">
@@ -1205,36 +1205,23 @@ function pgQType(el){
   el.classList.add('active');pgQMod='cenovnik';pgQM2=null;pgQRender();
 }
 function pgQRucnoSet(){pgQMod='rucno';pgQM2=null;pgQRender();}
-/* Montaža u brzom upitu: uz objekat ili samostojeća. Cenovnik je za montažu uz objekat —
-   doplatu za samostojeću upisujete jednom po modelu i pamti se. */
-let pgSamoD={};try{pgSamoD=JSON.parse(localStorage.getItem('pg_samo_dop'))||{};}catch(e){pgSamoD={};}
+/* Montaža u brzom upitu: uz objekat ili samostojeća. Cenovnik je za montažu uz objekat.
+   Doplata za samostojeću zavisi od konstrukcije (greda, cevi, stubovi, rad) — procenjuje se za svaki posao,
+   zato se NE pamti: važi samo za ponudu koja se upravo pravi i briše se čim se vrati „Uz objekat". */
+let pgSamoIznos=0;
+try{localStorage.removeItem('pg_samo_dop');}catch(e){}   // stara verzija je pamtila doplatu po modelu
 function pgQSamo(){const a=document.querySelector('#pg_qMount .type-option.active');return !!a&&a.dataset.qm==='samostojeca';}
 function pgQMountSet(el){
   document.querySelectorAll('#pg_qMount .type-option').forEach(o=>o.classList.remove('active'));
-  el.classList.add('active');if(pgQMod==='rucno')pgQMod='cenovnik';if(pgS.var2)pgS.var2.rucno=false;pgQRender();
-}
-function pgQSdSet(){
-  const v=parseFloat(document.getElementById('pg_qSd').value);pgSamoD[pgQTip()]=v>0?v:0;
-  try{localStorage.setItem('pg_samo_dop',JSON.stringify(pgSamoD));}catch(e){}
+  el.classList.add('active');if(!pgQSamo())pgSamoIznos=0;
   if(pgQMod==='rucno')pgQMod='cenovnik';if(pgS.var2)pgS.var2.rucno=false;pgQRender();
 }
-/* doplata za samostojeću za dati model — 0 kad je montaža uz objekat */
-function pgSamoDop(tip){const samo=pgQOn()?pgQSamo():pgS.mount==='samostojeca';return samo?(+pgSamoD[tip]||0):0;}
-function pgQM2Set(){
-  const r=parseFloat(document.getElementById('pg_qM2').value);
-  if(r>0){pgQMod='m2';pgQM2=r;}else{pgQMod='cenovnik';pgQM2=null;}
-  pgQRender();
+function pgQSdSet(){
+  const v=parseFloat(document.getElementById('pg_qSd').value);pgSamoIznos=v>0?v:0;
+  if(pgQMod==='rucno')pgQMod='cenovnik';if(pgS.var2)pgS.var2.rucno=false;pgQRender();
 }
-function pgQZkUI(){document.querySelectorAll('#pg_qZk button').forEach(b=>b.classList.toggle('on',+b.dataset.k===pgQKorak));}
-document.getElementById('pg_qZk').addEventListener('click',function(e){
-  const b=e.target.closest('button');if(!b)return;
-  pgQKorak=+b.dataset.k;pgQZkUI();
-  try{localStorage.setItem('pg_qKorak',String(pgQKorak));}catch(er){}
-  if(pgQMod==='rucno'){const pi=document.getElementById('pg_qPrice'),c=parseFloat(pi.value);if(c>0)pi.value=pgQZaokruzi(c);}
-  pgQRender();
-});
-pgQZkUI();
-
+/* doplata za samostojeću — samo u brzom upitu; u detaljnom unosu cenu upisujete sami */
+function pgSamoDop(){return pgQOn()&&pgQSamo()?pgSamoIznos:0;}
 /* Promena mere: ručno upisan iznos se odbacuje, cena po m² se zadržava */
 function pgQCalc(){if(pgQMod==='rucno')pgQMod='cenovnik';if(pgS.var2)pgS.var2.rucno=false;pgQRender();}
 function pgQRender(){
@@ -1245,18 +1232,18 @@ function pgQRender(){
         a=w*d, cena=pgQCena(tip,w,d),
         W=pgQSnap(w,pgQGrid(tip)[0]),D=pgQSnap(d,pgQGrid(tip)[1]),
         cur=pgPrices.cur, pi=document.getElementById('pg_qPrice'), m2e=document.getElementById('pg_qM2'),
-        samo=pgQSamo(), dop=pgSamoDop(tip), sde=document.getElementById('pg_qSd');
+        samo=pgQSamo(), dop=pgSamoDop(), sde=document.getElementById('pg_qSd');
   if(pgQMod==='m2')pi.value=a>0?pgQZaokruzi(a*pgQM2+dop):'';
   else if(pgQMod==='cenovnik')pi.value=cena!==null?pgQZaokruzi(cena+dop):'';
   document.getElementById('pg_qSdWrap').classList.toggle('on',samo);
   document.getElementById('pg_qCurSd').textContent=cur;
-  if(document.activeElement!==sde)sde.value=+pgSamoD[tip]>0?pgSamoD[tip]:'';
+  if(document.activeElement!==sde)sde.value=pgSamoIznos>0?pgSamoIznos:'';
   document.getElementById('pg_qCur').textContent=cur;
   document.getElementById('pg_qCurM2').textContent=cur+'/m²';
 
   /* polje po m²: vaša vrednost, ili sivo — koliko trenutna cena izlazi po kvadratu */
   const uk=parseFloat(pi.value), ef=(a>0&&uk>0)?Math.round(uk/a):null,
-        sdN=samo?(dop>0?' + '+pgFmt(dop)+' '+cur+' samostojeća':' · cenovnik je za montažu uz objekat — upišite doplatu za samostojeću'):'';
+        sdN=samo?(dop>0?' + '+pgFmt(dop)+' '+cur+' samostojeća':' · cenovnik je za montažu uz objekat — upišite svoju procenu doplate za samostojeću'):'';
   if(document.activeElement!==m2e){
     m2e.value=pgQMod==='m2'?pgQM2:'';
     m2e.placeholder=ef!==null?String(ef):'';
@@ -1569,12 +1556,12 @@ function pgVarMera(){
 function pgVarSync(){
   const v=pgS.var2;if(!v)return;const a=pgVarTipA();
   if(v.tip===a||!PG_VAR[v.tip]){v.tip=pgVarOst(a)[0];v.rucno=false;}
-  if(!v.rucno){const m=pgVarMera(),c=pgQCena(v.tip,m.w,m.d);v.cena=c===null?'':pgQZaokruzi(c+pgSamoDop(v.tip));}
+  if(!v.rucno){const m=pgVarMera(),c=pgQCena(v.tip,m.w,m.d);v.cena=c===null?'':pgQZaokruzi(c+pgSamoDop());}
 }
 function pgVarNota(){
   const v=pgS.var2;if(!v)return '';
-  const sd=pgSamoDop(v.tip);
-  const t=+v.cena>0?(v.rucno?'Ručno upisana cena.':'Iz cenovnika'+(v.tip==='biofix'?' (sa montažom)':'')+(sd>0?' + '+pgFmt(sd)+' '+pgPrices.cur+' samostojeća':'')+' · cenu možete izmeniti.')
+  const sd=pgSamoDop();
+  const t=+v.cena>0?(v.rucno?'Ručno upisana cena.':'Iz cenovnika'+(v.tip==='biofix'?' (sa montažom)':'')+(sd>0?' + '+pgFmt(sd)+' '+pgPrices.cur+' samostojeća (ista doplata kao gore)':'')+' · cenu možete izmeniti.')
     :(v.tip==='biofix'?'BIOFIX radimo do 7 × 3 m — upišite cenu, ili ostaje „na upit".':'Mera je van cenovnika — upišite cenu, ili ostaje „na upit".');
   return t+' Ide samo u <b>link</b>: obe varijante na jednoj stranici, jeftinija levo. Staklo i ZIP važe za obe.';
 }

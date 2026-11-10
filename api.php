@@ -13,6 +13,46 @@ function out($ok, $data = null, $err = null) {
   exit;
 }
 
+/* Čišćenje starih ponuda — najviše jednom dnevno, pri objavi nove.
+   Ponuda starija od PONUDE_DANA (podrazumevano 90) zamenjuje se kratkom stranicom
+   „ponuda je istekla" sa kontaktom, a njena slika za pregled linka se briše.
+   Godinu dana posle toga briše se i ta kratka stranica. PONUDE_DANA = 0 isključuje čišćenje. */
+function ponude_cisti($dir) {
+  $dana = defined('PONUDE_DANA') ? (int)PONUDE_DANA : 90;
+  if ($dana <= 0) return;
+  $znak = $dir . '/.ciscenje';
+  if (file_exists($znak) && @filemtime($znak) > time() - 86400) return;
+  @touch($znak);
+  $granica = time() - $dana * 86400;
+  foreach ((@scandir($dir) ?: []) as $f) {
+    if (!preg_match('/^[0-9a-f]{12}\.(html|jpg|png|webp)$/', $f, $m)) continue;   // samo fajlovi koje pravi ovaj program
+    $p = $dir . '/' . $f;
+    $t = @filemtime($p);
+    if (!$t || $t > $granica) continue;
+    if ($m[1] !== 'html') { @unlink($p); continue; }
+    if (@filesize($p) < 4000) { if ($t < $granica - 365 * 86400) @unlink($p); continue; }   // već zamenjena
+    $h = @file_get_contents($p);
+    if ($h === false) continue;
+    $tel = preg_match('/href="tel:([^"]{3,30})"/', $h, $x) ? $x[1] : '';
+    $vib = preg_match('/href="viber:\/\/chat\?number=([^"]{3,30})"/', $h, $x) ? $x[1] : '';
+    $bg  = strpos($h, 'PERGOLAS.BG') !== false;
+    $e   = function ($v) { return htmlspecialchars($v, ENT_QUOTES); };
+    $n   = $bg ? ['Офертата е изтекла', 'Цените и условията може да са променени. Обадете се или ни пишете — ще Ви изпратим нова оферта.', 'Обади се', 'Viber съобщение']
+               : ['Ova ponuda je istekla', 'Cene i uslovi su se možda promenili. Pozovite nas ili nam pišite — poslaćemo Vam novu ponudu.', 'Pozovi', 'Viber poruka'];
+    $kratka = '<!DOCTYPE html><html lang="' . ($bg ? 'bg' : 'sr') . '"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+      . '<meta name="robots" content="noindex,nofollow"><title>AG GROUP — ' . $n[0] . '</title><style>'
+      . 'body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f4f5f7;color:#16213a;text-align:center}'
+      . 'header{background:#14213d;color:#fff;padding:18px;font-weight:800;font-size:19px;letter-spacing:.5px}'
+      . 'main{max-width:440px;margin:0 auto;padding:44px 22px}h1{font-size:22px;margin:0 0 12px}p{color:#6b7280;line-height:1.55;margin:0 0 26px}'
+      . 'a{display:block;padding:14px;border-radius:11px;text-decoration:none;font-weight:800;margin-top:10px;color:#fff;background:#14213d}a.v{background:#c8944e}'
+      . '</style></head><body><header>AG GROUP</header><main><h1>' . $n[0] . '</h1><p>' . $n[1] . '</p>'
+      . ($tel !== '' ? '<a href="tel:' . $e($tel) . '">' . $n[2] . ' ' . $e($tel) . '</a>' : '')
+      . ($vib !== '' ? '<a class="v" href="viber://chat?number=' . $e($vib) . '">' . $n[3] . '</a>' : '')
+      . '</main></body></html>';
+    if (@file_put_contents($p, $kratka) !== false) @touch($p, $t);   // datum ostaje — da se zna kad je ponuda napravljena
+  }
+}
+
 $key = $_SERVER['HTTP_X_API_KEY'] ?? '';
 if (!hash_equals(API_KEY, $key)) {
   http_response_code(401);
@@ -54,6 +94,7 @@ if (($_GET['action'] ?? '') === 'publish') {
   $file  = $dir . '/' . $token . '.html';
   if (@file_put_contents($file, $html) === false) out(false, null, 'Upis nije uspeo — proverite dozvole foldera ponude/ (treba 0755).');
   @chmod($file, 0644);
+  try { ponude_cisti($dir); } catch (Throwable $e) {}   // čišćenje nikad ne sme da omete objavu
   out(true, ['url' => $urlBase . '/' . $token . '.html']);
 }
 
