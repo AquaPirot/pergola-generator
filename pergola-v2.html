@@ -19,7 +19,9 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
 /* ═══ BRZI UPIT ═══ */
-.qmode-bar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.qmode-bar{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:16px}
+.qmode-btn.novo{color:var(--primary);padding:11px 13px;white-space:nowrap}
+.qmode-btn.novo:active{background:rgba(200,148,78,.18)}
 .qmode-btn{font:600 12px var(--font);padding:11px 6px;border:2px solid var(--border);background:var(--card);color:var(--text-muted);border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition)}
 .qmode-btn:hover{border-color:var(--accent)}
 .qmode-btn.active{border-color:var(--accent);background:rgba(200,148,78,.10);color:var(--primary)}
@@ -96,7 +98,8 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
 .app-header h1{font-size:18px;font-weight:700;letter-spacing:1px}
 .app-header .subtitle{font-size:11px;opacity:.7;letter-spacing:.5px}
 .badge{background:rgba(200,148,78,.2);border:1px solid rgba(200,148,78,.5);color:#e2b877;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px}
-.view-bar{background:var(--primary);display:flex;border-bottom:3px solid var(--accent);overflow-x:auto}
+.view-bar{background:var(--primary);display:none;border-bottom:3px solid var(--accent);overflow-x:auto}
+.view-bar.vise{display:flex}   /* traka sa karticama se vidi samo kad ima više od jedne (radni nalog za čelik) */
 .view-btn{padding:12px 28px;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;border:none;background:none;font-family:var(--font);position:relative;transition:var(--transition)}
 .view-btn:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.05)}
 .view-btn.active{color:white;background:rgba(200,148,78,.15)}
@@ -110,6 +113,8 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
 .card-header .icon{width:26px;height:26px;background:rgba(255,255,255,.15);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px}
 .card-body{padding:18px}
 #pg_projCard .card-header{cursor:pointer;user-select:none}
+#pg_projCard .btn-mini{flex:0 0 auto;white-space:nowrap}
+#pg_cloudBadge{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 #pg_projCard .pj-st{font-size:11px;opacity:.7;transition:transform .15s;display:inline-block}
 #pg_projCard.zat .card-body{display:none}
 #pg_projCard.zat .pj-st{transform:rotate(-90deg)}
@@ -205,8 +210,8 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
 .proj-list{display:flex;flex-direction:column;gap:6px;max-height:290px;overflow-y:auto}
 .proj-list::-webkit-scrollbar{width:5px}
 .proj-list::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
-.proj-tools{display:flex;gap:6px;margin-bottom:9px}
-.proj-tools input{flex:1;padding:8px 10px;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:var(--font);font-weight:600;background:#fafbfc}
+.proj-tools{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+.proj-tools input{flex:1 1 140px;min-width:0;padding:8px 10px;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:var(--font);font-weight:600;background:#fafbfc}
 .proj-tools input:focus{outline:none;border-color:var(--accent);background:#fff}
 .btn-arh{padding:8px 11px;border:2px solid var(--border);border-radius:var(--radius-sm);background:#fafbfc;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);color:var(--text-muted);white-space:nowrap}
 .btn-arh:hover{border-color:var(--accent)}
@@ -240,6 +245,16 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
 .sm-proj:hover{border-color:var(--accent-blue);background:#fff}
 .sm-proj span{font-size:10px;color:var(--text-muted);font-weight:400}
 @media(max-width:1200px){.app-container{grid-template-columns:1fr}.sidebar{position:static;max-height:none}.stats-grid{grid-template-columns:repeat(2,1fr)}}
+/* telefon: brzi upit zbijen — parovi polja ostaju u jednom redu, manje pločice, niže zaglavlje */
+@media(max-width:768px){
+  .app-header{gap:8px}.app-header .subtitle{display:none}
+  #pg_projCard .card-header{padding:10px 12px;gap:8px}
+  .qpanel .form-row{grid-template-columns:1fr 1fr!important}
+  .qpanel .form-row.single{grid-template-columns:1fr!important}
+  .qpanel .type-option{padding:8px 6px}
+  .qpanel .type-option .type-icon{font-size:18px;margin-bottom:2px}
+  .qpanel .type-selector.cmp .type-icon{margin:0}
+}
 @media(max-width:768px){.app-header{padding:12px 16px}.app-container{padding:10px}.type-selector{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.color-options{grid-template-columns:repeat(2,1fr)}}
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:var(--bg)}
@@ -247,17 +262,6 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
 </style>
 </head>
 <body>
-
-<div class="start-overlay" id="pg_startOverlay">
-  <div class="start-modal">
-    <div class="sm-head"><h2>Dobrodošli &#128075;</h2><p>AG GROUP — Generator Tehničkih Crteža</p></div>
-    <div class="sm-body">
-      <button class="sm-btn new" onclick="pgStartNew()">&#10133; Novi projekat<span>Prazan unos sa standardnim vrednostima</span></button>
-      <button class="sm-btn" id="pg_startContBtn" onclick="pgStartContinue()">&#128194; Nastavi poslednji rad<span id="pg_startLast">Vraća poslednje uneto stanje</span></button>
-      <div id="pg_startProjects" style="display:contents"></div>
-    </div>
-  </div>
-</div>
 
 <div class="start-overlay" id="pg_linkOverlay">
   <div class="start-modal" style="max-width:520px">
@@ -290,7 +294,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v69</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v70</div>
 </header>
 
 <div class="view-bar">
@@ -307,6 +311,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
         <div class="proj-tools">
           <input type="search" id="pg_projSearch" placeholder="Pretraga po nazivu..." oninput="pgProjRender()">
           <button class="btn-arh" id="pg_arhBtn" onclick="pgProjToggleArh()">&#128230; Arhiva</button>
+          <button class="btn-arh" onclick="pgPoslednji()" title="Vraća ono što je bilo uneto pre zatvaranja programa">&#8617; Poslednji unos</button>
         </div>
         <div class="proj-list" id="pg_projList"></div>
       </div>
@@ -318,6 +323,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
         <div class="qmode-bar">
           <button class="qmode-btn active" id="pg_qmOn" onclick="pgQMode(true)">&#9889; Brzi upit</button>
           <button class="qmode-btn" id="pg_qmOff" onclick="pgQMode(false)">&#9881; Detaljan unos</button>
+          <button class="qmode-btn novo" onclick="pgNovo()" title="Novi upit — sve se vraća na početne vrednosti">&#8634; Novo</button>
         </div>
 
         <div class="qpanel" id="pg_qPanel">
@@ -737,6 +743,7 @@ function pgMountUI(){
   const nb=document.getElementById('pg_btnNalog'),vb=document.getElementById('pg_viewNalogBtn');
   if(nb)nb.style.display=steel?'flex':'none';
   if(vb)vb.style.display=steel?'block':'none';
+  const bar=document.querySelector('.view-bar');if(bar)bar.classList.toggle('vise',steel);
   if(!steel){const pnl=document.getElementById('panel-nalog');if(pnl&&pnl.classList.contains('active'))switchView('ponuda',document.getElementById('pg_tabPonuda'));}
   if(steel&&!own)document.getElementById('pg_steelNote').textContent=pgS.mount==='samostojeca'
     ?'Samostojeći objekat: čelična konstrukcija nosi zadnju stranu pergole — 2 ili 3 stuba ankerisana u temelj, greda zavarena odozgo. Polje „Visina na zidu" predstavlja visinu vrha konstrukcije.'
@@ -1013,7 +1020,7 @@ function pgProjArh(id,val){
   const all=pgProjAll(),pr=all.find(x=>x.id===id);if(!pr)return;
   if(!pr.data)pr.data={};
   pr.data.arh=val?1:0;
-  pgProjStore(all);pgProjRender();pgStartProjList();pgCloudPush(pr);
+  pgProjStore(all);pgProjRender();pgCloudPush(pr);
 }
 function pgProjRender(){
   const all=pgProjAll(),el=document.getElementById('pg_projList');
@@ -1071,7 +1078,7 @@ async function pgCloudSync(report){
     for(const lp of localOnly)await pgApi('save',lp);
     const merged=localOnly.length?await pgApi('list'):server;
     pgProjStore(merged);
-    pgCloudOK=true;pgCloudBadge();pgProjRender();pgStartProjList();
+    pgCloudOK=true;pgCloudBadge();pgProjRender();
     if(report)alert('Sinhronizacija uspešna — projekata na serveru: '+merged.length);
   }catch(e){
     pgCloudOK=false;pgCloudBadge();
@@ -1153,27 +1160,35 @@ function pgRenderWarnings(){
 /* ═══ POČETNI EKRAN ═══ */
 const PG_DEF_S={type:'bioklimatska',count:1,ral:'7016',hasWallBase:false,wallBaseH:40,postHeight:190,sharedPost:true,hasWallTube:false,wallTubeProfile:'80x40',wallTubeW:4,wallTubeH:8,drain:'none',showPrice:false,ceradaBoja:'',motorSides:['none','none','none'],gaps:[0,0],align:'back',mount:'zid',steelPosts:2,steelProfile:100,samoTip:'stubovi',depth:1,model:'bio-3',priceMode:'fix',lang:'sr'};
 const PG_DEF_F={pg_rokDana:'7',pg_wallHeight:'262',pg_passHeight:'230',pg_postsPerPergola:'3',pg_postW:'12',pg_postD:'12',pg_projectName:'',pg_notes:'',pg_customRal:'',pg_wallBaseH:'40',pg_postHeight:'190',pg_tubeW:'40',pg_tubeH:'80',pg_drain:'none',pg_ceradaBoja:'',pg_steelProfile:'100',pg_priceFix:'',pg_rok:'10–20 dana',pw_0:'500',pp_0:'400',pm_0:'none',pw_1:'500',pp_1:'400',pm_1:'none',pw_2:'500',pp_2:'400',pm_2:'none',pg_gap_0:'0',pg_gap_1:'0'};
-function pgStartClose(){document.getElementById('pg_startOverlay').classList.remove('visible');}
-function pgStartNew(){pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F});pgSaveState();pgStartClose();}
-function pgStartContinue(){pgLoadState();pgQMode(false);pgStartClose();}
-function pgStartProjList(){
-  const el=document.getElementById('pg_startProjects');if(!el)return;
-  const projs=pgProjAll().filter(p=>!pgIsArh(p));
-  el.innerHTML=projs.length?'<div class="sm-sub">Sačuvani projekti</div>'+projs.slice(0,6).map(pr=>`<button class="sm-proj" onclick="pgProjOpen(${pr.id});pgStartClose()">${esc(pr.name)}<span>${esc(pr.date)}</span></button>`).join(''):'';
+/* Program se otvara pravo na unos, sa početnim vrednostima. „Poslednji unos" (u kartici Projekti)
+   vraća ono što je bilo uneto pre zatvaranja. */
+function pgPoslednji(){
+  let d=null;try{d=JSON.parse(localStorage.getItem('pg_v2'));}catch(e){}
+  if(!d){alert('Nema sačuvanog prethodnog unosa.');return;}
+  pgApply(d);pgQMode(false);pgTelSet(pgS.tel||'');
 }
-function pgStartInit(){
-  let last=null;try{last=JSON.parse(localStorage.getItem('pg_v2'));}catch(e){}
-  const projs=pgProjAll();
-  if(!last&&!projs.length&&!pgSyncKey)return; // prvi ulazak — prazan formular, bez modala
-  if(!last)document.getElementById('pg_startContBtn').style.display='none';
-  else if(last.f&&last.f.pg_projectName)document.getElementById('pg_startLast').textContent='Poslednji rad: '+last.f.pg_projectName;
-  pgStartProjList();
-  const ov=document.getElementById('pg_startOverlay');
-  ov.classList.add('visible');
-  ov.addEventListener('click',e=>{if(e.target===ov)pgStartContinue();});
+/* NOVO — sve na početne vrednosti: brzi upit, detaljan unos, dodaci, druga varijanta, broj kupca, 3D i prikaz ponude */
+function pgNovo(){
+  const akt=(sel,at,v)=>document.querySelectorAll(sel).forEach(o=>o.classList.toggle('active',o.dataset[at]===v));
+  document.getElementById('pg_qName').value='';
+  akt('#pg_qType .type-option','qt','klasicna');akt('#pg_qMount .type-option','qm','zid');akt('#pg_qN .num-option','n','1');
+  document.getElementById('pg_qW').value='6';document.getElementById('pg_qD').value='4';
+  pgQMod='cenovnik';pgQM2=null;pgSamoIznos=0;
+  pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F});
+  pgTelSet('');pg3DUkloni();
+  document.getElementById('pg_customRalWrap').classList.remove('visible');
+  pgCeradaDefault();pgDrainNote();pgModelAuto();pgMountUI();pgLayRender();
+  document.querySelectorAll('.output-canvas').forEach(c=>c.style.display='none');
+  document.querySelectorAll('.drawing-placeholder').forEach(x=>x.style.display='');
+  ['pg_btnExport','pg_btnPDF','pg_btnShare','pg_btnPonudaExport','pg_btnPonudaPDF','pg_btnNalogExport','pg_btnNalogPDF'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
+  const wb=document.getElementById('pg_warnBox');if(wb)wb.classList.remove('visible');
+  pgLinkVar=null;
+  if(pgQOn())pgQCalc();else pgDodRender();
+  pgSaveState();
+  try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){}
 }
 
-pgProjRender();pgPricesLoad();pgPriceModeUI();pgModelRender();pgLayRender();pgCeradaDefault();pgDrainNote();pgStartInit();pgCloudSync();
+pgProjRender();pgPricesLoad();pgPriceModeUI();pgModelRender();pgLayRender();pgCeradaDefault();pgDrainNote();pgCloudSync();
 
 /* ═══════════ BRZI UPIT — cenovnik i automatika ═══════════ */
 /* Cene: klasicna pergola, montaza na zid. Redovi = projekcija, kolone = sirina (m). */
