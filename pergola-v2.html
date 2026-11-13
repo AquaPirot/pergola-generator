@@ -294,7 +294,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v70</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v71</div>
 </header>
 
 <div class="view-bar">
@@ -1247,6 +1247,22 @@ function pgQType(el){
   el.classList.add('active');pgQMod='cenovnik';pgQM2=null;pgQRender();
 }
 function pgQRucnoSet(){pgQMod='rucno';pgQM2=null;pgQRender();}
+/* cena po m²: upisana vrednost × površina daje ukupnu cenu; prazno polje vraća cenovnik */
+function pgQM2Set(){
+  const r=parseFloat(String(document.getElementById('pg_qM2').value).replace(',','.'));
+  if(r>0){pgQMod='m2';pgQM2=r;}else{pgQMod='cenovnik';pgQM2=null;}
+  pgQRender();
+}
+function pgQZkUI(){document.querySelectorAll('#pg_qZk button').forEach(b=>b.classList.toggle('on',+b.dataset.k===pgQKorak));}
+document.getElementById('pg_qZk').addEventListener('click',function(e){
+  const b=e.target.closest('button');if(!b)return;
+  pgQKorak=+b.dataset.k;pgQZkUI();
+  try{localStorage.setItem('pg_qKorak',String(pgQKorak));}catch(er){}
+  if(pgQMod==='rucno'){const pi=document.getElementById('pg_qPrice'),c=parseFloat(pi.value);if(c>0)pi.value=pgQZaokruzi(c);}
+  if(pgS.var2)pgS.var2.rucno=false;
+  pgQRender();
+});
+pgQZkUI();
 /* Montaža u brzom upitu: uz objekat ili samostojeća. Cenovnik je za montažu uz objekat.
    Doplata za samostojeću zavisi od konstrukcije (greda, cevi, stubovi, rad) — procenjuje se za svaki posao,
    zato se NE pamti: važi samo za ponudu koja se upravo pravi i briše se čim se vrati „Uz objekat". */
@@ -1294,10 +1310,8 @@ function pgQRender(){
   /* polje po m²: vaša vrednost, ili sivo — koliko trenutna cena izlazi po kvadratu */
   const uk=parseFloat(pi.value), ef=(a>0&&uk>0)?Math.round(uk/a):null,
         sdN=samo?(dop>0?' + '+pgFmt(dop)+' '+cur+' samostojeća':' · cenovnik je za montažu uz objekat — upišite svoju procenu doplate za samostojeću'):'';
-  if(document.activeElement!==m2e){
-    m2e.value=pgQMod==='m2'?pgQM2:'';
-    m2e.placeholder=ef!==null?String(ef):'';
-  }
+  if(document.activeElement!==m2e)m2e.value=pgQMod==='m2'?pgQM2:'';
+  m2e.placeholder=ef!==null?String(ef):'';
 
   const zk=pgQKorak>1?' · zaokruženo na '+pgQKorak:'';
   let nota;
