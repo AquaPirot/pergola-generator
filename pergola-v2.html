@@ -230,6 +230,28 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
 .warn-box ul{margin:4px 0 0 18px}
 .start-overlay{position:fixed;inset:0;background:rgba(26,26,46,.72);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
 .start-overlay.visible{display:flex}
+.start-overlay{overflow-y:auto;overscroll-behavior:contain}
+.start-modal{margin:auto}
+/* prozor „Link za kupca" — zbijen da ceo stane na ekran telefona */
+.start-modal.lnk .sm-head{padding:11px 16px}
+.start-modal.lnk .sm-head h2{font-size:16px}
+.start-modal.lnk .sm-body{padding:12px 14px 14px;gap:8px}
+.start-modal.lnk .sm-btn{align-items:center;justify-content:center;text-align:center;padding:11px 6px;font-size:13px;text-decoration:none;flex:1;min-width:0}
+.start-modal.lnk .l3,.start-modal.lnk .l2{display:flex;gap:7px}
+.start-modal.lnk input,.start-modal.lnk textarea{width:100%;padding:9px 10px;border:2px solid var(--border);border-radius:10px;font:600 13px/1.4 var(--font);color:var(--text);background:#f8f9fa}
+.start-modal.lnk textarea{font-weight:400;background:#fff;resize:vertical}
+.start-modal.lnk .lt{display:flex;align-items:center;gap:10px}
+.start-modal.lnk .lt label,.start-modal.lnk .lh label{font-size:12px;font-weight:700;color:var(--primary);white-space:nowrap}
+.start-modal.lnk .lt input{flex:1;font:700 15px var(--font)}
+.start-modal.lnk .lh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:-3px}
+.start-modal.lnk .lh a{font-size:11px;color:var(--text-muted)}
+.start-modal.lnk .lv{display:none;font-size:11.5px;line-height:1.35;color:#5b49d6;font-weight:600;text-decoration:none;padding:1px 2px}
+.start-modal.lnk .lv.on{display:block}
+/* preporučena polja — boja vodi kroz unos: Novo, broj kupca, mere */
+.form-group input.prep,.start-modal.lnk input.prep{background:#fdf1d8;border-color:#e3b871}
+.form-group input.prep:focus{background:#fff8e8;border-color:var(--accent)}
+.qmode-btn.novo,.sm-btn.prep{background:#fdf1d8;border-color:#e3b871;color:var(--primary)}
+@media(max-width:768px){.start-overlay{padding:10px;align-items:flex-start}}
 .start-modal{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);max-width:470px;width:100%;overflow:hidden;animation:smIn .25s ease}
 @keyframes smIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
 .start-modal .sm-head{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;padding:22px 26px}
@@ -264,27 +286,30 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
 <body>
 
 <div class="start-overlay" id="pg_linkOverlay">
-  <div class="start-modal" style="max-width:520px">
-    <div class="sm-head"><h2>&#128279; Link za kupca</h2><p>Ponuda je objavljena kao stranica prilagođena telefonu</p></div>
+  <div class="start-modal lnk" style="max-width:520px">
+    <div class="sm-head"><h2>&#128279; Link za kupca</h2></div>
     <div class="sm-body">
-      <input type="text" id="pg_linkUrl" readonly onclick="this.select()" style="width:100%;padding:11px;border:2px solid var(--border);border-radius:10px;font-size:13px;font-family:var(--font);font-weight:600;background:#f8f9fa">
-      <div style="display:flex;gap:8px">
-        <button class="sm-btn" id="pg_linkCopyBtn" onclick="pgLinkCopy()" style="flex:1;align-items:center;text-align:center">Kopiraj link</button>
-        <button class="sm-btn" onclick="pgLinkShare()" style="flex:1;align-items:center;text-align:center">Pošalji</button>
+      <input type="text" id="pg_linkUrl" readonly onclick="this.select()">
+      <div class="l3">
+        <button class="sm-btn" id="pg_linkCopyBtn" onclick="pgLinkCopy()">Kopiraj link</button>
+        <a class="sm-btn" id="pg_linkOpen" href="#" target="_blank" rel="noopener">Otvori</a>
+        <button class="sm-btn" onclick="pgLinkShare()">Podeli</button>
       </div>
-      <a class="sm-btn" id="pg_linkOpen" href="#" target="_blank" rel="noopener" style="align-items:center;text-align:center;text-decoration:none">Otvori i proveri</a>
-      <label for="pg_linkTel" style="font-size:12px;font-weight:700;color:var(--primary);margin-top:4px">Broj kupca <span style="font-weight:600;color:var(--text-muted)">— sa brojem poruka ide pravo njemu; bez broja sami birate kome</span></label>
-      <input type="tel" id="pg_linkTel" inputmode="tel" autocomplete="off" placeholder="npr. 064 123 4567" oninput="pgTelSet(this.value)" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;font:700 15px var(--font)">
-      <label for="pg_poruka" style="font-size:12px;font-weight:700;color:var(--primary);margin-top:4px">Poruka uz link</label>
-      <textarea id="pg_poruka" rows="8" oninput="pgPorukaSave()" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;font:13px/1.45 var(--font);resize:vertical"></textarea>
-      <div style="display:flex;gap:8px">
-        <button class="sm-btn" id="pg_porukaViberBtn" onclick="pgPorukaViber()" style="flex:1;align-items:center;text-align:center;background:#7360f2;color:#fff;border-color:#7360f2">Viber</button>
-        <button class="sm-btn" id="pg_porukaWABtn" onclick="pgPorukaWA()" style="flex:1;align-items:center;text-align:center;background:#25d366;color:#fff;border-color:#25d366">WhatsApp</button>
-        <button class="sm-btn" id="pg_porukaCopyBtn" onclick="pgPorukaKopiraj()" style="flex:1;align-items:center;text-align:center">Kopiraj poruku</button>
+      <div class="lt"><label for="pg_linkTel">Broj kupca</label>
+        <input type="tel" class="prep" id="pg_linkTel" inputmode="tel" autocomplete="off" placeholder="npr. 064 123 4567" oninput="pgTelSet(this.value)"></div>
+      <div class="lh"><label for="pg_poruka">Poruka uz link</label><a href="#" onclick="pgPorukaReset();return false">vrati predlog teksta</a></div>
+      <textarea id="pg_poruka" rows="5" oninput="pgPorukaSave()"></textarea>
+      <div class="l3">
+        <button class="sm-btn" id="pg_porukaViberBtn" onclick="pgPorukaViber()" style="background:#7360f2;color:#fff;border-color:#7360f2">Viber</button>
+        <button class="sm-btn" id="pg_porukaWABtn" onclick="pgPorukaWA()" style="background:#25d366;color:#fff;border-color:#25d366">WhatsApp</button>
+        <button class="sm-btn" id="pg_porukaCopyBtn" onclick="pgPorukaKopiraj()">Kopiraj poruku</button>
       </div>
-      <button class="sm-btn" id="pg_odgCenaBtn" onclick="pgOdgCena()" style="align-items:center;text-align:center;border-color:var(--accent);color:#8a5d22">Odgovor na „Cena?"</button>
-      <div class="info-note" id="pg_porukaNote"></div>
-      <button class="sm-btn" onclick="pgLinkClose()" style="align-items:center;text-align:center;border-color:var(--border)">Zatvori</button>
+      <a href="#" class="lv" id="pg_viberIzbor" onclick="pgPorukaViberIzbor();return false">Viber javi „Zahtev nije dostupan"? Dodirnite ovde — sami birate kome ide &rarr;</a>
+      <button class="sm-btn" id="pg_odgCenaBtn" onclick="pgOdgCena()" style="border-color:var(--accent);color:#8a5d22">Odgovor na „Cena?"</button>
+      <div class="l2">
+        <button class="sm-btn prep" onclick="pgLinkClose();pgNovo()">&#8634; Novo</button>
+        <button class="sm-btn" onclick="pgLinkClose()">Zatvori</button>
+      </div>
     </div>
   </div>
 </div>
@@ -294,7 +319,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v71</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v72</div>
 </header>
 
 <div class="view-bar">
@@ -331,7 +356,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
             <div class="form-group"><label>Kupac</label>
               <input type="text" id="pg_qName" placeholder="npr. Marko Petrović"></div>
             <div class="form-group"><label>Broj kupca <span class="unit">(Viber)</span></label>
-              <input type="tel" id="pg_qTel" inputmode="tel" autocomplete="off" placeholder="npr. 064 123 4567" oninput="pgTelSet(this.value)"></div>
+              <input type="tel" class="prep" id="pg_qTel" inputmode="tel" autocomplete="off" placeholder="npr. 064 123 4567" oninput="pgTelSet(this.value)"></div>
           </div>
           <div class="form-row single"><div class="form-group"><label>Pergola</label>
             <div class="type-selector" id="pg_qType" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:0">
@@ -346,9 +371,9 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
             </div></div></div>
           <div class="form-row">
             <div class="form-group"><label>Širina <span class="unit">(m)</span></label>
-              <input type="number" id="pg_qW" value="6" min="2" max="30" step="0.5" oninput="pgQCalc()"></div>
+              <input type="number" class="prep" id="pg_qW" value="6" min="2" max="30" step="0.5" oninput="pgQCalc()"></div>
             <div class="form-group"><label>Projekcija <span class="unit">(m)</span></label>
-              <input type="number" id="pg_qD" value="4" min="1" max="7" step="0.5" oninput="pgQCalc()"></div>
+              <input type="number" class="prep" id="pg_qD" value="4" min="1" max="7" step="0.5" oninput="pgQCalc()"></div>
           </div>
           <div class="form-row single"><div class="form-group"><label>Broj spojenih sistema <span class="unit">(širina je ukupna)</span></label>
             <div class="num-selector" id="pg_qN">
@@ -3250,10 +3275,13 @@ function pgTelUI(){
   const n=pgTelIntl(),v=document.getElementById('pg_porukaViberBtn'),w=document.getElementById('pg_porukaWABtn'),q=document.getElementById('pg_qBtnViber');
   if(v)v.textContent=n?'Viber → kupcu':'Viber';
   if(w)w.textContent=n?'WhatsApp → kupcu':'WhatsApp';
+  const iz=document.getElementById('pg_viberIzbor');if(iz)iz.classList.toggle('on',!!n);
   if(q)q.innerHTML='&#128233; Pošalji na Viber'+(n?' → +'+n:'');
 }
 /* Sa brojem: otvara razgovor sa tim kupcem i poruka je već upisana (ostaje i u klipbordu, za svaki slučaj).
    Bez broja: Viber pita kome da prosledi. */
+/* uvek radi: Viber otvara spisak razgovora i sami birate kome ide (kad direktno slanje na broj ne prođe) */
+function pgPorukaViberIzbor(){location.href='viber://forward?text='+encodeURIComponent(pgPorukaTekst());}
 function pgPorukaViber(){
   const txt=pgPorukaTekst(),n=pgTelIntl();
   if(!n){location.href='viber://forward?text='+encodeURIComponent(txt);return;}
@@ -3265,9 +3293,6 @@ function pgLinkShow(url){
   document.getElementById('pg_linkUrl').value=url;
   document.getElementById('pg_linkTel').value=pgS.tel||'';pgTelUI();
   document.getElementById('pg_poruka').value=pgPorukaSablon();
-  document.getElementById('pg_porukaNote').innerHTML=(pgLinkVar?'Poruka za <b>dve varijante</b> — {varijante}, {mera} i {link} program sam popunjava.':'{model}, {mera} i {link} program sam popunjava.')+
-    ' Tekst menjate jednom — pamti se za sledeći put. <a href="#" onclick="pgPorukaReset();return false">Vrati predlog teksta</a>'+
-    '<br>Kupac ipak napiše „Cena?" — dugme <b>Odgovor na „Cena?"</b> kopira kratak odgovor koji ga vraća na link.';
   document.getElementById('pg_linkOpen').href=url;
   document.getElementById('pg_linkOverlay').classList.add('visible');
 }
