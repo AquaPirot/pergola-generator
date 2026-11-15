@@ -59,6 +59,15 @@ if (!hash_equals(API_KEY, $key)) {
   out(false, null, 'Pogrešna šifra za sinhronizaciju.');
 }
 
+/* Troškovi i marža za preporučenu cenu — fajl cene-podaci.php pored api.php (nije na GitHub-u) */
+if (($_GET['action'] ?? '') === 'prep') {
+  $f = __DIR__ . '/cene-podaci.php';
+  if (!is_file($f)) out(false, null, 'Na serveru nema fajla cene-podaci.php.');
+  $d = include $f;
+  if (!is_array($d) || empty($d['mat']) || empty($d['p'])) out(false, null, 'Fajl cene-podaci.php nije ispravan.');
+  out(true, $d);
+}
+
 /* Objavljivanje ponude kao veb stranice — ne zahteva bazu */
 if (($_GET['action'] ?? '') === 'publish') {
   $body = json_decode(file_get_contents('php://input'), true) ?: [];

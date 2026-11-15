@@ -148,7 +148,34 @@ try {
     await pg.context().close();
   }
 
-  /* 6) OSTALE STRANICE se učitavaju bez greške */
+  /* 6) PREPORUČENA CENA — izmišljeni troškovi (pravi su samo na serveru, u cene-podaci.php) */
+  {
+    console.log('Preporučena cena');
+    const pg = await strana({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true });
+    await pg.evaluate(() => {
+      pgPrep = { mat: { pro: [3.5, 4], sir: [3.5, 4], t: [[1000, 1100], [1050, 1150]] },
+        p: { motor: 100, ekipa: 200, montera: 3, nocenje: 25, km: 0.5, brzina: 50, sati: 8, granica: 100, d1: 30, d2: 50, mMax: 1, a0: 15, mMin: 0.5, a1: 70, pdv: 0.2, zaokr: 50 } };
+    });
+    const set = async (w, d, m) => { await pg.fill('#pg_qW', String(w)); await pg.fill('#pg_qD', String(d)); await pg.fill('#pg_qMesto', m); };
+    const preporuka = () => pg.evaluate(() => { const me = pgMesto(document.getElementById('pg_qMesto').value); const r = pgPrepCena(pgQTip(), +document.getElementById('pg_qW').value, +document.getElementById('pg_qD').value, pgQN(), me && !me.nepoznato ? me : null); return r && r.uk; });
+    // ručno: 4×4: (1150+100+200) × (1+0,9909) × 1,2 = 3464 → 3500; Beograd: + (310 + 310 + 75) × 1,2 = 834 → 4350
+    await set(4, 4, 'Pirot'); ok(await preporuka() === 3500, 'formula: 4 × 4 Pirot = 3500', await preporuka());
+    await set(4, 4, 'beog'); ok(await preporuka() === 4350, 'dolazak: „beog" → Beograd 310 km, sa noćenjem = 4350', await preporuka());
+    await set(3.5, 3.5, 'Niš'); ok(await preporuka() === 3350, 'Niš 72 km bez noćenja: 3150 + 173 = 3350', await preporuka());
+    await set(4, 3, '0'); ok(await preporuka() === 3250, 'projekcija ispod tabele (3 m) — procena po nagibu = 3250', await preporuka());
+    await set(4, 4, 'Mesto koga nema'); ok(await preporuka() === 3500, 'nepoznato mesto → bez dolaska, traži km', await preporuka());
+    await set(4, 4, 'Beograd');
+    ok(await pg.inputValue('#pg_qPrice') === '3450', 'dok se ne izabere, cena ostaje iz cenovnika (3450)', await pg.inputValue('#pg_qPrice'));
+    await pg.tap('#pg_qPrep button');
+    ok(await pg.inputValue('#pg_qPrice') === '4350', '„Koristi" upisuje preporučenu cenu', await pg.inputValue('#pg_qPrice'));
+    await pg.fill('#pg_qMesto', 'Niš'); ok(await pg.inputValue('#pg_qPrice') === await pg.evaluate(() => String(pgPrepCena('klasicna', 4, 4, 1, { km: 72 }).uk)), 'promena mesta menja cenu');
+    ok(await pg.evaluate(() => localStorage.getItem('pg_qIzvor')) === 'prep', 'izbor „preporučena" se pamti');
+    await pg.tap('#pg_qPrep button'); ok(await pg.inputValue('#pg_qPrice') === '3450', '„Cenovnik" vraća cenu iz cenovnika', await pg.inputValue('#pg_qPrice'));
+    ok(!pg.gr.length, 'bez grešaka', pg.gr.join(' ¦ '));
+    await pg.context().close();
+  }
+
+  /* 7) OSTALE STRANICE se učitavaju bez greške */
   {
     console.log('Ostale stranice');
     const lo = [];
