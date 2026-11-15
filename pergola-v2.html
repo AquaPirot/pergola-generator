@@ -39,8 +39,12 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
 .qprice .qp-v input:focus{outline:2px solid var(--accent);outline-offset:1px}
 .qprice .qp-v span{font:700 13px var(--font);color:rgba(255,255,255,.75);flex:0 0 auto}
 .qprice .qp-n{font-size:11px;color:rgba(255,255,255,.62);margin-top:7px;line-height:1.45}
-.qprice .qp-pr{margin-top:10px;padding:9px 11px;border:1px solid rgba(255,255,255,.18);border-radius:9px;background:rgba(255,255,255,.05)}
-.qprice .qp-pr.on{border-color:var(--accent);background:rgba(200,148,78,.16)}
+.qprice .qp-pr{margin-top:10px;padding:7px 11px;border:1px solid rgba(255,255,255,.18);border-radius:9px;background:rgba(255,255,255,.05)}
+.qprice .qp-pr .pr-t{font-size:10.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.55);text-transform:uppercase;text-decoration:none;flex:1}
+.qprice .qp-pr .dot{width:9px;height:9px;border-radius:50%;background:#34d399;flex:0 0 auto}
+.qprice .qp-pr .dot.lo{background:#f87171}
+.qprice .qp-pr .pr-o tr.u td span{font-weight:600;color:rgba(255,255,255,.65)}
+.qprice .qp-pr .pr-o tr.lo td{color:#fca5a5}
 .qprice .qp-pr .pr-r{display:flex;align-items:center;gap:9px}
 .qprice .qp-pr .pr-l{flex:1;min-width:0;font-size:10px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.62);text-transform:uppercase}
 .qprice .qp-pr .pr-l span{text-transform:none;letter-spacing:0;font-weight:600;color:rgba(255,255,255,.8)}
@@ -335,7 +339,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v74</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v75</div>
 </header>
 
 <div class="view-bar">
@@ -1220,7 +1224,7 @@ function pgNovo(){
   document.getElementById('pg_qName').value='';
   akt('#pg_qType .type-option','qt','klasicna');akt('#pg_qMount .type-option','qm','zid');akt('#pg_qN .num-option','n','1');
   document.getElementById('pg_qW').value='6';document.getElementById('pg_qD').value='4';
-  pgQMod=pgQBaza;pgQM2=null;pgSamoIznos=0;document.getElementById('pg_qMesto').value='';
+  pgQMod=pgQBaza;pgQM2=null;pgSamoIznos=0;pgPrepOtv=false;document.getElementById('pg_qMesto').value='';
   pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F});
   pgTelSet('');pg3DUkloni();
   document.getElementById('pg_customRalWrap').classList.remove('visible');
@@ -1262,8 +1266,8 @@ const PG_BIO_M2=[[10,650],[15,590],[20,550],[30,490]];
 
 /* Odakle dolazi cena u brzom upitu:
    'cenovnik' — iz matrice / opsega po m²; 'm2' — vaša cena po kvadratu × površina; 'rucno' — upisan iznos */
-/* izvor osnovne cene: 'cenovnik' ili 'prep' (preporučena — formula: trošak + marža + dolazak); pamti se na uređaju */
-let pgQBaza='cenovnik';try{if(localStorage.getItem('pg_qIzvor')==='prep')pgQBaza='prep';}catch(e){}
+/* osnovna cena dolazi iz cenovnika; cenu određujete vi (cenovnik, po m² ili ručno) */
+const pgQBaza='cenovnik';try{localStorage.removeItem('pg_qIzvor');}catch(e){}
 let pgQMod=pgQBaza, pgQM2=null, pgQKorak=10;
 try{const k=parseInt(localStorage.getItem('pg_qKorak'));if([1,10,50,100].indexOf(k)>=0)pgQKorak=k;}catch(e){}
 function pgQZaokruzi(v){return Math.round(v/pgQKorak)*pgQKorak;}
@@ -1336,11 +1340,11 @@ function pgQNSet(el){document.querySelectorAll('#pg_qN .num-option').forEach(o=>
 function pgQCenaN(tip,w,d,n){const c=pgQCena(tip,w/n,d);return c===null?null:c*n;}
 /* najmanja projekcija: klasična od 1 m, ostale od 2 m */
 function pgQMinD(tip){return tip==='klasicna'?1:2;}
-/* ═══ PREPORUČENA CENA — trošak + marža po veličini + dolazak po mestu ═══
-   Troškovi i marža NISU u ovom fajlu (repozitorijum je javan): stižu sa servera (api.php?action=prep,
-   fajl cene-podaci.php pored api.php) i pamte se na uređaju. Bez njih se preporučena cena ne prikazuje.
-   Klasična: (materijal + motor + dani montaže × ekipa) × (1 + marža) × PDV.
-   Bioklimatska i BIOFIX (za njih još nema troška materijala): cena iz cenovnika + dolazak. */
+/* ═══ TROŠAK I ZARADA — diskretan pregled za cenu koju ste vi odredili ═══
+   Sve je BEZ PDV-a (cene su bez PDV-a; preko firme se PDV dodaje na iznos).
+   Troškovi NISU u ovom fajlu (repozitorijum je javan): stižu sa servera (api.php?action=prep,
+   fajl cene-podaci.php pored api.php) i pamte se na uređaju.
+   Ekipa: cena dana pokriva i vožnju i montažu; daleko mesto (noćenje) = još jedan dan ekipe za put. */
 const PG_MESTA=[['Pirot',0],['Dimitrovgrad',27],['Bela Palanka',30],['Babušnica',35],['Knjaževac',65],['Niš',72],['Prokuplje',100],['Aleksinac',105],
   ['Zaječar',105],['Leskovac',115],['Bor',140],['Kruševac',155],['Paraćin',160],['Negotin',160],['Vranje',180],['Jagodina',185],['Kragujevac',212],
   ['Kraljevo',215],['Čačak',250],['Požarevac',275],['Smederevo',280],['Užice',305],['Beograd',310],['Pančevo',320],['Novi Pazar',320],['Valjevo',330],
@@ -1361,7 +1365,6 @@ function pgMesto(v){
   return m?{ime:m[0],km:m[1]}:{nepoznato:true,ime:String(v).trim()};
 }
 function pgPrepDani(a){const p=pgPrep.p;return a<=p.d1?1:(a<=p.d2?1.5:2);}
-function pgPrepMarza(a){const p=pgPrep.p;return a<=p.a0?p.mMax:(a>=p.a1?p.mMin:p.mMax-(a-p.a0)/(p.a1-p.a0)*(p.mMax-p.mMin));}
 /* trošak materijala klasične za jedan sistem; mera između → sledeća veća (kao cenovnik);
    ispod najmanje mere iz tabele — procena po nagibu prve dve kolone/reda */
 function pgPrepMat(d,w){
@@ -1378,62 +1381,47 @@ function pgPrepMat(d,w){
   else{proc=true;const a=red(P[0]),b=red(P[1]);v=a-(P[0]-pd)/(P[1]-P[0])*(b-a);}
   return v>0?{v,proc}:null;
 }
-/* dolazak po stavkama: vozilo, vreme ekipe u vožnji, noćenje, PDV */
-function pgPrepDolazakDelovi(km,dani){
-  const p=pgPrep.p,o={km,voz:2*km*p.km,sati:2*km/p.brzina,noci:km>p.granica?Math.ceil(dani):0};
-  o.vozEk=o.sati/p.sati*p.ekipa;o.noc=o.noci*p.montera*p.nocenje;
-  o.bez=o.voz+o.vozEk+o.noc;o.pdv=o.bez*p.pdv;o.uk=Math.round(o.bez+o.pdv);
-  return o;
-}
-function pgPrepDolazak(km,dani){return km>0?pgPrepDolazakDelovi(km,dani).uk:0;}
-/* preporučena cena za model, meru (ukupna širina w, projekcija d, n sistema) i mesto */
-function pgPrepCena(tip,w,d,n,mesto){
+/* troškovi za model, meru (ukupna širina w, projekcija d, n sistema) i mesto — bez PDV */
+function pgTrosak(tip,w,d,n,mesto){
   if(!pgPrep||!(w>0)||!(d>0))return null;
-  const p=pgPrep.p,a=w*d,dani=pgPrepDani(a),zk=x=>Math.ceil(x/p.zaokr-1e-9)*p.zaokr,r={dani};
-  if(tip==='klasicna'){
-    const m=pgPrepMat(d,w/n);if(!m)return null;
-    r.mat=n*m.v;r.mot=n*p.motor;r.mont=dani*p.ekipa;r.tr=r.mat+r.mot+r.mont;r.n=n;
-    r.marza=pgPrepMarza(a);r.ostaje=r.tr*r.marza;r.pdvP=(r.tr+r.ostaje)*p.pdv;r.proc=m.proc;r.izv='formula';
-    r.perg=zk(r.tr+r.ostaje+r.pdvP);
-  }else{const c=pgQCenaN(tip,w,d,n);if(c===null)return null;r.perg=c;r.izv='cenovnik';}
-  r.dop=pgSamoDop();r.perg+=r.dop;
-  r.dd=mesto&&mesto.km>0?pgPrepDolazakDelovi(mesto.km,dani):null;
-  r.dol=r.dd?r.dd.uk:0;
-  r.uk=zk(r.perg+r.dol);
+  const p=pgPrep.p,a=w*d,dm=pgPrepDani(a),km=mesto&&mesto.km>0?mesto.km:0,dal=km>p.granica;
+  const r={dm,km,dal,n};
+  r.ekDani=dal?Math.ceil(dm)+(+p.putDan||0):dm;
+  r.noci=dal?Math.max(0,r.ekDani-1):0;
+  r.ekipa=r.ekDani*p.ekipa;r.voz=2*km*p.km;r.noc=r.noci*p.montera*p.nocenje;r.rad=+p.radionica||0;
+  if(tip==='klasicna'){const m=pgPrepMat(d,w/n);if(m){r.mat=n*m.v;r.proc=m.proc;}r.mot=n*p.motor;}
+  r.uk=(r.mat||0)+(r.mot||0)+r.ekipa+r.voz+r.noc+r.rad;
   return r;
 }
-/* rasklopivi obračun preporučene cene — stavka po stavka */
-let pgPrepOtv=false;try{pgPrepOtv=localStorage.getItem('pg_prepOtv')==='1';}catch(e){}
-function pgPrepTgl(){pgPrepOtv=!pgPrepOtv;try{localStorage.setItem('pg_prepOtv',pgPrepOtv?'1':'0');}catch(e){}pgQRender();}
-function pgPrepObracun(r,mesto){
-  const p=pgPrep.p,cur=pgPrices.cur,f=v=>pgFmt(v)+' '+cur,red=(l,v,c)=>`<tr${c?` class="${c}"`:''}><td>${l}</td><td>${v}</td></tr>`;
-  let h='';
-  if(r.izv==='formula'){
-    h+=red('Materijal'+(r.n>1?' ('+r.n+' sistema)':'')+(r.proc?' — procena':''),f(r.mat));
-    h+=red('Motor i daljinski'+(r.n>1?' × '+r.n:''),f(r.mot));
-    h+=red('Montaža — '+pgQBr(r.dani)+' dan'+(r.dani===1?'':'a')+' × '+f(p.ekipa),f(r.mont));
-    h+=red('Trošak',f(r.tr),'z');
-    h+=red('Marža '+Math.round(r.marza*100)+' % — radionica, režija, zarada',f(r.ostaje));
-    h+=red('PDV '+Math.round(p.pdv*100)+' %',f(r.pdvP));
-  }else h+=red('Cena iz cenovnika',f(r.perg-r.dop));
-  if(r.dop)h+=red('Doplata za samostojeću',f(r.dop));
-  h+=red('Pergola sa montažom'+(r.izv==='formula'?' (zaokruženo)':''),f(r.perg),'z');
-  if(r.dd){const d=r.dd,nm=mesto.ime==='udaljenost'?d.km+' km':mesto.ime+', '+d.km+' km';
-    h+=`<tr class="g"><td colspan="2">Dolazak — ${esc(nm)}</td></tr>`;
-    h+=red('Vozilo: '+pgFmt(2*d.km)+' km × '+String(p.km).replace('.',',')+' '+cur,f(d.voz));
-    h+=red('Ekipa u vožnji: '+pgQBr(d.sati)+' h ÷ '+p.sati+' h × '+f(p.ekipa),f(d.vozEk));
-    if(d.noci)h+=red('Noćenje: '+d.noci+' × '+p.montera+' čoveka × '+f(p.nocenje),f(d.noc));
-    h+=red('PDV '+Math.round(p.pdv*100)+' %',f(d.pdv));
-    h+=red('Dolazak',f(d.uk),'z');
-  }
-  h+=red('UKUPNO (zaokruženo na '+p.zaokr+')',f(r.uk),'u');
-  return '<table class="pr-o">'+h+'</table>';
-}
-function pgQPrepSet(on){
-  pgQBaza=on?'prep':'cenovnik';pgQMod=pgQBaza;pgQM2=null;
-  try{localStorage.setItem('pg_qIzvor',pgQBaza);}catch(e){}
-  if(pgS.var2)pgS.var2.rucno=false;
-  pgQRender();
+let pgPrepOtv=false;
+function pgTrosakTgl(){pgPrepOtv=!pgPrepOtv;pgQRender();}
+function pgTrosakHTML(cena,tip,w,d,n,mesto,dop){
+  if(!pgPrep)return '<div class="pr-s">Trošak i zarada: troškovi stižu sa servera — povežite se (☁ kod Projekata).</div>';
+  const t=pgTrosak(tip,w,d,n,mesto&&!mesto.nepoznato?mesto:null),p=pgPrep.p,cur=pgPrices.cur,f=v=>pgFmt(v)+' '+cur;
+  const imaMat=t&&t.mat!==undefined,ost=t&&cena>0&&imaMat?cena-t.uk:null,pct=ost!==null&&t.uk>0?ost/t.uk:null,lo=pct!==null&&pct<(+p.prag||0);
+  let h='<div class="pr-r"><a href="#" class="pr-t" onclick="pgTrosakTgl();return false">Trošak i zarada '+(pgPrepOtv?'▴':'▸')+'</a>'+
+    (pct!==null?'<span class="dot'+(lo?' lo':'')+'"></span>':'')+'</div>';
+  if(!pgPrepOtv||!t)return h;
+  const red=(l,v,c)=>`<tr${c?` class="${c}"`:''}><td>${l}</td><td>${v}</td></tr>`,mi=x=>'− '+f(x);
+  let o=red('Vaša cena (bez PDV)',cena>0?f(cena):'—','z');
+  if(tip==='klasicna'){
+    o+=imaMat?red('Materijal'+(n>1?' ('+n+' sistema)':'')+(t.proc?' — procena':''),mi(t.mat)):red('Materijal — mera van tabele','?');
+    o+=red('Motor i daljinski'+(n>1?' × '+n:''),mi(t.mot));
+  }else o+=red('Materijal i motor — za ovaj model još nema podataka','?');
+  o+=red('Ekipa: '+pgQBr(t.ekDani)+' dan'+(t.ekDani===1?'':'a')+' × '+f(p.ekipa)+(t.dal?' ('+pgQBr(t.dm)+' montaža + '+pgQBr(t.ekDani-t.dm)+' put)':' (vožnja i montaža)'),mi(t.ekipa));
+  if(t.km)o+=red('Vozilo: '+pgFmt(2*t.km)+' km × '+String(p.km).replace('.',',')+' '+cur,mi(t.voz));
+  if(t.noci)o+=red('Noćenje: '+t.noci+' × '+p.montera+' čoveka × '+f(p.nocenje),mi(t.noc));
+  if(t.rad)o+=red('Radionica i režija',mi(t.rad));
+  o+=red('Trošak',f(t.uk),'z');
+  if(ost!==null)o+=red('OSTAJE VAM <span>('+Math.round(pct*100)+' % na trošak)</span>',f(ost),'u'+(lo?' lo':''));
+  else if(!imaMat)o+=red('Ostaje — ne može da se izračuna bez troška materijala','—','u');
+  if(cena>0)o+=red('Preko firme, sa PDV '+Math.round((+p.pdv||0.2)*100)+' %',f(Math.round(cena*(1+(+p.pdv||0.2)))));
+  let nap=[];
+  if(!mesto)nap.push('Mesto nije upisano — računato bez puta.');
+  else if(mesto.nepoznato)nap.push('Nepoznato mesto — upišite km od Pirota.');
+  if(dop>0)nap.push('U ceni je doplata za samostojeću ('+f(dop)+'), a trošak te konstrukcije nije u pregledu.');
+  if(!t.rad)nap.push('Iz ostatka se plaćaju još radionica i režija.');
+  return h+'<table class="pr-o">'+o+'</table>'+(nap.length?'<div class="pr-s">'+nap.join(' ')+'</div>':'');
 }
 /* Promena mere: ručno upisan iznos se odbacuje, cena po m² se zadržava */
 function pgQCalc(){if(pgQMod==='rucno')pgQMod=pgQBaza;if(pgS.var2)pgS.var2.rucno=false;pgQRender();}
@@ -1447,8 +1435,7 @@ function pgQRender(){
         W=pgQSnap(wS,pgQGrid(tip)[0]),D=pgQSnap(d,pgQGrid(tip)[1]),
         cur=pgPrices.cur, pi=document.getElementById('pg_qPrice'), m2e=document.getElementById('pg_qM2'),
         samo=pgQSamo(), dop=pgSamoDop(), sde=document.getElementById('pg_qSd'),
-        mesto=pgMesto(document.getElementById('pg_qMesto').value), pr=pgPrepCena(tip,w,d,n,mesto&&!mesto.nepoznato?mesto:null);
-  if(pgQMod==='prep')pi.value=pr?pgQZaokruzi(pr.uk):'';
+        mesto=pgMesto(document.getElementById('pg_qMesto').value);
   if(pgQMod==='m2')pi.value=a>0?pgQZaokruzi(a*pgQM2+dop):'';
   else if(pgQMod==='cenovnik')pi.value=cena!==null?pgQZaokruzi(cena+dop):'';
   document.getElementById('pg_qSdWrap').classList.toggle('on',samo);
@@ -1461,26 +1448,14 @@ function pgQRender(){
   const uk=parseFloat(pi.value), ef=(a>0&&uk>0)?Math.round(uk/a):null,
         sdN=samo?(dop>0?' + '+pgFmt(dop)+' '+cur+' samostojeća':' · cenovnik je za montažu uz objekat — upišite svoju procenu doplate za samostojeću'):'';
   if(document.activeElement!==m2e)m2e.value=pgQMod==='m2'?pgQM2:'';
-  /* red sa preporučenom cenom */
-  const pe=document.getElementById('pg_qPrep'),mN=!mesto?'mesto nije upisano':(mesto.nepoznato?'„'+esc(mesto.ime)+'" — nepoznato mesto, upišite km':(mesto.ime==='udaljenost'?'':esc(mesto.ime)+', ')+mesto.km+' km');
-  pe.classList.toggle('on',pgQMod==='prep');
-  if(!pgPrep)pe.innerHTML='<div class="pr-s">Preporučena cena: troškovi stižu sa servera — povežite se (☁ kod Projekata).</div>';
-  else if(!pr)pe.innerHTML='<div class="pr-r"><div class="pr-l">Preporučeno <span>· '+mN+'</span></div></div><div class="pr-s">Za ovu meru nema preporučene cene'+(tip==='klasicna'?' (projekcija do 7 m, širina do 10 m po sistemu)':' (mera je van cenovnika)')+'.</div>';
-  else pe.innerHTML='<div class="pr-r"><div class="pr-l">Preporučeno <span>· '+mN+'</span></div><b>'+pgFmt(pr.uk)+' '+cur+'</b>'+
-    '<button type="button" onclick="pgQPrepSet('+(pgQMod==='prep'?'false':'true')+')">'+(pgQMod==='prep'?'Cenovnik':'Koristi')+'</button></div>'+
-    '<div class="pr-s">'+(pr.izv==='formula'?'pergola':'cenovnik')+' '+pgFmt(pr.perg)+(pr.dol?' + dolazak '+pgFmt(pr.dol):(mesto&&!mesto.nepoznato?' · bez dolaska':' · bez dolaska — upišite mesto'))+
-    (pr.izv==='formula'?' · marža '+Math.round(pr.marza*100)+' %, ostaje '+pgFmt(pr.ostaje)+' bez PDV':'')+(pr.proc?' · mera ispod tabele — procena':'')+
-    (dop>0?' · sa doplatom za samostojeću':'')+' · <a href="#" onclick="pgPrepTgl();return false">'+(pgPrepOtv?'sakrij obračun ▴':'obračun ▾')+'</a></div>'+
-    (pgPrepOtv?pgPrepObracun(pr,mesto):'');
+  /* diskretan pregled troška i zarade za upisanu cenu */
+  document.getElementById('pg_qPrep').innerHTML=pgTrosakHTML(uk>0?uk:0,tip,w,d,n,mesto,dop);
   m2e.placeholder=ef!==null?String(ef):'';
 
   const zk=pgQKorak>1?' · zaokruženo na '+pgQKorak:'';
   let nota;
   const poS=n>1?' po sistemu':'';
   if(w<=0||d<=0)nota='Unesite meru.';
-  else if(pgQMod==='prep')
-    nota=pr?pgQBr(a)+' m² · preporučena cena'+(pr.dol?' sa dolaskom ('+(mesto.ime==='udaljenost'?mesto.km+' km':mesto.ime)+')':'')+(pgQZaokruzi(pr.uk)!==pr.uk?zk:'')+' · cenu možete izmeniti.'
-      :'Za ovu meru nema preporučene cene — upišite cenu ili se vratite na cenovnik.';
   else if(pgQMod==='m2')
     nota=pgQBr(a)+' m² × '+pgQBr(pgQM2)+' '+cur+'/m²'+(dop>0?sdN:'')+zk+' · cenu možete izmeniti.';
   else if(pgQMod==='rucno')
@@ -1803,14 +1778,13 @@ function pgVarSync(){
   const v=pgS.var2;if(!v)return;const a=pgVarTipA();
   if(v.tip===a||!PG_VAR[v.tip]){v.tip=pgVarOst(a)[0];v.rucno=false;}
   if(!v.rucno){
-    if(pgQOn()&&pgQBaza==='prep'){const m=pgVarMera(),me=pgMesto(document.getElementById('pg_qMesto').value),pr=pgPrepCena(v.tip,m.w,m.d,pgQN(),me&&!me.nepoznato?me:null);v.cena=pr?pgQZaokruzi(pr.uk):'';}
-    else{const c=pgVarCena(v.tip);v.cena=c===null?'':pgQZaokruzi(c+pgSamoDop());}
+    const c=pgVarCena(v.tip);v.cena=c===null?'':pgQZaokruzi(c+pgSamoDop());
   }
 }
 function pgVarNota(){
   const v=pgS.var2;if(!v)return '';
   const sd=pgSamoDop();
-  const t=+v.cena>0?(v.rucno?'Ručno upisana cena.':pgQOn()&&pgQBaza==='prep'?'Preporučena cena · cenu možete izmeniti.':'Iz cenovnika'+(v.tip==='biofix'?' (sa montažom)':'')+(sd>0?' + '+pgFmt(sd)+' '+pgPrices.cur+' samostojeća (ista doplata kao gore)':'')+' · cenu možete izmeniti.')
+  const t=+v.cena>0?(v.rucno?'Ručno upisana cena.':'Iz cenovnika'+(v.tip==='biofix'?' (sa montažom)':'')+(sd>0?' + '+pgFmt(sd)+' '+pgPrices.cur+' samostojeća (ista doplata kao gore)':'')+' · cenu možete izmeniti.')
     :(v.tip==='biofix'?'BIOFIX radimo do 7 × 3 m — upišite cenu, ili ostaje „na upit".':'Mera je van cenovnika — upišite cenu, ili ostaje „na upit".');
   return t+' Ide samo u <b>link</b>: obe varijante na jednoj stranici, jeftinija levo. Staklo i ZIP važe za obe.';
 }

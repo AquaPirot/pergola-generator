@@ -148,29 +148,32 @@ try {
     await pg.context().close();
   }
 
-  /* 6) PREPORUČENA CENA — izmišljeni troškovi (pravi su samo na serveru, u cene-podaci.php) */
+  /* 6) TROŠAK I ZARADA — izmišljeni troškovi (pravi su samo na serveru, u cene-podaci.php); sve bez PDV */
   {
-    console.log('Preporučena cena');
+    console.log('Trošak i zarada');
     const pg = await strana({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true });
     await pg.evaluate(() => {
       pgPrep = { mat: { pro: [3.5, 4], sir: [3.5, 4], t: [[1000, 1100], [1050, 1150]] },
-        p: { motor: 100, ekipa: 200, montera: 3, nocenje: 25, km: 0.5, brzina: 50, sati: 8, granica: 100, d1: 30, d2: 50, mMax: 1, a0: 15, mMin: 0.5, a1: 70, pdv: 0.2, zaokr: 50 } };
+        p: { motor: 100, ekipa: 200, montera: 3, nocenje: 25, km: 0.5, granica: 100, putDan: 1, d1: 30, d2: 50, radionica: 0, prag: 0.3, pdv: 0.2 } };
     });
+    const tr = () => pg.evaluate(() => { const me = pgMesto(document.getElementById('pg_qMesto').value); const t = pgTrosak(pgQTip(), +document.getElementById('pg_qW').value, +document.getElementById('pg_qD').value, pgQN(), me && !me.nepoznato ? me : null); return t && Math.round(t.uk); });
     const set = async (w, d, m) => { await pg.fill('#pg_qW', String(w)); await pg.fill('#pg_qD', String(d)); await pg.fill('#pg_qMesto', m); };
-    const preporuka = () => pg.evaluate(() => { const me = pgMesto(document.getElementById('pg_qMesto').value); const r = pgPrepCena(pgQTip(), +document.getElementById('pg_qW').value, +document.getElementById('pg_qD').value, pgQN(), me && !me.nepoznato ? me : null); return r && r.uk; });
-    // ručno: 4×4: (1150+100+200) × (1+0,9909) × 1,2 = 3464 → 3500; Beograd: + (310 + 310 + 75) × 1,2 = 834 → 4350
-    await set(4, 4, 'Pirot'); ok(await preporuka() === 3500, 'formula: 4 × 4 Pirot = 3500', await preporuka());
-    await set(4, 4, 'beog'); ok(await preporuka() === 4350, 'dolazak: „beog" → Beograd 310 km, sa noćenjem = 4350', await preporuka());
-    await set(3.5, 3.5, 'Niš'); ok(await preporuka() === 3350, 'Niš 72 km bez noćenja: 3150 + 173 = 3350', await preporuka());
-    await set(4, 3, '0'); ok(await preporuka() === 3250, 'projekcija ispod tabele (3 m) — procena po nagibu = 3250', await preporuka());
-    await set(4, 4, 'Mesto koga nema'); ok(await preporuka() === 3500, 'nepoznato mesto → bez dolaska, traži km', await preporuka());
+    await set(4, 4, 'Pirot'); ok(await tr() === 1450, 'Pirot: materijal 1150 + motor 100 + ekipa 1 dan 200 = 1450', await tr());
+    await set(4, 4, 'Niš'); ok(await tr() === 1522, 'Niš 72 km: + vozilo 144 × 0,5 = 1522 (ekipa i dalje 1 dan, bez noćenja)', await tr());
+    await set(4, 4, 'beog'); ok(await tr() === 2035, 'Beograd 310 km: 1150 + 100 + ekipa 2 dana 400 + vozilo 310 + noćenje 75 = 2035', await tr());
+    await set(4, 3, '0'); ok(await tr() === 1350, 'projekcija ispod tabele (3 m) — procena materijala 1050', await tr());
     await set(4, 4, 'Beograd');
-    ok(await pg.inputValue('#pg_qPrice') === '3450', 'dok se ne izabere, cena ostaje iz cenovnika (3450)', await pg.inputValue('#pg_qPrice'));
-    await pg.tap('#pg_qPrep button');
-    ok(await pg.inputValue('#pg_qPrice') === '4350', '„Koristi" upisuje preporučenu cenu', await pg.inputValue('#pg_qPrice'));
-    await pg.fill('#pg_qMesto', 'Niš'); ok(await pg.inputValue('#pg_qPrice') === await pg.evaluate(() => String(pgPrepCena('klasicna', 4, 4, 1, { km: 72 }).uk)), 'promena mesta menja cenu');
-    ok(await pg.evaluate(() => localStorage.getItem('pg_qIzvor')) === 'prep', 'izbor „preporučena" se pamti');
-    await pg.tap('#pg_qPrep button'); ok(await pg.inputValue('#pg_qPrice') === '3450', '„Cenovnik" vraća cenu iz cenovnika', await pg.inputValue('#pg_qPrice'));
+    ok(await pg.$eval('#pg_qPrep', e => !e.querySelector('table') && /Trošak i zarada/.test(e.textContent) && !/\d/.test(e.textContent)), 'pregled je skupljen i bez brojeva dok se ne otvori');
+    await pg.tap('#pg_qPrep .pr-t');
+    const txt = await pg.$eval('#pg_qPrep', e => e.innerText.replace(/\s+/g, ' '));
+    ok(txt.includes('Vaša cena (bez PDV) 3.450 EUR') && txt.includes('Trošak 2.035 EUR') && txt.includes('OSTAJE VAM (70 % na trošak) 1.415 EUR') && txt.includes('Preko firme, sa PDV 20 % 4.140 EUR'), 'otvoren: cena 3450 − trošak 2035 = ostaje 1415 (70 %), preko firme 4140', txt.slice(0, 200));
+    await pg.fill('#pg_qPrice', '2300');
+    ok(await pg.$eval('#pg_qPrep', e => !!e.querySelector('tr.lo') && !!e.querySelector('.dot.lo')), 'ispod 30 % zarade (2300 − 2035 = 13 %) pregled pocrveni');
+    await pg.tap('#pg_qType [data-qt="bioklimatska"]');
+    ok(await pg.$eval('#pg_qPrep', e => /nema podataka/.test(e.textContent) && !/OSTAJE VAM/.test(e.textContent)), 'bioklimatska bez troška materijala: ne prikazuje lažnu zaradu');
+    await pg.tap('.qmode-btn.novo');
+    ok(await pg.$eval('#pg_qPrep', e => !e.querySelector('table')), '„Novo" ponovo skuplja pregled');
+    ok(await pg.evaluate(() => !document.querySelector('#pg_qPrep button')) && await pg.inputValue('#pg_qPrice') === '4100', 'nema više „preporučene cene" — cena ostaje vaša (cenovnik 4100)');
     ok(!pg.gr.length, 'bez grešaka', pg.gr.join(' ¦ '));
     await pg.context().close();
   }
