@@ -38,6 +38,16 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
 .qprice .qp-v input{flex:1 1 auto;min-width:0;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);border-radius:8px;color:#fff;font:800 25px var(--font);padding:5px 10px}
 .qprice .qp-v input:focus{outline:2px solid var(--accent);outline-offset:1px}
 .qprice .qp-v span{font:700 13px var(--font);color:rgba(255,255,255,.75);flex:0 0 auto}
+.q-prod{display:none}
+body.qmode.prod .q-perg{display:none!important}
+body.qmode.prod .q-prod{display:block}
+body.qmode.prod .d3d{display:none}
+@media(max-width:1200px){body.qmode.prod #pg_main{display:none}}   /* telefon: ispod forme nema prazne ponude-slike */
+.prodsel{grid-template-columns:1fr 1fr 1fr!important;margin-bottom:14px}
+.prodsel .type-option{padding:9px 4px}
+.prodsel .type-option .type-name{font-size:11px}
+.dadd.jedan{grid-template-columns:1fr}
+#pg_qProdTot .qp-v b{font:800 27px var(--font);color:#fff;flex:1}
 .qprice .qp-n{font-size:11px;color:rgba(255,255,255,.62);margin-top:7px;line-height:1.45}
 .qprice .qp-pr{margin-top:10px;padding:7px 11px;border:1px solid rgba(255,255,255,.18);border-radius:9px;background:rgba(255,255,255,.05)}
 .qprice .qp-pr .pr-t{font-size:10.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.55);text-transform:uppercase;text-decoration:none;flex:1}
@@ -339,7 +349,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
     <div class="logo-icon">AG</div>
     <div><h1>AG GROUP</h1><div class="subtitle">PERGOLA.RS &nbsp;|&nbsp; PROHORECA.RS &nbsp;—&nbsp; Generator Tehničkih Crteža</div></div>
   </div>
-  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v76</div>
+  <div class="badge" title="Verzija aplikacije — mora da se poklapa sa poslednjom nadogradnjom">v77</div>
 </header>
 
 <div class="view-bar">
@@ -372,40 +382,45 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
         </div>
 
         <div class="qpanel" id="pg_qPanel">
+          <div class="type-selector cmp prodsel" id="pg_qProd">
+            <div class="type-option active" data-pr="perg" onclick="pgProdSet('perg')"><span class="type-name">Pergola</span></div>
+            <div class="type-option" data-pr="zip" onclick="pgProdSet('zip')"><span class="type-name">ZIP zavese</span></div>
+            <div class="type-option" data-pr="staklo" onclick="pgProdSet('staklo')"><span class="type-name">Staklo</span></div>
+          </div>
           <div class="form-row">
             <div class="form-group"><label>Kupac</label>
               <input type="text" id="pg_qName" placeholder="npr. Marko Petrović"></div>
             <div class="form-group"><label>Broj kupca <span class="unit">(Viber)</span></label>
               <input type="tel" class="prep" id="pg_qTel" inputmode="tel" autocomplete="off" placeholder="npr. 064 123 4567" oninput="pgTelSet(this.value)"></div>
           </div>
-          <div class="form-row single"><div class="form-group"><label>Pergola</label>
+          <div class="form-row single q-perg"><div class="form-group"><label>Pergola</label>
             <div class="type-selector" id="pg_qType" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:0">
               <div class="type-option active" data-qt="klasicna" onclick="pgQType(this)"><span class="type-icon">&#9698;</span><span class="type-name">Klasična</span></div>
               <div class="type-option" data-qt="bioklimatska" onclick="pgQType(this)"><span class="type-icon">&#9776;</span><span class="type-name">Bioklimatska</span></div>
               <div class="type-option" data-qt="biofix" onclick="pgQType(this)"><span class="type-icon">&#9644;</span><span class="type-name">BIOFIX</span></div>
             </div></div></div>
-          <div class="form-row single"><div class="form-group"><label>Montaža</label>
+          <div class="form-row single q-perg"><div class="form-group"><label>Montaža</label>
             <div class="type-selector cmp" id="pg_qMount" style="grid-template-columns:1fr 1fr;margin-bottom:0">
               <div class="type-option active" data-qm="zid" onclick="pgQMountSet(this)"><span class="type-icon">&#127968;</span><span class="type-name">Uz objekat</span></div>
               <div class="type-option" data-qm="samostojeca" onclick="pgQMountSet(this)"><span class="type-icon">&#9961;</span><span class="type-name">Samostojeća</span></div>
             </div></div></div>
-          <div class="form-row">
+          <div class="form-row q-perg">
             <div class="form-group"><label>Širina <span class="unit">(m)</span></label>
               <input type="number" class="prep" id="pg_qW" value="6" min="2" max="30" step="0.5" oninput="pgQCalc()"></div>
             <div class="form-group"><label>Projekcija <span class="unit">(m)</span></label>
               <input type="number" class="prep" id="pg_qD" value="4" min="1" max="7" step="0.5" oninput="pgQCalc()"></div>
           </div>
-          <div class="form-row single"><div class="form-group"><label>Mesto montaže <span class="unit">(grad ili km od Pirota)</span></label>
+          <div class="form-row single q-perg"><div class="form-group"><label>Mesto montaže <span class="unit">(grad ili km od Pirota)</span></label>
             <input type="text" class="prep" id="pg_qMesto" list="pg_mestaList" autocomplete="off" placeholder="npr. Beograd, Niš… ili 240" oninput="pgQCalc()"></div></div>
           <datalist id="pg_mestaList"></datalist>
-          <div class="form-row single"><div class="form-group"><label>Broj spojenih sistema <span class="unit">(širina je ukupna)</span></label>
+          <div class="form-row single q-perg"><div class="form-group"><label>Broj spojenih sistema <span class="unit">(širina je ukupna)</span></label>
             <div class="num-selector" id="pg_qN">
               <div class="num-option active" data-n="1" onclick="pgQNSet(this)">1</div>
               <div class="num-option" data-n="2" onclick="pgQNSet(this)">2</div>
               <div class="num-option" data-n="3" onclick="pgQNSet(this)">3</div>
             </div></div></div>
 
-          <div class="qprice">
+          <div class="qprice q-perg">
             <div class="qp-l">CENA ZA KUPCA</div>
             <div class="qp-v"><input type="number" id="pg_qPrice" step="10" oninput="pgQRucnoSet()"><span id="pg_qCur">EUR</span></div>
             <div class="qp-pr" id="pg_qPrep"></div>
@@ -428,17 +443,23 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
             </div>
             <div class="qp-n" id="pg_qNote"></div>
           </div>
-          <div class="var2" id="pg_qVar"></div>
+          <div class="var2 q-perg" id="pg_qVar"></div>
 
-          <div class="form-section-title" style="margin:6px 0 8px">&#9670; Staklo i ZIP</div>
+          <div class="form-section-title" id="pg_qDodT" style="margin:6px 0 8px">&#9670; Staklo i ZIP</div>
           <div class="dod" id="pg_qDod"></div>
 
-          <div class="qauto" id="pg_qAuto"></div>
+          <div class="qprice q-prod" id="pg_qProdTot">
+            <div class="qp-l">CENA ZA KUPCA — UKUPNO</div>
+            <div class="qp-v"><b id="pg_qProdSum">—</b><span id="pg_qProdCur">EUR</span></div>
+            <div class="qp-n" id="pg_qProdNote"></div>
+          </div>
+
+          <div class="qauto q-perg" id="pg_qAuto"></div>
 
           <button class="btn-3d" id="pg_qBtnViber" onclick="pgQGo('viber')" style="background:linear-gradient(135deg,#7360f2,#5b49d6)">&#128233; Pošalji na Viber</button>
           <button class="btn-3d" onclick="pgQGo('link')" style="background:linear-gradient(135deg,#0f766e,#0b5e57)">&#128279; Link za Kupca (telefon)</button>
-          <button class="btn-3d" onclick="pgQGo('ponuda')" style="background:linear-gradient(135deg,#c8944e,#a97a37)">&#128247; Ponuda za Kupca</button>
-          <button class="btn-3d" onclick="pgQGo('detalji')" style="background:linear-gradient(135deg,#475569,#1e293b)">&#9881; Nastavi u detaljnom unosu</button>
+          <button class="btn-3d q-perg" onclick="pgQGo('ponuda')" style="background:linear-gradient(135deg,#c8944e,#a97a37)">&#128247; Ponuda za Kupca</button>
+          <button class="btn-3d q-perg" onclick="pgQGo('detalji')" style="background:linear-gradient(135deg,#475569,#1e293b)">&#9881; Nastavi u detaljnom unosu</button>
         </div>
 
 
@@ -674,7 +695,7 @@ body.qmode #pg_cfgBody>.btn-whatsapp{display:none!important}
   </div>
 
   <!-- OUTPUT -->
-  <div>
+  <div id="pg_main">
     <div class="warn-box" id="pg_warnBox"></div>
     <div class="stats-grid" id="statsGrid" style="display:none">
       <div class="stat-card"><div class="stat-value" id="stat1">-</div><div class="stat-label" id="stat1L">-</div></div>
@@ -717,19 +738,25 @@ const PG_KONTAKT={
 function K(){return PG_KONTAKT[pgS&&pgS.lang==='bg'?'bg':'sr'];}
 /* Naši brendovi (Srbija) — u ponudi se kupcu predlažu ostali sajtovi. sis: koji dodaci iz ponude spadaju pod taj brend */
 const PG_BRENDOVI=[
-  {d:'PERGOLA.RS',url:'https://pergola.rs',t:'Pergole',sis:[]},
-  {d:'ZIPZAVESE.RS',url:'https://zipzavese.rs',t:'ZIP zavese',foto:'img/sistemi/zip.jpg',sis:['zip'],
+  {d:'PERGOLA.RS',url:'https://pergola.rs',t:'Pergole',foto:'foto/biofix-3.jpg',sis:[],
+   o:'Klasične, bioklimatske i BIOFIX pergole po meri — proizvodimo i montiramo sami, u Pirotu.'},
+  {d:'ZIPZAVESE.RS',url:'https://zipzavese.rs',t:'ZIP zavese',foto:'img/brend/zipzavese.jpg',sis:['zip'],
    o:'Zavese od screen platna na motor — štite od sunca, vetra i insekata, a iznutra se vidi napolje.'},
-  {d:'STAKLENISISTEMI.RS',url:'https://staklenisistemi.rs',t:'Stakleni sistemi',foto:'img/sistemi/klizno.jpg',sis:['klizno','giljotina','fiksno'],
+  {d:'STAKLENISISTEMI.RS',url:'https://staklenisistemi.rs',t:'Stakleni sistemi',foto:'img/brend/staklenisistemi.jpg',sis:['klizno','giljotina','fiksno'],
    o:'Klizno staklo, giljotine i fiksno staklo — zatvorite terasu i koristite je i kad zahladni.'}
 ];
 /* ostali brendovi za ponudu (samo srpska ponuda); link nosi oznaku da je poseta došla iz ponude */
-function pgBrendoviPonuda(){
+function pgBrendoviPonuda(sajt){
   if(pgS.lang==='bg')return [];
-  const ima=new Set(pgDodaci().map(d=>d.sis));
-  return PG_BRENDOVI.filter(b=>b.d!==K().domeni).map(b=>({d:b.d,t:b.t,o:b.o,foto:'../'+b.foto,
-    url:b.url+'/?utm_source=ponuda&utm_medium=pergola.rs&utm_campaign=ponuda',uPonudi:b.sis.some(x=>ima.has(x))}));
+  sajt=sajt||K().domeni;
+  const ima=new Set(pgDodaci().map(d=>d.sis)),pergF=pgBrendFotoPerg();
+  return PG_BRENDOVI.filter(b=>b.d!==sajt).map(b=>({d:b.d,t:b.t,o:b.o,foto:b.d==='PERGOLA.RS'?pergF:'../'+b.foto,
+    url:b.url+'/?utm_source=ponuda&utm_medium='+sajt.toLowerCase()+'&utm_campaign=ponuda',uPonudi:b.sis.some(x=>ima.has(x))}));
 }
+/* kartica PERGOLA.RS u ponudi drugog brenda: fotografija klasične pergole sa servera (foto/klas-3.jpg), ili BIOFIX */
+let pgBrendPergF='../foto/biofix-3.jpg';
+function pgBrendFotoPerg(){return pgBrendPergF;}
+(function(){const im=new Image();im.onload=()=>{pgBrendPergF='../foto/klas-3.jpg';};im.src='foto/klas-3.jpg';})();
 /* Oznaka poreza uz cenu — prazno za srpsko trziste */
 function pgPDV(){return pgS&&pgS.lang==='bg'?'+ ДДС':'';}
 let pgLogoImg=null;
@@ -1239,7 +1266,7 @@ function pgNovo(){
   document.getElementById('pg_qName').value='';
   akt('#pg_qType .type-option','qt','klasicna');akt('#pg_qMount .type-option','qm','zid');akt('#pg_qN .num-option','n','1');
   document.getElementById('pg_qW').value='6';document.getElementById('pg_qD').value='4';
-  pgQMod=pgQBaza;pgQM2=null;pgSamoIznos=0;pgPrepOtv=false;document.getElementById('pg_qMesto').value='';
+  pgQMod=pgQBaza;pgQM2=null;pgSamoIznos=0;pgPrepOtv=false;pgProdList.zip=[];pgProdList.staklo=[];pgLinkProd=null;document.getElementById('pg_qMesto').value='';
   pgApply({s:JSON.parse(JSON.stringify(PG_DEF_S)),f:PG_DEF_F});
   pgTelSet('');pg3DUkloni();
   document.getElementById('pg_customRalWrap').classList.remove('visible');
@@ -1554,6 +1581,7 @@ function pgQApply(){
   return true;
 }
 function pgQGo(sta){
+  if(pgProdOn()){if(sta==='link'||sta==='viber')generateLinkProd(sta==='viber'?'viber':'');return;}
   if(!pgQApply())return;
   if(sta==='detalji'){pgQMode(false);return;}
   if(sta==='link'){generateLink();return;}
@@ -1583,7 +1611,32 @@ const PG_SIS={
 const PG_STRANE=[['napred','Napred'],['levo','Levo'],['desno','Desno'],['pozadi','Pozadi'],['trouglovi','Bočni trouglovi'],['ostalo','Ostalo']];
 const PG_STRANA_K={napred:'napred',levo:'leva strana',desno:'desna strana',pozadi:'pozadi',trouglovi:'bočni trouglovi',ostalo:''};
 let pgDodCM={};try{pgDodCM=JSON.parse(localStorage.getItem('pg_dod_cm'))||{};}catch(e){pgDodCM={};}
-function pgDodaci(){if(!Array.isArray(pgS.dodaci))pgS.dodaci=[];return pgS.dodaci;}
+/* Samostalna ponuda za drugi brend (bez pergole): stavke su otvori sa širinom × visinom */
+const PG_PROD={
+  zip:{d:'ZIPZAVESE.RS',naziv:'ZIP zavese',sis:['zip'],foto:'img/brend/zipzavese.jpg',
+    opis:'ZIP zavese od screen platna spuštaju se motorom, na dugme daljinskog. Štite od sunca, vetra i insekata, a iznutra se vidi napolje. Platno je u bočnim vođicama i ne leprša na vetru — jedan komad ide do 6 m širine i 3 m visine.',
+    ukl:['ZIP zavesa sa screen platnom','Kaseta i bočne vođice od aluminijuma','Motor i daljinski upravljač','Transport i montaža'],
+    nije:['Elektro priključak do mesta montaže','Konstrukcija (pergola, nadstrešnica) na koju se zavesa montira, ako je nema','Građevinski i limarski radovi']},
+  staklo:{d:'STAKLENISISTEMI.RS',naziv:'Stakleni sistemi',sis:['klizno','giljotina','fiksno'],foto:'img/brend/staklenisistemi.jpg',
+    opis:'Stakleni sistemi zatvaraju terasu bez prekida u pogledu. Klizna krila se skupljaju uz stranu, giljotina se podiže i spušta motorom, a fiksno staklo zatvara delove koji se ne otvaraju — terasu koristite i kad zahladni.',
+    ukl:['Aluminijumski profili i staklo prema stavkama iznad','Okov, zaptivke i ručke','Transport i montaža'],
+    nije:['Elektro priključak do mesta montaže (za giljotinu)','Konstrukcija (pergola, nadstrešnica) na koju se sistem montira, ako je nema','Građevinski radovi — priprema podloge i zidova']}
+};
+let pgProd=null;try{const v=localStorage.getItem('pg_qProd');if(PG_PROD[v])pgProd=v;}catch(e){}
+const pgProdList={zip:[],staklo:[]};
+function pgProdOn(){return !!pgProd&&pgQOn();}
+function pgDodaci(){if(pgProdOn())return pgProdList[pgProd];if(!Array.isArray(pgS.dodaci))pgS.dodaci=[];return pgS.dodaci;}
+function pgProdSet(v){
+  pgProd=PG_PROD[v]?v:null;try{localStorage.setItem('pg_qProd',pgProd||'');}catch(e){}
+  pgProdUI();
+  if(!pgProd)pgQRender();else pgDodRender();
+}
+function pgProdUI(){
+  const on=pgProdOn();
+  document.body.classList.toggle('prod',on);
+  document.querySelectorAll('#pg_qProd .type-option').forEach(o=>o.classList.toggle('active',o.dataset.pr===(pgProd||'perg')));
+  const t=document.getElementById('pg_qDodT');if(t)t.innerHTML=on?'&#9670; Otvori — širina × visina, cena po m²':'&#9670; Staklo i ZIP';
+}
 function pgQOn(){return document.body.classList.contains('qmode');}
 const pgFmt=v=>Math.round(v).toLocaleString('sr-RS');
 /* mere pergole za dodatke (cm): širina, projekcija, prolazna visina, razlika za trouglove */
@@ -1598,11 +1651,11 @@ function pgDodMere(){
   return{w:Math.round(pgTW()||0),d:Math.round(pgMP()||0),h,klas,tr:klas?(ok&&pgS.wallHeight>pgS.passHeight?pgS.wallHeight-pgS.passHeight:Math.round((pgMP()||0)*.1)):0};
 }
 function pgDodAuto(d,m){
-  if(!d.auto)return;
+  if(!d.auto||pgProdOn())return;   // samostalna ponuda: mere su upisane, ne uzimaju se iz pergole
   if(d.sis==='fiksno'){if(d.strana==='trouglovi'&&m.tr>0)d.m2=Math.round(m.d*m.tr/1e4*10)/10;return;}
   d.w=(d.strana==='levo'||d.strana==='desno')?m.d:m.w;d.h=m.h;
 }
-/* tehnika po pravilima: krilo ≤ 90 cm, šina po krilu (najviše 5 — inače dva kompleta), polje giljotine ≤ 400, ZIP ≤ 400 × 300 */
+/* tehnika po pravilima: krilo ≤ 90 cm, šina po krilu (najviše 5 — inače dva kompleta), polje giljotine ≤ 400, ZIP ≤ 600 × 300 */
 function pgDodTeh(d){
   const w=+d.w||0,h=+d.h||0,r={m2:0,txt:'',kom:1,warn:''};
   if(d.sis==='fiksno'){r.m2=+d.m2||0;r.txt='fiksno staklo';return r;}
@@ -1616,7 +1669,7 @@ function pgDodTeh(d){
   }else if(d.sis==='giljotina'){
     const n=Math.max(1,Math.ceil(w/400));r.kom=n;r.txt=`${n} ${n===1?'polje':'polja'} · 3 segmenta · motor i daljinski`;
   }else if(d.sis==='zip'){
-    const n=Math.max(1,Math.ceil(w/400));r.kom=n;r.txt=`${n} ${n===1?'komad':'komada'} · screen platno · motor i daljinski`;
+    const n=Math.max(1,Math.ceil(w/600));r.kom=n;r.txt=`${n} ${n===1?'komad':'komada'} · screen platno · motor i daljinski`;
     if(h>300)r.warn='Visina preko 300 cm — proverite izvodljivost.';
   }
   return r;
@@ -1699,11 +1752,21 @@ function pgDodHTML(){
       <label>${pgPrices.cur}/m²<input type="number" data-f="cm" step="1" min="0" value="${d.cm||''}"></label>
       <label>Iznos<input type="number" data-f="iznos" step="10" min="0" value="${+d.iznos>0?d.iznos:''}" placeholder="${pgDodIznosAuto(d)||''}"></label></div>
       <div class="dt" data-t="1">${pgDodTehTxt(d)}</div></div>`;}).join('');
-  return rows+`<div class="dadd">${Object.entries(PG_SIS).map(([k,S])=>`<button type="button" data-add="${k}">+ ${S.kr}</button>`).join('')}</div>`+
+  const sisi=pgProdOn()?PG_PROD[pgProd].sis:Object.keys(PG_SIS);
+  return rows+`<div class="dadd${sisi.length===1?' jedan':''}">${sisi.map(k=>`<button type="button" data-add="${k}">+ ${PG_SIS[k].kr}</button>`).join('')}</div>`+
     `<div class="dsum" data-sum="1"></div><div class="d3d" data-3d="1"></div>`;
 }
 function pgDodSum(){
   const dod=pgDodUkupno(),cur=pgPrices.cur;
+  if(pgProdOn()){
+    const L=pgDodaci(),bez=L.filter(d=>!(pgDodIznos(d)>0)).length;
+    document.querySelectorAll('[data-sum]').forEach(e=>e.innerHTML=L.length?'':'Dodajte otvor, upišite širinu i visinu u cm i cenu po m² — program pamti cenu po m² za sledeći put.');
+    document.getElementById('pg_qProdSum').textContent=dod>0?pgFmt(dod):'—';
+    document.getElementById('pg_qProdCur').textContent=cur;
+    document.getElementById('pg_qProdNote').textContent=!L.length?'Još nema stavki.':(L.length+' '+(L.length===1?'stavka':(L.length<5?'stavke':'stavki'))+
+      (bez?' · '+bez+' bez cene — u ponudi piše „na upit"':'')+' · zbir stavki; cenu menjate u stavkama (po m² ili iznos).');
+    return;
+  }
   const perg=pgQOn()?(parseFloat(document.getElementById('pg_qPrice').value)||0):pgPrice();
   const t=pgDodaci().length?`${pgDodNaziv()}: <b>${pgFmt(dod)} ${cur}</b> &nbsp;·&nbsp; Pergola + dodaci: <b>${pgFmt(perg+dod)} ${cur}</b>`
     :'Mere se uzimaju iz pergole, a cenu po m² upisujete vi — program je pamti za sledeći put.';
@@ -1719,7 +1782,8 @@ function pgDodRender(){
 function pgDodAdd(sis){
   const m=pgDodMere(),zauzeto=pgDodaci().filter(d=>d.sis!=='fiksno').map(d=>d.strana);
   const strana=sis==='fiksno'?(m.klas?'trouglovi':'ostalo'):(['napred','levo','desno','pozadi'].find(x=>!zauzeto.includes(x))||'ostalo');
-  pgDodaci().push({sis,strana,auto:true,w:0,h:0,m2:'',cm:pgDodCM[sis]||'',iznos:''});
+  const auto=!pgProdOn();   // samostalna ponuda: mere se upisuju, ne uzimaju se iz pergole
+  pgDodaci().push({sis,strana,auto,w:auto?0:'',h:auto?0:'',m2:'',cm:pgDodCM[sis]||'',iznos:''});
   pgDodRender();pgSaveState();
 }
 function pgDodEv(el){
@@ -1731,7 +1795,7 @@ function pgDodEv(el){
   el.addEventListener('input',e=>{
     const f=e.target.dataset.f;if(!f)return;
     const r=e.target.closest('.dodr'),d=pgDodaci()[+r.dataset.i];if(!d)return;
-    if(f==='strana'){d.strana=e.target.value;d.auto=true;pgDodRender();pgSaveState();return;}
+    if(f==='strana'){d.strana=e.target.value;d.auto=!pgProdOn();pgDodRender();pgSaveState();return;}
     const v=e.target.value===''?'':parseFloat(e.target.value);
     d[f]=v;if(f==='w'||f==='h'||f==='m2')d.auto=false;
     if(f==='cm'&&v>0){pgDodCM[d.sis]=v;try{localStorage.setItem('pg_dod_cm',JSON.stringify(pgDodCM));}catch(er){}}
@@ -1871,6 +1935,7 @@ window.addEventListener('storage',e=>{if(e.key==='pg_3d')pg3DStatus();});
 
 function pgQMode(on){
   document.body.classList.toggle('qmode',!!on);
+  if(typeof pgProdUI==='function')pgProdUI();
   document.getElementById('pg_qmOn').classList.toggle('active',!!on);
   document.getElementById('pg_qmOff').classList.toggle('active',!on);
   try{localStorage.setItem('pg_qmode',on?'1':'0');}catch(e){}
@@ -2912,6 +2977,22 @@ function pgJedanTelo(o,row,draw){
   <div class="card"><ul class="usl">${o.ukljuceno.map(u=>`<li><span class="ut">${esc(u.t)}</span>${u.zh}</li>`).join('')}</ul></div>
 `;
 }
+/* ponuda drugog brenda: fotografija brenda → cena → stavke sa crtežima → opis → uključeno */
+function pgProizvodTelo(o,row,draw){
+  const L=o.L;
+  return `<div class="hero"><img src="${o.foto}" alt="${esc(o.model)}"><div class="cap"><h2>${esc(o.model)}</h2><p>${esc(o.gabarit)}</p></div></div>
+<div class="sec">
+  <div class="traka">${o.traka.map(t=>`<div><b>${esc(t[0])}</b><span>${esc(t[1])}</span></div>`).join('')}</div>
+  ${o.klijent?`<h3>${esc(L.ponudaZa)} ${esc(o.klijent)}</h3>`:''}
+  ${o.cena?`<div class="price"><div class="lbl">${esc(L.cena)}</div><div class="val">${esc(o.cena)}${o.pdv?`<i>${esc(o.pdv)}</i>`:''}</div>${o.cenaRaz?`<div class="sub">${esc(o.cenaRaz)}</div>`:''}</div>`
+          :`<div class="price"><div class="lbl">${esc(L.cenaUpit)}</div><div class="val">${esc(L.naUpit)}</div><div class="sub">${esc(L.upit2)}</div></div>`}
+  <h3>${esc(L.dodH)}</h3>${pgDodKarte(o)}
+  <h3>${esc(L.opisH)}</h3>
+  <div class="card txt"><p>${esc(o.opis)}</p></div>
+  <h3>${esc(L.uklH)}</h3>
+  <div class="card"><ul class="usl">${o.ukljuceno.map(u=>`<li><span class="ut">${esc(u.t)}</span>${u.zh}</li>`).join('')}</ul></div>
+`;
+}
 /* dve varijante: kartice sa cenama (jeftinija levo) → razlike → tabovi sa detaljima svake */
 function pgVarTelo(o,row,draw){
   const L=o.L,pdv=o.pdv?`<i>${esc(o.pdv)}</i>`:'';
@@ -3118,7 +3199,7 @@ footer b{display:block;color:var(--navy);font-size:13px;letter-spacing:.5px}
   <div class="mark">${o.logo?`<img src="${o.logo}" alt="">`:'<span>AG</span>'}</div>
   <div><h1>${esc(o.firma)}</h1><div class="dom">${esc(o.domeni)}</div></div>
 </header>
-${o.var?pgVarTelo(o,row,draw):pgJedanTelo(o,row,draw)}
+${o.var?pgVarTelo(o,row,draw):(o.prod?pgProizvodTelo(o,row,draw):pgJedanTelo(o,row,draw))}
   <h3>${esc(o.L.nijeH)}</h3>
   <div class="card"><ul class="usl nije">${o.nije.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>
   <h3>${esc(o.L.uslH)}</h3>
@@ -3184,7 +3265,7 @@ function vt(i,sk){
   ikona();
 })();
 (function(){
-  var ext=['jpg','jpeg','png','webp','JPG','JPEG'],box=document.getElementById('gal'),bases=${JSON.stringify([].concat(o.galBase))},bi=0,base=bases[0],max=24,n=0,ok=0,
+  var ext=['jpg','jpeg','png','webp','JPG','JPEG'],box=document.getElementById('gal'),bases=${JSON.stringify([].concat(o.galBase||[]))},bi=0,base=bases[0],max=24,n=0,ok=0,
       dd=new Date(),vq='?v='+dd.getFullYear()+String(dd.getMonth()+1).padStart(2,'0')+String(dd.getDate()).padStart(2,'0')+String(dd.getHours()).padStart(2,'0');
   function next(i){
     if(i>max)return dalje();
@@ -3200,11 +3281,35 @@ function vt(i,sk){
   }
   function dalje(){bi++;if(bi<bases.length){base=bases[bi];next(1);}else fin();}
   function fin(){if(n)document.getElementById('galwrap').classList.add('on');}
-  next(1);
+  if(bases.length)next(1);
 })();
 <\/script></div></body></html>`;
 }
 /* podaci jednog modela iz trenutnog stanja (pgS + polja) — za link; sa3d: 3D iz ARHITEKTE pripada ovom modelu */
+/* stavke (staklo, ZIP) za stranicu ponude */
+function pgDodZaPonudu(dodL,showP){
+  const cur=pgPrices.cur;
+  return dodL.map(d=>{const S=PG_SIS[d.sis],t=pgDodTeh(d),str=PG_STRANA_K[d.strana],v=pgDodIznos(d);
+    return{naziv:T(S.n)+(str?' — '+T(str):''),meta:[pgDodMeraTxt(d),d.sis!=='fiksno'&&t.m2?pgQBr(t.m2)+' m²':''].filter(Boolean).join(' · '),
+      teh:d.sis!=='fiksno'?t.txt:'',opis:T(S.opis),ukl:T(S.ukl),foto:'../'+S.foto,crtez:pgDodPNG(d),cena:showP?(v>0?pgFmt(v)+' '+cur:T('na upit')):''};});
+}
+/* natpisi na stranici ponude */
+function pgPonudaL(){
+  return {spec:T('Specifikacija'),cena:T(pgCenaLbl()),cenaUpit:T('CENA'),naUpit:T('Na upit'),
+         dodH:T(pgDodNaslov()),d3:T('Vaša pergola u 3D'),
+         kakoRadi:'Kako radi',gdeRadili:'Gde smo radili',proizvodnja:'Naša proizvodnja',
+         demoNap:'Prikaz rada sistema. Nisu prikazane vaše mere — one su u specifikaciji iznad.',
+         upit2:T('Pozovite nas za ponudu'),placanje:T('Plaćanje: 50% avans  •  50% dan pre isporuke i montaže'),
+         teh:T('TEHNIČKI PRIKAZI'),opisH:T('Opis modela'),uslH:T('Uslovi'),uklH:T('U cenu je uključeno'),
+         nijeH:T('Nije uključeno'),zasto:T('Zašto AG GROUP'),brendH:'Upotpunite terasu',brendP:'Pored pergola zatvaramo i terase — pogledajte naše druge sajtove:',brendU:'Deo toga je već u ovoj ponudi',brendV:'Pogledajte',radovi:T('Naši radovi'),
+         zoom:T('dodirnite za uvećanje'),zoomP:T('Dodirnite fotografiju za uvećanje.'),
+         pozovi:T('Pozovi'),viber:T('Viber poruka'),ponudaZa:T('Ponuda za:'),
+         napomena:T('Napomena: '),proizvod:T('Proizvedeno u Srbiji'),ponuda:T('Ponuda'),
+         prolazna:T('prolazna visina '),nemaFoto:T('Nema fotografije za ovaj model'),
+         vasa:T('VAŠA PONUDA'),dve:T('Dve varijante — izaberite'),obe:T('Obe pravimo i montiramo sami, u Pirotu.'),
+         saMont:T('sa montažom'),detalji:T('Detalji'),razlike:T('Razlike na prvi pogled'),stubovi:T('Stubovi'),
+         uzObe:T('važi za obe varijante'),saDod:T('sa dodacima')};
+}
 async function pgVarPodaci(sa3d){
   const tw=pgTW(),mp=pgMP(),ta=pgTA(),tp=pgTP(),sl=pgSl(),V=pgS.visineOK,tip=pgBF()?'biofix':pgS.type;
   const r={tip,model:pgNazivKupac(),foto:'',fotoAbs:'',og:'',slika3d:'',og3d:'',V,pPerg:pgPrice(),
@@ -3262,7 +3367,8 @@ function pgSistRed(){
   return pgSpojeni()?[T('Spojeni sistemi'),isti?U(`${pgS.count} × ${pgS.pergs[0].w} × ${pgS.pergs[0].p} cm`):`${pgS.count} — `+pgS.pergs.map((p,i)=>`P${i+1}: ${p.w}×${p.p}`).join(', ')]
     :[T('Broj pergola'),`${pgS.count} — `+pgS.pergs.map((p,i)=>`P${i+1}: ${p.w}×${p.p}`).join(', ')];
 }
-let pgLinkVar=null;   // poslednji link: null = jedan model, ili [tip levo, tip desno]
+let pgLinkVar=null;
+let pgLinkProd=null;   // poslednji link je ponuda drugog brenda: {model, mera, sajt}   // poslednji link: null = jedan model, ili [tip levo, tip desno]
 async function generateLink(posle){
   pgGather();
   if(pgS.pergs.some(p=>p.w<50||p.p<50||isNaN(p.w)||isNaN(p.p))){alert('Unesite validne dimenzije (min 50 cm).');return;}
@@ -3291,9 +3397,7 @@ async function generateLink(posle){
       firma:PG_FIRMA,domeni:K().domeni,tel:K().tel,telRaw:K().telRaw,viber:K().viber,
       logo,klijent:pn,pdv:pgPDV(),
       gabarit:U(`${tw} × ${mp} cm`),sist:pgSistTxt(),
-      dodaci:dodL.map(d=>{const S=PG_SIS[d.sis],t=pgDodTeh(d),str=PG_STRANA_K[d.strana],v=pgDodIznos(d);
-        return{naziv:T(S.n)+(str?' — '+T(str):''),meta:[pgDodMeraTxt(d),d.sis!=='fiksno'&&t.m2?pgQBr(t.m2)+' m²':''].filter(Boolean).join(' · '),
-          teh:d.sis!=='fiksno'?t.txt:'',opis:T(S.opis),ukl:T(S.ukl),foto:'../'+S.foto,crtez:pgDodPNG(d),cena:pgS.showPrice?(v>0?pgFmt(v)+' '+cur:T('na upit')):''};}),
+      dodaci:pgDodZaPonudu(dodL,pgS.showPrice),
       napomena:notes,
       uslovi:[T('Ponuda važi do ')+dsPlus(pgRokDana()),
               T('Plaćanje: 50% avans, 50% dan pre isporuke i montaže.'),
@@ -3304,20 +3408,7 @@ async function generateLink(posle){
       traka:PG_TRAKA.map(x=>[T(x[0]),T(x[1])]),
       demo:pgS.lang==='sr'?'../demo/':'',brendovi:pgBrendoviPonuda(),
       broj:genId('PON'),datum:ds(),
-      L:{spec:T('Specifikacija'),cena:T(pgCenaLbl()),cenaUpit:T('CENA'),naUpit:T('Na upit'),
-         dodH:T(pgDodNaslov()),d3:T('Vaša pergola u 3D'),
-         kakoRadi:'Kako radi',gdeRadili:'Gde smo radili',proizvodnja:'Naša proizvodnja',
-         demoNap:'Prikaz rada sistema. Nisu prikazane vaše mere — one su u specifikaciji iznad.',
-         upit2:T('Pozovite nas za ponudu'),placanje:T('Plaćanje: 50% avans  •  50% dan pre isporuke i montaže'),
-         teh:T('TEHNIČKI PRIKAZI'),opisH:T('Opis modela'),uslH:T('Uslovi'),uklH:T('U cenu je uključeno'),
-         nijeH:T('Nije uključeno'),zasto:T('Zašto AG GROUP'),brendH:'Upotpunite terasu',brendP:'Pored pergola zatvaramo i terase — pogledajte naše druge sajtove:',brendU:'Deo toga je već u ovoj ponudi',brendV:'Pogledajte',radovi:T('Naši radovi'),
-         zoom:T('dodirnite za uvećanje'),zoomP:T('Dodirnite fotografiju za uvećanje.'),
-         pozovi:T('Pozovi'),viber:T('Viber poruka'),ponudaZa:T('Ponuda za:'),
-         napomena:T('Napomena: '),proizvod:T('Proizvedeno u Srbiji'),ponuda:T('Ponuda'),
-         prolazna:T('prolazna visina '),nemaFoto:T('Nema fotografije za ovaj model'),
-         vasa:T('VAŠA PONUDA'),dve:T('Dve varijante — izaberite'),obe:T('Obe pravimo i montiramo sami, u Pirotu.'),
-         saMont:T('sa montažom'),detalji:T('Detalji'),razlike:T('Razlike na prvi pogled'),stubovi:T('Stubovi'),
-         uzObe:T('važi za obe varijante'),saDod:T('sa dodacima')}
+      L:pgPonudaL()
     };
     let og;
     if(!vB){
@@ -3352,12 +3443,55 @@ async function generateLink(posle){
     const ogImg=og?og.img:'';
     const html=pgPonudaHTML(o);
     const res=await pgApi('publish',ogImg?{html,img:ogImg}:{html});
+    pgLinkProd=null;
     pgLinkShow(res.url);
     if(posle==='viber')pgPorukaViber();   // brzi upit: odmah u Viber; ako telefon to ne dozvoli, dugme Viber je na ekranu
   }catch(e){
     alert('Nije uspelo pravljenje linka: '+e.message);
   }finally{
     if(btn){btn.innerHTML=old;btn.disabled=false;}
+  }
+}
+/* Ponuda drugog brenda (ZIP zavese ili stakleni sistemi) — bez pergole */
+async function generateLinkProd(posle){
+  const P=PG_PROD[pgProd],L0=pgDodaci(),cur=pgPrices.cur;
+  if(!L0.length){alert('Dodajte bar jedan otvor ('+P.naziv+').');return;}
+  if(L0.some(d=>d.sis==='fiksno'?!(+d.m2>0):!(+d.w>0&&+d.h>0))){alert('Upišite širinu i visinu (cm) za svaki otvor — kod fiksnog stakla m².');return;}
+  if(!pgSyncKey){alert('Za pravljenje linka potrebna je šifra za sinhronizaciju.\n\nKliknite na ikonicu ☁ pored „Projekti" i unesite je.');return;}
+  pgS.tel=document.getElementById('pg_qTel').value.trim();
+  const dod=pgDodUkupno(),showP=dod>0,bez=L0.filter(d=>!(pgDodIznos(d)>0)).length;
+  const m2=L0.reduce((z,d)=>z+pgDodTeh(d).m2,0),nz=pgDodNaziv(),naziv=T(nz&&nz!=='Staklo'?nz:P.naziv);
+  const mera=L0.map(d=>pgDodMeraTxt(d)).filter(Boolean).join(' + ');
+  const btn=document.getElementById('pg_qBtnViber'),old=btn?btn.innerHTML:'';
+  if(btn){btn.innerHTML='&#8987; Pravim link...';btn.disabled=true;}
+  try{
+    let logo='';
+    if(pgLogoImg){const ls=pgLogoImg.src;logo=ls.startsWith('data:')?ls:'../'+ls.substring(ls.lastIndexOf('logo.'));}
+    const o={
+      prod:pgProd,firma:PG_FIRMA,domeni:P.d,tel:K().tel,telRaw:K().telRaw,viber:K().viber,
+      logo,klijent:document.getElementById('pg_qName').value.trim(),pdv:pgPDV(),
+      foto:'../'+P.foto,fotoAbs:new URL(P.foto,location.href).href,model:naziv,
+      gabarit:L0.length+' '+(L0.length===1?'otvor':'otvora')+(m2>0?' · '+pgQBr(m2)+' m²':''),
+      cena:showP?pgFmt(dod)+' '+cur:'',cenaRaz:showP&&bez?bez+' '+(bez===1?'stavka':'stavke')+' na upit — cena je za ostale':'',
+      dodaci:pgDodZaPonudu(L0,true),opis:T(P.opis),
+      ukljuceno:P.ukl.map(t=>({t:T(t),zh:''})),nije:P.nije.map(T),
+      uslovi:[T('Ponuda važi do ')+dsPlus(pgRokDana()),T('Plaćanje: 50% avans, 50% dan pre isporuke i montaže.'),T('Rok isporuke i montaže: ')+T('10–20 dana')+'.',T('Konačne mere se uzimaju na licu mesta.')],
+      prednosti:PG_PREDNOSTI.map(x=>[T(x[0]),T(String(x[1]).replace('gotove pergole — svaka se radi','gotove sisteme — sve se radi').replace('Na sve elemente pergole','Na sve elemente'))]),
+      traka:PG_TRAKA.map(x=>[T(x[0]),T(x[1])]),
+      demo:'../demo/',anim:'',galBase:[],brendovi:pgBrendoviPonuda(P.d),
+      broj:genId('PON'),datum:ds(),spec:[],crtezi:[],
+      ogTitle:`${PG_FIRMA} — ${naziv}`,ogDesc:`${L0.length} ${L0.length===1?'otvor':'otvora'} — ${T('cena, tehnički crteži i sve što je uključeno')}`,
+      L:Object.assign(pgPonudaL(),{cena:T('UKUPNA CENA'),dodH:T('Vaša ponuda — stavke'),opisH:T('O sistemu'),
+        brendP:pgProd==='zip'?'Pored ZIP zavesa radimo pergole i staklene sisteme — pogledajte naše druge sajtove:':'Pored staklenih sistema radimo pergole i ZIP zavese — pogledajte naše druge sajtove:'})
+    };
+    const res=await pgApi('publish',{html:pgPonudaHTML(o)});
+    pgLinkVar=null;pgLinkProd={model:naziv,mera,sajt:P.d};
+    pgLinkShow(res.url);
+    if(posle==='viber')pgPorukaViber();
+  }catch(e){
+    alert('Nije uspelo pravljenje linka: '+e.message);
+  }finally{
+    if(btn){btn.innerHTML=old;btn.disabled=false;pgTelUI();}
   }
 }
 function pgOgSlika(im){
@@ -3383,12 +3517,16 @@ const PG_ODG_CENA={
       'Цените са най-горе в офертата, веднага под заглавието — докоснете линка по-горе 👆 Там са и разликите между вариантите и чертежите.']
 };
 function pgJez(){return pgS.lang==='bg'?'bg':'sr';}
-function pgPorukaKey(){return 'pg_poruka_'+(pgLinkVar?'2_':'')+pgJez();}
-function pgPorukaSablon(){try{const v=localStorage.getItem(pgPorukaKey());if(v)return v;}catch(e){}return (pgLinkVar?PG_PORUKA2_DEF:PG_PORUKA_DEF)[pgJez()];}
+/* ponuda drugog brenda (ZIP, staklo) — {model}, {mera}, {sajt} */
+const PG_PORUKA_P_DEF='Poštovani,\njavljam se povodom Vašeg upita — {model}, {mera}.\n\n👉 Cena, tehnički crteži i sve što je uključeno su na linku:\n{link}\n\nUnutra je i video iz naše proizvodnje u Pirotu.\n\nSrdačan pozdrav,\nAleksandar Ćirić · {sajt}\n064 89 79 242';
+function pgPorukaKey(){return 'pg_poruka_'+(pgLinkProd?'p_':(pgLinkVar?'2_':''))+pgJez();}
+function pgPorukaSablon(){try{const v=localStorage.getItem(pgPorukaKey());if(v)return v;}catch(e){}return pgLinkProd?PG_PORUKA_P_DEF:(pgLinkVar?PG_PORUKA2_DEF:PG_PORUKA_DEF)[pgJez()];}
 function pgPorukaSave(){try{localStorage.setItem(pgPorukaKey(),document.getElementById('pg_poruka').value);}catch(e){}}
 function pgPorukaReset(){try{localStorage.removeItem(pgPorukaKey());}catch(e){}document.getElementById('pg_poruka').value=pgPorukaSablon();}
 function pgPorukaTekst(){
   const url=document.getElementById('pg_linkUrl').value, t=document.getElementById('pg_poruka').value||pgPorukaSablon();
+  if(pgLinkProd){const P=pgLinkProd;const x=t.replace(/\{model\}/g,P.model).replace(/\{mera\}/g,P.mera).replace(/\{sajt\}/g,P.sajt).replace(/\{varijante\}/g,P.model);
+    return x.indexOf('{link}')>=0?x.replace(/\{link\}/g,url):x+'\n'+url;}
   const bg=pgJez()==='bg';
   const model=pgLinkVar?pgLinkVar.map(k=>T(PG_VAR[k].n)).join(' '+T('ili')+' '):T(pgBF()?'BIOFIX pergola':(PG_NAZIV[pgS.type]||PG_TL[pgS.type]));
   const vari=pgLinkVar?pgLinkVar.map(k=>bg?PG_VAR[k].bg:PG_VAR[k].ak).join(bg?' и ':' i '):'';

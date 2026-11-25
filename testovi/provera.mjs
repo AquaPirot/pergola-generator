@@ -187,6 +187,34 @@ try {
     await pg.context().close();
   }
 
+  /* 6b) PONUDE DRUGIH BRENDOVA — ZIP zavese i stakleni sistemi bez pergole */
+  {
+    console.log('ZIP zavese i stakleni sistemi');
+    const pg = await strana({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true });
+    await pg.tap('#pg_qProd [data-pr="zip"]');
+    ok(await pg.evaluate(() => document.body.classList.contains('prod') && getComputedStyle(document.getElementById('pg_qW').closest('.form-row')).display === 'none' && getComputedStyle(document.getElementById('pg_qProdTot')).display !== 'none'), 'ZIP: polja pergole sakrivena, vidi se zbir');
+    ok(await pg.evaluate(() => [...document.querySelectorAll('#pg_qDod [data-add]')].map(x => x.dataset.add).join()) === 'zip', 'ZIP: nudi se samo ZIP zavesa');
+    const fill = async (i, f, v) => { await pg.fill(`#pg_qDod .dodr[data-i="${i}"] input[data-f="${f}"]`, String(v)); };
+    await pg.tap('#pg_qDod [data-add="zip"]'); await pg.tap('#pg_qDod [data-add="zip"]');
+    await fill(0, 'w', 550); await fill(0, 'h', 250); await fill(0, 'cm', 100);
+    await fill(1, 'w', 700); await fill(1, 'h', 250);
+    await pg.selectOption('#pg_qDod .dodr[data-i="1"] select', 'levo');
+    ok(await pg.evaluate(() => pgDodaci()[1].w) === 700, 'promena strane ne prepisuje upisanu meru (700 ostaje)', await pg.evaluate(() => pgDodaci()[1].w));
+    ok(/2 komada/.test(await pg.textContent('#pg_qDod .dodr[data-i="1"] .dt')), 'ZIP do 6 m: 700 cm = 2 komada');
+    ok((await pg.textContent('#pg_qProdSum')) === '1.380' && /1 bez cene/.test(await pg.textContent('#pg_qProdNote')), 'zbir 13,75 m² × 100 = 1380, druga stavka bez cene', await pg.textContent('#pg_qProdSum'));
+    await pg.fill('#pg_qTel', '064 123 4567');
+    const r = await pg.evaluate(async () => { let u = ''; window.pgPorukaViber = () => { u = pgPorukaTekst(); }; await generateLinkProd('viber'); pgLinkClose(); const h = window.__cap.html; return { u, dom: (h.match(/class="dom">([^<]*)/) || [])[1], h2: (h.match(/<h2>([^<]*)/) || [])[1], cena: (h.match(/class="val">([^<]*)/) || [])[1], na: (h.match(/class="dp">na upit/g) || []).length, br: [...h.matchAll(/<a class="br" href="([^"?]*)/g)].map(x => x[1]).join(), og: (h.match(/og:image" content="([^"]*)/) || [])[1], gal: /galerija/.test(h.replace(/<script>[\s\S]*?<\/script>/g, '')) }; });
+    ok(r.dom === 'ZIPZAVESE.RS' && r.h2 === 'ZIP zavese' && r.cena === '1.380 EUR' && r.na === 1, 'ponuda: ZIPZAVESE.RS, „ZIP zavese", 1.380 EUR, jedna stavka na upit', JSON.stringify(r).slice(0, 160));
+    ok(r.br === 'https://pergola.rs/,https://staklenisistemi.rs/' && /img\/brend\/zipzavese\.jpg$/.test(r.og), 'predlaže pergola.rs i staklenisistemi.rs; slika za Viber je slika brenda');
+    ok(r.u.includes('ZIP zavese, 550 × 250 cm + 700 × 250 cm') && r.u.includes('ZIPZAVESE.RS') && r.u.includes('https://primer.rs/ponude/proba.html'), 'poruka za Viber: model, mere, sajt i link', r.u.slice(0, 120));
+    await pg.tap('#pg_qProd [data-pr="staklo"]');
+    ok(await pg.evaluate(() => [...document.querySelectorAll('#pg_qDod [data-add]')].map(x => x.dataset.add).join()) === 'klizno,giljotina,fiksno' && await pg.evaluate(() => pgDodaci().length) === 0, 'staklo: klizno, giljotina, fiksno — posebna lista');
+    await pg.tap('#pg_qProd [data-pr="perg"]');
+    ok(await pg.inputValue('#pg_qPrice') === '4100' && await pg.evaluate(() => pgDodaci().length) === 0 && !(await pg.evaluate(() => document.body.classList.contains('prod'))), 'nazad na pergolu: sve kao pre, dodaci pergole netaknuti');
+    ok(!pg.gr.length, 'bez grešaka', pg.gr.join(' ¦ '));
+    await pg.context().close();
+  }
+
   /* 7) OSTALE STRANICE se učitavaju bez greške */
   {
     console.log('Ostale stranice');
