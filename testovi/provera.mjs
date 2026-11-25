@@ -145,6 +145,15 @@ try {
     ok(r.red.includes('Za sva godišnja doba') && r.red.includes('✓ sa dimerom') && r.red.includes('3D Blockout cerada') && !/pokvari/.test(r.red), 'tabela razlika ima dogovorene tekstove');
     ok(r.p.includes('dve varijante — BIOFIX i Klasičnu pergolu') && r.og === 'Ponuda 4 × 3 m — BIOFIX ili Klasična' && r.tip === 'klasicna', 'poruka, naslov za Viber i vraćanje stanja', r.p.slice(0, 90));
     ok(!pg.gr.length, 'bez grešaka', pg.gr.join(' ¦ '));
+    // naši brendovi u ponudi
+    const br = await pg.evaluate(async () => {
+      pgDodAdd('zip'); pgQApply(); await generateLink(); pgLinkClose(); const h = window.__cap.html;
+      pgS.lang = 'bg'; await generateLink(); pgLinkClose(); const hb = window.__cap.html; pgS.lang = 'sr';
+      return { sr: [...h.matchAll(/<a class="br" href="([^"]*)"[\s\S]*?<b>([^<]*)<\/b>/g)].map(x => x[2] + ' ' + x[1]), zip: /ZIPZAVESE\.RS<\/b>[\s\S]{0,400}Deo toga je već u ovoj ponudi/.test(h), staklo: /STAKLENISISTEMI\.RS<\/b>[\s\S]{0,300}Deo toga/.test(h), foot: /<footer>[\s\S]*zipzavese\.rs[\s\S]*staklenisistemi\.rs/.test(h), bg: /class="br"/.test(hb) };
+    });
+    ok(br.sr.length === 2 && br.sr[0].startsWith('ZIPZAVESE.RS https://zipzavese.rs/?utm_source=ponuda') && br.sr[1].startsWith('STAKLENISISTEMI.RS https://staklenisistemi.rs/'), 'ponuda predlaže zipzavese.rs i staklenisistemi.rs (bez pergola.rs)', JSON.stringify(br.sr));
+    ok(br.zip && !br.staklo, 'kad je ZIP u ponudi, na kartici ZIP piše „već u ovoj ponudi"');
+    ok(br.foot && !br.bg, 'sva tri sajta u podnožju; bugarska ponuda bez srpskih brendova');
     await pg.context().close();
   }
 
